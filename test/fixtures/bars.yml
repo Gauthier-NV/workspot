@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  address: MyString
+  description: MyText
+  has_wifi: false
+  has_power_outlets: false
+  latitude: 1.5
+  longitude: 1.5
+
+two:
+  name: MyString
+  address: MyString
+  description: MyText
+  has_wifi: false
+  has_power_outlets: false
+  latitude: 1.5
+  longitude: 1.5

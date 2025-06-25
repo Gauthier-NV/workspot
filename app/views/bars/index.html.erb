@@ -1,0 +1,15 @@
+<h1>Bienvenu sur Workspot</h1>
+
+<div id="map" style="height: 400px; width: 100%; margin-bottom: 20px;"></div>
+
+<div id="bar-list">
+  <% @bars.each do |bar| %>
+    <div class="bar-card">
+      <h2><%= bar.name %></h2>
+      <p><%= bar.address %></p>
+      <p><%= bar.description %></p>
+      <p>Wifi : <%= bar.has_wifi ? "✅" : "❌" %></p>
+      <p>Prises : <%= bar.has_power_outlets ? "✅" : "❌" %></p>
+    </div>
+  <% end %>
+</div>
