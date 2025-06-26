@@ -69,3 +69,6 @@ end
 #SCSS gem
 
 gem 'sassc-rails'
+
+#securization gem for development and test environments
+gem 'dotenv-rails', groups: [:development, :test]

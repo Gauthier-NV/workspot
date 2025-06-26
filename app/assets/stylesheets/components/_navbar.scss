@@ -1,16 +1,28 @@
 .navbar-workspot {
+  width: 100%;
+  z-index: 1000;
+  background-color: #f1f4f9;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
   align-items: center;
-  background-color: #f1f4f9; // couleur claire
-  padding: 20px 40px;
+  padding: 20px 0;
+  transition: all 0.3s ease;
 
-  .navbar-logo img {
+  .logo {
+    height: 300px;
+    width: auto;
+    transition: all 0.3s ease;
+  }
+
+  &.shrink {
+    padding: 10px 0;
+  }
+
+  &.shrink .logo {
     height: 80px;
   }
 
   .btn-outline {
-
     border: 2px solid black;
     border-radius: 50px;
     padding: 10px 20px;
@@ -31,9 +43,9 @@
     gap: 20px;
     text-align: center;
 
-
+    .navbar-button.right,
+    .navbar-button.left {
+      margin-top: 50px;
     }
-
-
-
+  }
 }

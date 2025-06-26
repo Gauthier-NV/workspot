@@ -48,22 +48,31 @@
       <p>Si vous avez des remarques à nous faire à propos d’un <strong>Spot</strong>...</p>
     </div>
 
-    <div class="contact-form">
-      <input type="text" placeholder="Prénom Nom..." />
-      <input type="text" placeholder="Nom de l’établissement..." />
-      <input type="text" placeholder="Adresse de l’établissement..." />
-      <select>
-        <option disabled selected>Je ...</option>
-        <option>Je recommande un spot</option>
-        <option>Je suis propriétaire d'un spot</option>
-        <option>J'ai une remarque à propos d'un spot</option>
-        <option>J'ai une autre demande...</option>
 
-      </select>
-      <textarea placeholder="Commentaire..."></textarea>
-    </div>
 
-      <%= link_to "Envoyez votre commentaire", class: "btn-outline" %>
+
+      <form action="<%= messages_path %>" method="post" class="contact-form">
+        <%= csrf_meta_tags %>
+
+        <input type="text" name="message[name]" placeholder="Prénom Nom..." />
+        <input type="text" name="message[email]" placeholder="Votre adresse email..." />
+        <input type="text" name="message[establishment]" placeholder="Nom de l’établissement..." />
+        <input type="text" name="message[address]" placeholder="Adresse de l’établissement..." />
+
+
+        <select name="message[role]">
+          <option disabled selected>Je ...</option>
+          <option>Je recommande un spot</option>
+          <option>Je suis propriétaire d'un spot</option>
+          <option>J'ai une remarque à propos d'un spot</option>
+          <option>J'ai une autre demande...</option>
+        </select>
+
+        <textarea name="message[content]" placeholder="Commentaire..."></textarea>
+
+        <button type="submit" class="btn-outline">Envoyez votre commentaire</button>
+      </form>
+
   </div>
 
 </section>
