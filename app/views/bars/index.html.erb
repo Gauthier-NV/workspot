@@ -10,6 +10,8 @@
 
   <!-- Carte mais plus tard avec AD -->
 
+    <!-- Carte mais plus tard avec AD -->
+
   <section class="pact">
     <h2>LE PACT DU WORKSPOTTER</h2>
     <p>
@@ -51,14 +53,19 @@
       <input type="text" placeholder="Nom de l’établissement..." />
       <input type="text" placeholder="Adresse de l’établissement..." />
       <select>
-        <option disabled selected>Je suis...</option>
-        <option>Client</option>
-        <option>Gérant</option>
-        <option>Autre</option>
+        <option disabled selected>Je ...</option>
+        <option>Je recommande un spot</option>
+        <option>Je suis propriétaire d'un spot</option>
+        <option>J'ai une remarque à propos d'un spot</option>
+        <option>J'ai une autre demande...</option>
+
       </select>
       <textarea placeholder="Commentaire..."></textarea>
     </div>
+
+      <%= link_to "Envoyez votre commentaire", class: "btn-outline" %>
   </div>
+
 </section>
 
 <footer class="footer">
