@@ -2,23 +2,23 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect() {
-    window.addEventListener("scroll", this.handleScroll.bind(this));
+    this.shrunk = false;
+    window.addEventListener("scroll", this.handleScroll);
   }
 
   disconnect() {
-    window.removeEventListener("scroll", this.handleScroll.bind(this));
+    window.removeEventListener("scroll", this.handleScroll);
   }
 
-  handleScroll() {
-    if (window.scrollY > 50) {
+  handleScroll = () => {
+    const shouldShrink = window.scrollY > 10;
+
+    if (shouldShrink && !this.shrunk) {
       this.element.classList.add("shrink");
-    } else {
+      this.shrunk = true;
+    } else if (!shouldShrink && this.shrunk) {
       this.element.classList.remove("shrink");
+      this.shrunk = false;
     }
-  }
-
-  handleScroll() {
-  console.log("scroll position:", window.scrollY)
-
   }
 }
