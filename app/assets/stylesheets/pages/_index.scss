@@ -1,9 +1,22 @@
+// Variables SCSS (optionnelles)
+$blue: #0066cc;
+$blue-light: #dbe9ff;
+$blue-border: #5c6eff;
+$blue-bg: #e6f0ff;
+$text-color: #222;
+$text-muted: #555;
+$font: 'Helvetica Neue', sans-serif;
+
+* {
+  box-sizing: border-box;
+}
+
 .workspot-presentation {
   max-width: 1000px;
   margin: 60px auto;
   padding: 0 20px;
-  font-family: 'Helvetica Neue', sans-serif;
-  color: #222;
+  font-family: $font;
+  color: $text-color;
 
   h2 {
     font-size: 2rem;
@@ -20,7 +33,7 @@
   h3 {
     margin-top: 40px;
     font-size: 1.2rem;
-    color: #0066cc;
+    color: $blue;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
@@ -39,29 +52,29 @@
     background-color: #fff;
     padding: 40px;
     border-radius: 12px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
     margin-top: 50px;
 
     h2 {
       font-size: 1.8rem;
-      text-align: center;
       font-weight: 800;
+      text-align: center;
       margin-bottom: 30px;
     }
 
     .rules {
       display: flex;
-      flex-direction: row;
       justify-content: space-between;
       gap: 40px;
       margin-top: 30px;
 
       .rule {
-        display: flex;
-        justify-content: space-between;
         flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         background: #f6f9fc;
-        padding: 0px;
+        padding: 20px;
         border-radius: 8px;
         text-align: center;
 
@@ -75,7 +88,6 @@
         p {
           font-size: 1rem;
           font-weight: 500;
-
         }
       }
     }
@@ -84,7 +96,7 @@
       text-align: center;
       font-size: 0.95rem;
       margin-top: 30px;
-      color: #555;
+      color: $text-muted;
 
       strong {
         font-weight: bold;
@@ -95,21 +107,6 @@
       }
     }
   }
-
-  @media (max-width: 768px) {
-  .workspot-presentation {
-    max-width: 100%;
-    margin: 20px 0;
-    padding: 0 10px;
-    font-size: 1rem;
-  }
-  .contact-section .contact-box {
-    padding: 20px;
-    flex-direction: column;
-    gap: 15px;
-  }
-}
-
 }
 
 .contact-section {
@@ -118,7 +115,7 @@
   justify-content: center;
 
   .contact-box {
-    background-color: #dbe9ff;
+    background-color: $blue-light;
     border-radius: 32px;
     display: flex;
     flex-direction: row;
@@ -143,7 +140,7 @@
     p {
       font-size: 1rem;
       margin-bottom: 10px;
-      color: #222;
+      color: $text-color;
     }
 
     strong {
@@ -160,11 +157,11 @@
     input,
     select,
     textarea {
-      border: 2px solid #5c6eff;
+      border: 2px solid $blue-border;
       border-radius: 30px;
       padding: 12px 20px;
       font-size: 1rem;
-      background-color: #e6f0ff;
+      background-color: $blue-bg;
       outline: none;
     }
 
@@ -175,8 +172,12 @@
     }
   }
 
-
   .btn-outline {
+    max-width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
     border: 2px solid black;
     border-radius: 50px;
     padding: 10px 20px;
@@ -191,7 +192,6 @@
       color: white;
     }
   }
-
 }
 
 .footer {
@@ -200,11 +200,43 @@
   text-align: center;
   padding: 30px 20px;
   font-size: 0.9rem;
+}
 
-  @media (max-width: 768px) {
+// ----------------------
+// ✅ Responsive design
+// ----------------------
+
+@media (max-width: 768px) {
+  .workspot-presentation {
+    max-width: 100%;
+    margin: 20px 0;
+    padding: 0 10px;
+    font-size: 1rem;
+
+    .pact .rules {
+      flex-direction: column;
+    }
+
+    .pact .rule {
+      width: 100%;
+    }
+  }
+
+  .contact-section .contact-box {
+    padding: 20px;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .btn-outline {
+    font-size: 0.9rem;
+    padding: 10px 16px;
+    border-radius: 40px;
+    width: 100%;
+  }
+
   .footer {
     padding: 20px 5px;
     font-size: 0.8rem;
   }
-}
 }

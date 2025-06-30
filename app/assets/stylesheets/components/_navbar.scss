@@ -42,13 +42,26 @@
   }
 
   @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 20px;
+  .btn-outline {
+    font-size: 0.9rem;
+    padding: 10px 16px;
+    border-radius: 40px;
+    width: 90%;
+    max-width: 300px;
+    box-sizing: border-box;
     text-align: center;
-
-    .navbar-button.right,
-    .navbar-button.left {
-      margin-top: 50px;
-    }
+    white-space: normal;
+    word-break: break-word;
   }
+
+  .navbar-button {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .logo {
+    height: 120px;
+  }
+}
 }
