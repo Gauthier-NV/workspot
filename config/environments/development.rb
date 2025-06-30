@@ -75,14 +75,19 @@ Rails.application.configure do
   config.action_controller.raise_on_missing_callback_actions = true
 
 
+ # mailer configuration
+
   config.action_mailer.delivery_method = :smtp
+  config.action_mailer.raise_delivery_errors = true
+
   config.action_mailer.smtp_settings = {
-    address:              "smtp.gmail.com",
+    address:              'mail.infomaniak.com',
     port:                 587,
-    domain:               "gmail.com",
-    user_name: ENV["GMAIL_USERNAME"],
-    password:  ENV["GMAIL_APP_PASSWORD"],
-    authentication:       "plain",
+    domain:               'workspots.fr', # ← mets ici ton domaine
+    user_name:            ENV['INFOMANIAK_EMAIL'],
+    password:             ENV['INFOMANIAK_PASSWORD'],
+    authentication:       'plain',
     enable_starttls_auto: true
   }
+
 end

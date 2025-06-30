@@ -1,5 +1,5 @@
 .workspot-presentation {
-  max-width: 800px;
+  max-width: 1000px;
   margin: 60px auto;
   padding: 0 20px;
   font-family: 'Helvetica Neue', sans-serif;
@@ -96,6 +96,20 @@
     }
   }
 
+  @media (max-width: 768px) {
+  .workspot-presentation {
+    max-width: 100%;
+    margin: 20px 0;
+    padding: 0 10px;
+    font-size: 1rem;
+  }
+  .contact-section .contact-box {
+    padding: 20px;
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
 }
 
 .contact-section {
@@ -186,4 +200,11 @@
   text-align: center;
   padding: 30px 20px;
   font-size: 0.9rem;
+
+  @media (max-width: 768px) {
+  .footer {
+    padding: 20px 5px;
+    font-size: 0.8rem;
+  }
+}
 }

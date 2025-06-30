@@ -72,3 +72,9 @@ gem 'sassc-rails'
 
 #securization gem for development and test environments
 gem 'dotenv-rails', groups: [:development, :test]
+
+
+#HEROKU DEPLOYMENT
+# Pour la production
+# Pour le dev/test (facultatif mais souvent là)
+gem 'sqlite3', group: [:development, :test]

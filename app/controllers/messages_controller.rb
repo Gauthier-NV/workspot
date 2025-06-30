@@ -8,7 +8,8 @@ class MessagesController < ApplicationController
     if @message.save
       # Envoie l’email après sauvegarde
       MessageMailer.new_message(@message).deliver_now
-      redirect_to root_path, notice: "L'équipe Workspot vous remercie pour votre message !"
+      flash[:notice] = "L'équipe Workspot vous remercie pour votre message !"
+      redirect_to root_path
     else
       redirect_to root_path, alert: "Une erreur est survenue."
     end

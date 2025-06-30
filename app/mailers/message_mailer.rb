@@ -1,14 +1,13 @@
 class MessageMailer < ApplicationMailer
-  default to: "gauthier.nouveau@gmail.com"
+  default from: ENV['INFOMANIAK_EMAIL']
 
   def new_message(message)
     @message = message
     mail(
-      from: "\"Workspot\" <#{ENV["GMAIL_USERNAME"]}>",
+      to: ENV['INFOMANIAK_EMAIL'],
+      from: "#{@message.name} <#{ENV['INFOMANIAK_EMAIL']}>",
       reply_to: @message.email,
-      subject: "📥 Nouveau message reçu via Workspot"
+      subject: "📩 Nouveau message via Workspot"
     )
   end
-
-
 end
