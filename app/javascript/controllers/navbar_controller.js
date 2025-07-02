@@ -11,7 +11,7 @@ export default class extends Controller {
   }
 
   handleScroll = () => {
-    const shouldShrink = window.scrollY > 10;
+    const shouldShrink = window.scrollY > 3;
 
     if (shouldShrink && !this.shrunk) {
       this.element.classList.add("shrink");
