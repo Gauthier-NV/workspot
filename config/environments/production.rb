@@ -97,4 +97,23 @@ Rails.application.configure do
 
 config.force_ssl = true
 
+# Configure the mailer to use Infomaniak SMTP settings
+  config.action_mailer.delivery_method = :smtp
+config.action_mailer.raise_delivery_errors = true
+
+config.action_mailer.smtp_settings = {
+  address:              'mail.infomaniak.com',
+  port:                 587,
+  domain:               'workspots.fr',
+  user_name:            ENV['INFOMANIAK_EMAIL'],
+  password:             ENV['INFOMANIAK_PASSWORD'],
+  authentication:       'plain',
+  enable_starttls_auto: true
+}
+
+config.action_mailer.default_url_options = {
+  host: 'www.workspots.fr',
+  protocol: 'https'
+}
+
 end
