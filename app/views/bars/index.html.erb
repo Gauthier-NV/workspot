@@ -9,10 +9,20 @@
 
   <h3 id="spots-map" >TOUS LES SPOTS DISPONIBLES :</h3>
 
-      <!-- Carte mais plus tard avec AD -->
-  <iframe src="https://my.atlist.com/map/a77842ff-5762-4570-b2c3-9f6a495216f3?share=true" allow="geolocation 'self' https://my.atlist.com" width="100%" height="600px" loading="lazy" frameborder="0" scrolling="no" allowfullscreen  ></iframe>
-    <!-- Carte mais plus tard avec AD -->
+      <!-- MAPS  -->
 
+      <div class="map-container">
+        <iframe
+          src="https://my.atlist.com/map/a77842ff-5762-4570-b2c3-9f6a495216f3?share=true"
+          allow="geolocation 'self' https://my.atlist.com"
+          loading="lazy"
+          frameborder="0"
+          scrolling="no"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <!-- PACTE DU WORKSPOTTER -->
 
 
   <section class="pact">
@@ -41,17 +51,26 @@
   </section>
 </div>
 
+
 <section class="contact-section" id="contact">
   <div class="contact-box">
-    <div class="contact-text">
-      <h2>CONTACTEZ-NOUS...</h2>
-      <p>Si vous êtes :</p>
-      <p>Un <strong>Spot</strong> qui mériterait d’être référencé !</p>
-      <p>Si vous vous recommandez un <strong>Spot</strong> !</p>
-      <p>Si vous avez des remarques à nous faire à propos d’un <strong>Spot</strong>...</p>
-    </div>
+    <h2 class="contact-title">CONTACTEZ-NOUS...</h2>
 
-
+    <div class="contact-content">
+        <div class="contact-cards">
+          <div class="contact-card">
+            <h4>Tu veux recommander un spot ?</h4>
+            <p>Dis-nous où tu aimes travailler et pourquoi ce lieu mérite sa place ici.</p>
+          </div>
+          <div class="contact-card">
+            <h4>Tu es un commerçant ?</h4>
+            <p>Propose ton café ou ton lieu pour accueillir les Workspotters.</p>
+          </div>
+          <div class="contact-card">
+            <h4>Un souci avec un spot ?</h4>
+            <p>Signale-nous tout comportement déplacé ou incohérence.</p>
+          </div>
+        </div>
 
 
       <form action="<%= messages_path %>" method="post" class="contact-form">
@@ -62,26 +81,24 @@
         <input type="text" name="message[establishment]" placeholder="Nom de l’établissement..." />
         <input type="text" name="message[address]" placeholder="Adresse de l’établissement..." />
 
-
-      <div class="select-wrapper">
-        <select name="message[role]">
-          <option disabled selected>Je ...</option>
-          <option>Je recommande un spot</option>
-          <option>Je suis propriétaire d'un spot</option>
-          <option>J'ai une remarque à propos d'un spot</option>
-          <option>J'ai une autre demande...</option>
-        </select>
-      </div>
-
+        <div class="select-wrapper">
+          <select name="message[role]">
+            <option disabled selected>Je ...</option>
+            <option>Je recommande un spot</option>
+            <option>Je suis propriétaire d'un spot</option>
+            <option>J'ai une remarque à propos d'un spot</option>
+            <option>J'ai une autre demande...</option>
+          </select>
+        </div>
 
         <textarea name="message[content]" placeholder="Commentaire..."></textarea>
 
         <button type="submit" class="btn-outline">Envoyez votre commentaire</button>
       </form>
-
+    </div>
   </div>
-
 </section>
+
 
 <footer class="footer">
   <div class="footer-content">

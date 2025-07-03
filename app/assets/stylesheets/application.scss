@@ -10,11 +10,11 @@ body {
   background-color: #f1f4f9 ;
 
 }
-
 .toast-flash {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 150px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 9999;
   padding: 15px 20px;
   border-radius: 8px;
@@ -27,12 +27,13 @@ body {
 }
 
 .alert-success {
-  background-color: #28a7466c;
+  background-color: #2f7e41cc; // vert semi-transparent
 }
 
 .alert-danger {
-  background-color: #dc354677;
+  background-color: #dc3546cc; // rouge semi-transparent
 }
+
 
 @keyframes fadeOut {
   to {
