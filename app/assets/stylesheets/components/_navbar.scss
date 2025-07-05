@@ -44,28 +44,45 @@
       color: white;
     }
   }
+}
 
-  @media (max-width: 768px) {
-    .btn-outline {
-      font-size: 0.9rem;
-      padding: 10px 16px;
-      border-radius: 40px;
-      width: 90%;
-      max-width: 300px;
-      box-sizing: border-box;
-      text-align: center;
-      white-space: normal;
-      word-break: break-word;
-    }
-
-    .navbar-button {
-      width: 100%;
-      display: flex;
-      justify-content: center;
+  @media (max-width: 650px) {
+  .navbar-workspot {
+    &.shrink {
+      transform: none;
+      height: auto;
+      padding: initial;
     }
 
     .logo {
-      height: 100px; // avant : 120px
+      height: 50px;
     }
+
+    .btn-outline {
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      border-radius: 40px;
+      width: 90%;
+      max-width: 300px;
+      text-align: center;
+    }
+
+    .btn-outline {
+        font-size: 0.9rem;
+        padding: 10px 16px;
+        border-radius: 40px;
+        width: 90%;
+        max-width: 300px;
+        box-sizing: border-box;
+        text-align: center;
+        white-space: normal;
+        word-break: break-word;
+      }
+
+    .navbar-button {
+      display: none; // on cache les boutons sur mobile si on a le footer fixe
+    }
+
+
   }
 }

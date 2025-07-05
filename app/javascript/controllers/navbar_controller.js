@@ -3,7 +3,10 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   connect() {
     this.shrunk = false;
-    window.addEventListener("scroll", this.handleScroll);
+
+    if (window.innerWidth > 768) {
+      window.addEventListener("scroll", this.handleScroll);
+    }
   }
 
   disconnect() {

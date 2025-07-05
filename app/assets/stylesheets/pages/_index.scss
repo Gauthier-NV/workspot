@@ -438,3 +438,86 @@ $font: 'Helvetica Neue', sans-serif;
     font-size: 0.8rem;
   }
 }
+
+
+
+ // Mobile responsive styles
+// ----------------------
+
+
+@media (max-width: 768px) {
+  // Présentation
+  .workspot-presentation {
+    h2 {
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    p {
+      font-size: 0.95rem;
+    }
+  }
+
+  // Pacte
+  .pact {
+    h2 {
+      font-size: 1.4rem;
+    }
+
+    .rule h3 {
+      font-size: 2rem;
+    }
+
+    .rule p {
+      font-size: 0.9rem;
+    }
+
+    .reminder {
+      font-size: 0.85rem;
+    }
+  }
+
+  // Contact
+  .contact-title {
+    font-size: 1.5rem;
+  }
+
+  .contact-card {
+    h4 {
+      font-size: 1rem;
+    }
+
+    p {
+      font-size: 0.85rem;
+    }
+  }
+
+  .contact-form input,
+  .contact-form textarea,
+  .contact-form select {
+    font-size: 0.95rem;
+  }
+
+  // Footer (classique)
+  .footer {
+    font-size: 0.85rem;
+
+    .footer-link {
+      font-size: 0.85rem;
+    }
+
+    .social-icon {
+      width: 30px;
+      height: 30px;
+    }
+  }
+
+  // Boutons
+  .btn-outline {
+    font-size: 0.85rem;
+    padding: 10px 14px;
+  }
+}
