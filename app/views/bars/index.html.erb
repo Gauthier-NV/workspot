@@ -115,63 +115,59 @@
     </p>
 
     <!-- Bouton d'installation Android -->
-    <a id="install-button" class="btn btn-flat" style="display: none; margin-top: 10px;">
+    <a id="install-button" class="btn btn-flat install-cta" style="display: none;">
       📲 Ajouter à l'écran d'accueil
     </a>
 
+    <!-- Conteneur du tuto iOS -->
+    <div id="ios-instructions" class="ios-instructions" style="display: none;">
+      📲 Pour ajouter Workspot à votre écran d'accueil :
+      <br>
+      Cliquez sur <strong>Partager</strong> puis <strong>« Sur l'écran d'accueil »</strong>.
+    </div>
 
+    <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-    <!-- Conditions d'affichages si / IOS/ ANDROID ect -->
+    if (!isMobile) return;
 
-      <script>
-        document.addEventListener("DOMContentLoaded", function () {
-          const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
-          const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-          const isAndroid = /android/i.test(navigator.userAgent);
-          const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    // ANDROID
+    if (isAndroid) {
+      let deferredPrompt;
+      const installButton = document.getElementById("install-button");
 
-          if (!isMobile) return;
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installButton.style.display = "inline-block";
 
-          // Android
-          if (isAndroid) {
-            let deferredPrompt;
-            const installButton = document.getElementById("install-button");
-
-            window.addEventListener("beforeinstallprompt", (e) => {
-              e.preventDefault();
-              deferredPrompt = e;
-              if (installButton) installButton.style.display = "inline-block";
-
-              installButton.addEventListener("click", () => {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                  if (choiceResult.outcome === "accepted") {
-                    console.log("Installation acceptée");
-                  } else {
-                    console.log("Installation refusée");
-                  }
-                  deferredPrompt = null;
-                });
-              });
-            });
-          }
-
-          // iOS Safari
-          if (isIOS && isSafari) {
-            const banner = document.createElement("div");
-            banner.innerHTML = `
-              <div style="background:#000;color:#fff;padding:12px;text-align:center;">
-                📲 Pour ajouter Workspot à l'écran d'accueil :<br>
-                Cliquez sur <strong>Partager</strong> puis <strong>« Sur l'écran d'accueil »</strong>.
-              </div>
-            `;
-            document.querySelector('.banner.about-banner .container').appendChild(banner);
-          }
+        installButton.addEventListener("click", () => {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            deferredPrompt = null;
+          });
         });
-      </script>
+      });
+    }
+
+    // iOS SAFARI
+    if (isIOS && isSafari) {
+      const iosBanner = document.getElementById("ios-instructions");
+      if (iosBanner) iosBanner.style.display = "block";
+    }
+  });
+</script>
 
   </div>
 </div>
+
+
+
+
 
     <!--  FOOTER -->
 
