@@ -47,8 +47,13 @@
 }
 
   @media (max-width: 650px) {
+
   .navbar-workspot {
-    height: 70px;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+  height: 70px;
 
     &.shrink {
       transform: none;
