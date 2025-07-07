@@ -63,35 +63,51 @@ $font: 'Helvetica Neue', sans-serif;
       margin-bottom: 30px;
     }
 
-    .rules {
+   .rules {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  margin-top: 30px;
+  flex-wrap: wrap; // au cas où sur mobile
+
+    .rule-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-right: 20px;
+    color: #000;
+    min-width: 40px;
+    text-align: center;
+  }
+
+
+
+    .rule {
+      flex: 1;
       display: flex;
-      justify-content: space-between;
-      gap: 40px;
-      margin-top: 30px;
+      align-items: center; // vertical alignment du chiffre et du texte
+      background: #f6f9fc;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: left;
+      min-width: 250px;
 
-      .rule {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        background: #f6f9fc;
-        padding: 20px;
-        border-radius: 8px;
-        text-align: center;
+      h3 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #000;
+        margin: 0 20px 0 0; // espacement à droite du chiffre
+        min-width: 40px;
+      }
 
-        h3 {
-          font-size: 2.5rem;
-          font-weight: 700;
-          color: #000;
-          margin-bottom: 10px;
-        }
-
-        p {
-          font-size: 1rem;
-          font-weight: 500;
-        }
+      p {
+        font-size: 1rem;
+        font-weight: 500;
+        margin: 0;
+        line-height: 1.4;
       }
     }
+  }
+
 
     .reminder {
       text-align: center;
@@ -263,6 +279,64 @@ $font: 'Helvetica Neue', sans-serif;
     border-color: darken($blue-electric, 5%);
   }
 }
+
+
+
+
+
+.banner {
+  background-size: cover;
+  background-position: center;
+  padding: 100px 0;
+  text-align: center;
+
+  h1 {
+    margin: 0;
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+  }
+
+  p {
+    font-size: 18px;
+    color: white;
+    opacity: 0.85;
+    max-width: 700px;
+    margin: 20px auto;
+    line-height: 1.6;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+  }
+
+  .btn-flat {
+    margin-top: 20px;
+    background-color: white;
+    color: black;
+    padding: 12px 24px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s;
+
+    &:hover {
+      background-color: #f6f6f6;
+    }
+  }
+}
+
+// Spécifique à ta bannière "à propos"
+.about-banner {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.603), rgba(0, 0, 0, 0.5)), url("About-us-ws.jpg");
+    background-size: cover;
+    background-position: center;
+}
+
+
+
+
+
+
+
 .footer {
   background-color: $blue-electric;
   color: white;
@@ -356,34 +430,18 @@ $font: 'Helvetica Neue', sans-serif;
   }
 }
 
-// Responsive footer
-@media (max-width: 768px) {
-  .footer {
-    text-align: center;
-
-    .footer-content {
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .footer-right {
-      text-align: center;
-    }
-  }
-}
-
-
 // ----------------------
 // 🗺️  map
 // ----------------------
+
+
 
 .map-container {
   position: relative;
   width: 100%;
   max-width: 100%;
   height: 0;
-  padding-bottom: 60%; // ratio 16:9 (modifie si tu veux un autre format)
+  padding-bottom: 75%; // ratio 16:9 (modifie si tu veux un autre format)
   overflow: hidden;
   border-radius: 5px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -400,9 +458,67 @@ $font: 'Helvetica Neue', sans-serif;
   }
 }
 
+
+
 // ----------------------
 // ✅ Responsive design
 // ----------------------
+
+
+
+
+
+
+// Responsive footer
+@media (max-width: 768px) {
+  .footer {
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 20px;
+
+    .footer-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .footer-logo {
+      display: none;
+    }
+
+    .footer-social {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      transition: opacity 0.2s;
+
+      .social-icon {
+        width: 24px;
+        height: 24px;
+        opacity: 0.8;
+        transition: opacity 0.3s;
+
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
+    .footer-right {
+      text-align: center;
+
+      a {
+        text-decoration: none;
+        color: inherit;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+
+
 
 @media (max-width: 768px) {
   .workspot-presentation {
@@ -420,11 +536,7 @@ $font: 'Helvetica Neue', sans-serif;
     }
   }
 
-  .contact-section .contact-box {
-    padding: 20px;
-    flex-direction: column;
-    gap: 15px;
-  }
+
 
   .btn-outline {
     font-size: 0.9rem;
@@ -481,6 +593,19 @@ $font: 'Helvetica Neue', sans-serif;
   }
 
   // Contact
+
+  .contact-section {
+    padding :10px;
+
+  }
+
+  .contact-box#contact {
+    padding: 40px;
+    flex-direction: column;
+    gap: 10px;
+
+  }
+
   .contact-title {
     font-size: 1.5rem;
   }
@@ -501,23 +626,35 @@ $font: 'Helvetica Neue', sans-serif;
     font-size: 0.95rem;
   }
 
-  // Footer (classique)
-  .footer {
-    font-size: 0.85rem;
-
-    .footer-link {
-      font-size: 0.85rem;
-    }
-
-    .social-icon {
-      width: 30px;
-      height: 30px;
-    }
-  }
 
   // Boutons
   .btn-outline {
     font-size: 0.85rem;
     padding: 10px 14px;
   }
+
+
+  // Maps
+ .map-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  height: 0;
+  padding-bottom: 95%; // ratio 16:9 (modifie si tu veux un autre format)
+  overflow: hidden;
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 40px auto;
+
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 5px;
+  }
+}
+
 }
