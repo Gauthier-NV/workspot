@@ -113,39 +113,96 @@
       Workspot sélectionne pour vous les meilleurs lieux pour travailler — cafés, hôtels, restaurants — accueillants, connectés, et propices à la concentration.<br>
       Notre mission : faciliter le quotidien des indépendants, étudiants, nomades digitaux ou simples curieux en quête d’un endroit agréable pour bosser.
     </p>
-    <a class="btn btn-flat" href="#contact">Nous contacter</a>
+
+    <!-- Bouton d'installation Android -->
+    <a id="install-button" class="btn btn-flat" style="display: none; margin-top: 10px;">
+      📲 Ajouter à l'écran d'accueil
+    </a>
+
+
+
+    <!-- Conditions d'affichages si / IOS/ ANDROID ect -->
+
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
+          const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+          const isAndroid = /android/i.test(navigator.userAgent);
+          const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+          if (!isMobile) return;
+
+          // Android
+          if (isAndroid) {
+            let deferredPrompt;
+            const installButton = document.getElementById("install-button");
+
+            window.addEventListener("beforeinstallprompt", (e) => {
+              e.preventDefault();
+              deferredPrompt = e;
+              if (installButton) installButton.style.display = "inline-block";
+
+              installButton.addEventListener("click", () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                  if (choiceResult.outcome === "accepted") {
+                    console.log("Installation acceptée");
+                  } else {
+                    console.log("Installation refusée");
+                  }
+                  deferredPrompt = null;
+                });
+              });
+            });
+          }
+
+          // iOS Safari
+          if (isIOS && isSafari) {
+            const banner = document.createElement("div");
+            banner.innerHTML = `
+              <div style="background:#000;color:#fff;padding:12px;text-align:center;">
+                📲 Pour ajouter Workspot à l'écran d'accueil :<br>
+                Cliquez sur <strong>Partager</strong> puis <strong>« Sur l'écran d'accueil »</strong>.
+              </div>
+            `;
+            document.querySelector('.banner.about-banner .container').appendChild(banner);
+          }
+        });
+      </script>
+
   </div>
 </div>
 
+    <!--  FOOTER -->
 
 
-<footer class="footer">
-  <div class="footer-content">
-    <div class="footer-left">
-      <%= image_tag("logo-ws-white.png", alt: "Workspot Logo", class: "footer-logo") %>
-    </div>
-
-    <div class="footer-center">
-    <!-- SOCIAL FOOTER À FAIRE-->
-      <div class="footer-social">
-        <%= link_to "https://www.facebook.com/workspotfr", target: "_blank", rel: "noopener" do %>
-          <%= image_tag "facebook.svg", alt: "Facebook", class: "social-icon" %>
-        <% end %>
-
-        <%= link_to "https://www.instagram.com/workspotfr", target: "_blank", rel: "noopener" do %>
-          <%= image_tag "instagram.svg", alt: "Instagram", class: "social-icon" %>
-        <% end %>
-
-        <%= link_to "https://www.linkedin.com/company/workspotfr", target: "_blank", rel: "noopener" do %>
-          <%= image_tag "linkedin.svg", alt: "LinkedIn", class: "social-icon" %>
-        <% end %>
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-left">
+        <%= image_tag("logo-ws-white.png", alt: "Workspot Logo", class: "footer-logo") %>
       </div>
-      <!-- SOCIAL FOOTER À FAIRE  -->
 
-    </div>
+      <div class="footer-center">
+      <!-- SOCIAL FOOTER À FAIRE-->
+        <div class="footer-social">
+          <%= link_to "https://www.facebook.com/workspotfr", target: "_blank", rel: "noopener" do %>
+            <%= image_tag "facebook.svg", alt: "Facebook", class: "social-icon" %>
+          <% end %>
 
-    <div class="footer-right">
-      <p><a href="mailto:contact@workspots.fr">contact@workspots.fr</a></p>
+          <%= link_to "https://www.instagram.com/workspotfr", target: "_blank", rel: "noopener" do %>
+            <%= image_tag "instagram.svg", alt: "Instagram", class: "social-icon" %>
+          <% end %>
+
+          <%= link_to "https://www.linkedin.com/company/workspotfr", target: "_blank", rel: "noopener" do %>
+            <%= image_tag "linkedin.svg", alt: "LinkedIn", class: "social-icon" %>
+          <% end %>
+        </div>
+        <!-- SOCIAL FOOTER À FAIRE  -->
+
+      </div>
+
+      <div class="footer-right">
+        <p><a href="mailto:contact@workspots.fr">contact@workspots.fr</a></p>
+      </div>
     </div>
-  </div>
-</footer>
+  </footer>
