@@ -54,6 +54,7 @@
   width: 100%;
   z-index: 1000;
   height: 70px;
+  padding-top: env(safe-area-inset-top);
 
     &.shrink {
       transform: none;
