@@ -47,11 +47,11 @@
 }
 @media (max-width: 650px) {
   .navbar-workspot {
-    position: sticky;
+   position: fixed;
     top: 0;
-    width: 100%;
-    z-index: 1000;
-    height: 120px;
+    left: 0;
+    right: 0;
+    z-index: 9999;
 
 
     // Ajout du padding avec fallback
