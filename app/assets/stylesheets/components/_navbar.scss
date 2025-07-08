@@ -45,16 +45,17 @@
     }
   }
 }
-
-  @media (max-width: 650px) {
-
+@media (max-width: 650px) {
   .navbar-workspot {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  z-index: 1000;
-  height: 70px;
-  padding-top: env(safe-area-inset-top);
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 70px;
+
+    // Ajout du padding avec fallback
+    padding-top: constant(safe-area-inset-top); // ancien iOS
+    padding-top: env(safe-area-inset-top);      // moderne iOS
 
     &.shrink {
       transform: none;
@@ -67,25 +68,18 @@
     }
 
     .btn-outline {
-        border: 0.5px solid black;
-        font-size: 0.75rem;
-        padding: 10px 10px;
-        border-radius: 40px;
-        width: 90%;
-        max-width: 300px;
-        box-sizing: border-box;
-        text-align: center;
-        white-space: normal;
-        word-break: break-word;
-        line-height: 1.2;
-        margin: 8px 0;
-      }
-
+      border: 0.5px solid black;
+      font-size: 0.75rem;
+      padding: 10px 10px;
+      border-radius: 40px;
+      width: 90%;
+      max-width: 300px;
+      box-sizing: border-box;
+      text-align: center;
+      white-space: normal;
+      word-break: break-word;
+      line-height: 1.2;
+      margin: 8px 0;
     }
-
-
-
-
-
-
   }
+}
