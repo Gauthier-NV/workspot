@@ -47,16 +47,12 @@
 }
 @media (max-width: 768px) {
   .navbar-workspot {
-    position: fixed;
-    top: 0;
+   position: fixed;
+    top: 10px;
     left: 0;
-    width: 100%;
+    right: 0;
     z-index: 9999;
-
-    background-color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
-    padding: 10px 0;
+    padding: 10px 10px;
 
     // Ajout du padding avec fallback
     padding-top: constant(safe-area-inset-top); // ancien iOS
