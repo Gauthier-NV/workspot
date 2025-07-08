@@ -51,8 +51,8 @@
     top: 0;
     width: 100%;
     z-index: 1000;
-    height: 70px;
-    margin-top: 20px;
+    height: 120px;
+
 
     // Ajout du padding avec fallback
     padding-top: constant(safe-area-inset-top); // ancien iOS
