@@ -1,5 +1,5 @@
 .navbar-workspot {
-  position: fixed;
+  position: sticky;
   top: 0;
   width: 100%;
   z-index: 1000;
@@ -47,12 +47,13 @@
 }
 @media (max-width: 768px) {
   .navbar-workspot {
-   position: fixed;
-    top: 10px;
+   position: sticky;
+    top: 0;
     left: 0;
     right: 0;
     z-index: 9999;
-    padding: 10px 10px;
+    padding: 10px;
+    margin-top: 10px;
 
     // Ajout du padding avec fallback
     padding-top: constant(safe-area-inset-top); // ancien iOS
