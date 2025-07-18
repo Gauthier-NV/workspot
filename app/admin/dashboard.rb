@@ -10,24 +10,30 @@ ActiveAdmin.register_page "Dashboard" do
       end
     end
 
-    # Here is an example of a simple dashboard with columns and panels.
-    #
-    # columns do
-    #   column do
-    #     panel "Recent Posts" do
-    #       ul do
-    #         Post.recent(5).map do |post|
-    #           li link_to(post.title, admin_post_path(post))
-    #         end
-    #       end
-    #     end
-    #   end
 
-    #   column do
-    #     panel "Info" do
-    #       para "Welcome to ActiveAdmin."
-    #     end
-    #   end
-    # end
-  end # content
+    # -------- content for the dashboard -------- !!
+
+  columns do
+
+        column do
+          panel "Derniers bars ajoutés" do
+            ul do
+              Bar.order(created_at: :desc).limit(5).map do |bar|
+                li link_to(bar.name, admin_bar_path(bar))
+              end
+            end
+          end
+        end
+
+
+        column do
+          panel "Statistiques rapides" do
+            para "Nombre total de bars : #{Bar.count}"
+            para "Avec Wi-Fi : #{Bar.where(has_wifi: true).count}"
+            para "Avec prises électriques : #{Bar.where(has_power_outlets: true).count}"
+          end
+        end
+      end
+
+  end
 end
