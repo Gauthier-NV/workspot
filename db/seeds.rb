@@ -92,3 +92,4 @@ bars.each_with_index do |bar_attrs, i|
 end
 
 puts "🌱 Seed terminée avec succès !"
+AdminUser.create!(email: 'admin@example.com', password: 'password', password_confirmation: 'password') if Rails.env.development?
