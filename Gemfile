@@ -78,3 +78,7 @@ gem 'dotenv-rails', groups: [:development, :test]
 # Pour la production
 # Pour le dev/test (facultatif mais souvent là)
 gem 'sqlite3', group: [:development, :test]
+
+
+#Admin gem for admin panel
+gem 'activeadmin'
