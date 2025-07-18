@@ -307,56 +307,100 @@ $font: 'Helvetica Neue', sans-serif;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
   }
 
-  .btn-flat {
-    margin-top: 20px;
-    background-color: white;
-    color: black;
-    padding: 12px 24px;
-    border-radius: 40px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background 0.3s;
+  .android-instructions {
+  background: #f9f9f9;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  padding: 24px 20px;
+  max-width: 380px;
+  margin: 32px auto 0;
+  font-family: "Inter", sans-serif;
+  text-align: left;
+  transition: all 0.3s ease;
 
-    &:hover {
-      background-color: #f6f6f6;
+  h2 {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+    color: #111;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.4;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  ol {
+    padding-left: 20px;
+    margin: 0 0 16px 0;
+
+    li {
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+      color: #333;
     }
   }
 
   .install-cta {
-  background-color: #ffffff;
-  color: #000000;
-  border: 2px solid white;
-  padding: 10px 20px;
-  border-radius: 40px;
-  margin-top: 15px;
-  font-weight: 600;
-  display: inline-block;
-  transition: all 0.3s ease;
+    display: block;
+    width: 100%;
+    text-align: center;
+    background-color: #111;
+    color: #fff;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s ease;
 
-  &:hover {
-    background-color: #f6f6f6;
+    &:hover {
+      background-color: #333;
+    }
+  }
+
+  @media (max-width: 600px) {
+    padding: 20px 16px;
+    h2 {
+      font-size: 1.1rem;
+    }
+    p, li {
+      font-size: 0.9rem;
+    }
   }
 }
 
+
 .ios-instructions {
-  background-color: #f9f9f9;
-  color: #222;
-  padding: 16px 20px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 400;
-  margin: 20px auto 0;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  padding: 24px 20px;
   max-width: 380px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin: 32px auto 0;
+  font-family: "Inter", sans-serif;
+  text-align: left;
+  transition: all 0.3s ease;
 
   h1 {
-    font-size: 18px;
-    margin-bottom: 10px;
-    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+    color: #111;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.4;
   }
 
   p {
-    margin-bottom: 12px;
+    font-size: 1rem;
+    color: #444;
+    margin-bottom: 16px;
     line-height: 1.5;
   }
 
@@ -365,25 +409,41 @@ $font: 'Helvetica Neue', sans-serif;
     margin: 0;
 
     li {
-      margin-bottom: 8px;
-      line-height: 1.5;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+      color: #333;
+
+      strong {
+        color: #000;
+        font-weight: 600;
+      }
+
+      span {
+        margin-left: 4px;
+        font-size: 1.2em;
+      }
+    }
+  }
+
+  @media (max-width: 600px) {
+    padding: 20px 16px;
+    h1 {
+      font-size: 1.1rem;
+    }
+    p, li {
+      font-size: 0.9rem;
     }
   }
 }
+
 }
 
-// Spécifique à ta bannière "à propos"
+// Spécifique "à propos"
 .about-banner {
     background-image: linear-gradient(rgba(0, 0, 0, 0.603), rgba(0, 0, 0, 0.64)), url("About-us-ws.jpg");
     background-size: cover;
     background-position: center;
 }
-
-
-
-
-
-
 
 .footer {
   background-color: $blue-electric;
@@ -609,6 +669,9 @@ $font: 'Helvetica Neue', sans-serif;
 @media (max-width: 768px) {
   // Présentation
   .workspot-presentation {
+
+
+
     h2 {
       font-size: 1.5rem;
     }
@@ -706,4 +769,36 @@ $font: 'Helvetica Neue', sans-serif;
   }
 }
 
+}
+
+
+
+//Tablette responsivity :
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .workspot-presentation {
+    max-width: 90vw;
+    padding: 0 20px;
+    font-size: 1.05rem;
+    margin-bottom: 0px;
+
+    .pact .rules {
+      flex-direction: column;
+      gap: 20px;
+    }
+  }
+
+  .contact-section {
+    padding: 30px 10px;
+  }
+
+  .contact-box {
+    padding: 30px;
+    margin :50px;
+  }
+
+  .btn-outline {
+    font-size: 1rem;
+    padding: 12px 18px;
+  }
 }
