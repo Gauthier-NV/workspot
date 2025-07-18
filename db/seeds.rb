@@ -92,4 +92,8 @@ bars.each_with_index do |bar_attrs, i|
 end
 
 puts "🌱 Seed terminée avec succès !"
-AdminUser.create!(email: 'admin@example.com', password: 'password', password_confirmation: 'password') if Rails.env.development?
+
+AdminUser.find_or_create_by!(email: ENV["ADMIN_EMAIL"]) do |admin|
+  admin.password = ENV["ADMIN_PASSWORD"]
+  admin.password_confirmation = ENV["ADMIN_PASSWORD"]
+end
