@@ -82,3 +82,5 @@ gem 'sqlite3', group: [:development, :test]
 
 #Admin gem for admin panel
 gem 'activeadmin'
+
+gem 'devise'
