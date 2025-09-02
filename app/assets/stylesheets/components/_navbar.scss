@@ -8,14 +8,12 @@
   justify-content: space-evenly;
   align-items: center;
 
-
   .logo {
     height: 150px; // avant : 300px, beaucoup plus raisonnable
     width: auto;
     transition: height 0.2s ease-in-out;
     will-change: height;
   }
-
 
 
   &.shrink .logo {
