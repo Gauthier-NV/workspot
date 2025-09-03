@@ -281,7 +281,7 @@ $blue-pastel:   #dceafe;
 }
 
 
-
+// ---------------------- CTA download app ----------------------
 
 
 .banner {
@@ -289,6 +289,7 @@ $blue-pastel:   #dceafe;
   background-position: center;
   padding: 100px 0;
   text-align: center;
+
 
   h1 {
     margin: 0;
@@ -439,12 +440,15 @@ $blue-pastel:   #dceafe;
 }
 
 // Spécifique "à propos"
-.about-banner {
+.banner.about-banner {
   background-image: linear-gradient(to right, rgba(15, 15, 15, 0.938) 0%, rgba(15, 15, 15, 0.815) 60%, rgba(15, 15, 15, 0.318) 100%), url("About-us-ws.jpg");
   background-size: cover;
   background-position: center;
   color: #fff;
-  padding: clamp(56px, 8vw, 110px) 0;
+  padding: 8px;
+
+
+
 
 
 
