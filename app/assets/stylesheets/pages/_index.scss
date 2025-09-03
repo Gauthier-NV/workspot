@@ -183,28 +183,96 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 
   .android-instructions,
   .ios-instructions {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,.08);
-    padding: 24px 20px;
-    max-width: 380px;
-    margin: 32px auto 0;
-    font-family: "Inter", $font;
-    text-align: left;
-    transition: all .3s ease;
+  --accent: #{$blue-electric};
 
-    h2, h1 { font-size: 1.25rem; margin: 0 0 12px; color: #111; display: flex; align-items: center; gap: 8px; line-height: 1.4; }
-    p  { font-size: 1rem; color: #444; margin: 0 0 16px; line-height: 1.5; }
-    ol { padding-left: 20px; margin: 0 0 16px; }
-    li { margin-bottom: 10px; font-size: .95rem; color: #333; }
+  background: #fff;
+  border: 1px solid rgba(17,17,17,.08);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,.06),
+    0 8px 24px -12px rgba(0,0,0,.12);
+  padding: 20px;
+  max-width: 420px;
+  margin: 24px auto 0;
+  font-family: "Inter", $font;
+  color: #0f172a;
+  text-align: left;
+  transition: box-shadow .2s ease, transform .04s ease;
 
-    .install-cta {
-      display: block; width: 100%; text-align: center; background: #111; color: #fff;
-      padding: 12px 20px; font-size: 1rem; border-radius: 40px; text-decoration: none; font-weight: 600;
-      transition: background .3s ease;
-      &:hover { background: #333; }
+  &:hover { box-shadow:
+    0 2px 6px rgba(0,0,0,.08),
+    0 12px 28px -14px rgba(0,0,0,.18); }
+
+  h2, h1 {
+    margin: 0 0 8px;
+    font: 700 1.1rem/1.3 system-ui, -apple-system, Segoe UI, Roboto, "Inter", sans-serif;
+    letter-spacing: .2px;
+    color: #0f172a;
+    display: block;
+  }
+
+  p {
+    font: 400 .98rem/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Inter", sans-serif;
+    color: #475569;  /* slate-600 */
+    margin: 0 0 12px;
+  }
+
+  /* Étapes (avec ou sans icône) */
+  ol {
+    margin: 8px 0 0;
+    padding-left: 1.25rem;
+
+    li {
+      margin: 8px 0;
+      font-size: .98rem;
+      line-height: 1.5;
+      color: #0f172a;
+
+      /* Si tu ajoutes une icône dans la li (span.step-icon, svg, img), on aligne proprement */
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .step-icon {
+        flex: 0 0 32px;
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        display: grid; place-items: center;
+        background: rgba(54,86,227,.10);   /* accent doux */
+        color: var(--accent);
+      }
+      /* inline SVG ou <img> dans .step-icon */
+      .step-icon .icon,
+      .step-icon img {
+        width: 18px; height: 18px; display: block;
+        /* si SVG inline : il prendra la couleur via currentColor */
+        fill: currentColor;
+      }
     }
   }
+
+  .install-cta {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: var(--accent);
+    color: #fff;
+    padding: 12px 16px;
+    font-size: 1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid var(--accent);
+    transition: background .2s ease, border-color .2s ease, transform .04s ease;
+
+    &:hover {
+      background: lighten($blue-electric, 4%);
+      border-color: lighten($blue-electric, 4%);
+    }
+    &:active { transform: translateY(1px); }
+  }
+}
+
 }
 
 /* ================================
@@ -337,7 +405,7 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 
   .btn-outline { font-size: .9rem; padding: 10px 16px; width: 100%; }
 
-  .map-container { padding-bottom: 75%; } /* 4:3 pour + de hauteur sur mobile */
+  .map-container { padding-bottom: 150%; } /* 4:3 pour + de hauteur sur mobile */
 
   .footer {
     font-size: .85rem; text-align: center; padding: 20px 5px;
