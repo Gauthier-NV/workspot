@@ -1,11 +1,11 @@
 // Variables SCSS (optionnelles)
 $blue: #0066cc;
-$blue-light: #dbe9ff;
-$blue-border: #5c6eff;
-$blue-bg: #e6f0ff;
+$background: #e6f0ff;
 $text-color: #222;
 $text-muted: #555;
 $font: 'Helvetica Neue', sans-serif;
+$blue-electric: #3656e3;     // exemple
+$blue-pastel:   #dceafe;
 
 * {
   box-sizing: border-box;
@@ -169,7 +169,7 @@ $font: 'Helvetica Neue', sans-serif;
   }
 
   .contact-card {
-    background-color: lighten($blue-bg, 5%);
+    background-color: lighten($background, 5%);
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -200,7 +200,7 @@ $font: 'Helvetica Neue', sans-serif;
     textarea {
       border: none;
       border-radius: 25px;
-      background-color: $blue-bg;
+      background-color: $background;
       padding: 14px 20px;
       font-size: 1rem;
       color: #111;
@@ -221,7 +221,7 @@ $font: 'Helvetica Neue', sans-serif;
       font-family: inherit;
 
       &:focus {
-        background-color: lighten($blue-bg, 2%);
+        background-color: lighten($background, 2%);
         box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
       }
     }
@@ -440,10 +440,91 @@ $font: 'Helvetica Neue', sans-serif;
 
 // Spécifique "à propos"
 .about-banner {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.603), rgba(0, 0, 0, 0.64)), url("About-us-ws.jpg");
-    background-size: cover;
-    background-position: center;
+  background-image: linear-gradient(to right, rgba(15, 15, 15, 0.938) 0%, rgba(15, 15, 15, 0.815) 60%, rgba(15, 15, 15, 0.318) 100%), url("About-us-ws.jpg");
+  background-size: cover;
+  background-position: center;
+  color: #fff;
+  padding: clamp(56px, 8vw, 110px) 0;
+
+
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+  /* ===== Bloc générique ===== */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr;  /* mobile */
+    gap: 24px;
+    margin: clamp(24px, 4vw, 48px) 0;
+  }
+
+  .about-title {
+    margin: 0 0 12px;
+    font-size: clamp(1.6rem, 2.5vw, 2.25rem);
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: .2px;
+
+    &::after {
+      content: "";
+      display: block;
+      width: 72px; height: 3px;
+      margin-top: 12px;
+      background: linear-gradient(90deg, #fff, rgba(255,255,255,0));
+      border-radius: 999px; opacity: .85;
+    }
+  }
+
+  .about-copy { max-width: 65ch; }
+
+  .about-copy p {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: #f3f4f6;
+    text-align: justify;
+  }
+
+  /* ===== Colonne image (1 seule image) ===== */
+  .about-media {
+    /* clé pour la hauteur égale en desktop : l’item s’étire */
+    overflow: hidden;                 /* pour un crop propre */
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(0,0,0,.25);
+    background: rgba(255,255,255,.06);  /* placeholder si l’image tarde */
+  }
+
+  .media-img {
+    width: 100%;
+    display: block;
+
+    /* Mobile : ratio fixe agréable */
+    aspect-ratio: 16 / 10;
+    height: auto;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* ===== Desktop : 2 colonnes, hauteurs EXACTEMENT égales ===== */
+  @media (min-width: 1024px) {
+    .about-grid {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 50px;
+      align-items: stretch;    /* étire chaque colonne à la hauteur de la rangée */
+    }
+
+    .about-media,
+    .media-img {
+      height: 100%;           /* l’image remplit la hauteur de sa colonne */
+    }
+
+    .media-img {
+      aspect-ratio: auto;     /* on laisse la hauteur 100% primer en desktop */
+    }
+  }
 }
+
+// Footer
 
 .footer {
   background-color: $blue-electric;

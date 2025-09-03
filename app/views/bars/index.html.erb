@@ -13,6 +13,8 @@
 
      <div class="map-container">
         <iframe
+          title="Carte des WorkSpots"
+          aria-label="Carte interactive des lieux WorkSpot"
           src="https://my.atlist.com/map/a77842ff-5762-4570-b2c3-9f6a495216f3?share=true"
           allow="geolocation 'self' https://my.atlist.com"
           loading="lazy"
@@ -82,8 +84,9 @@
         </div>
 
 
-      <form action="<%= messages_path %>" method="post" class="contact-form">
-        <%= csrf_meta_tags %>
+      <!-- Contact Form -->
+        <form action="<%= messages_path %>" method="post" class="contact-form">
+        <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
 
         <input type="text" name="message[name]" placeholder="Prénom Nom..." />
         <input type="text" name="message[email]" placeholder="Votre adresse email..." />
@@ -110,11 +113,49 @@
 
 <div class="banner about-banner">
   <div class="container">
-    <h1>Qui sommes-nous ?</h1>
-    <p>
-      Workspot sélectionne pour vous les meilleurs lieux pour travailler — cafés, hôtels, restaurants — accueillants, connectés, et propices à la concentration.<br>
-      Notre mission : faciliter le quotidien des indépendants, étudiants, nomades digitaux ou simples curieux en quête d’un endroit agréable pour bosser.
-    </p>
+   <div class="about-grid">
+    <section class="about-copy" aria-labelledby="about-title-1">
+      <h2 id="about-title-1" class="about-title">Qui sommes-nous ?</h2>
+      <p>
+        Trouver un bon endroit pour travailler hors de chez soi, c’est souvent galère.
+        Trop bruyant, pas de prises, mauvaise connexion…
+        On a passé des heures à chercher le bon spot pour faire une visio après un rendez-vous, avancer sur un dossier hors de chez soi, ou simplement se réunir dans un endroit central.
+        Alors on a créé WorkSpot.
+        Une carte claire et intuitive qui référence les meilleurs lieux où il fait bon télétravailler : cafés, restaurants, hôtels… Tous sont accueillants, connectés, et ouverts à cette nouvelle façon de travailler.
+        Pas besoin de se demander si on dérange : ici, vous êtes les bienvenus.
+        Certains lieux proposent même des offres dédiées aux télétravailleurs, histoire de ne manquer de rien pendant la matinée ou l’après-midi.
+      </p>
+    </section>
+
+    <div class="about-media" aria-hidden="true">
+      <img class="media-img"
+          src="/assets/about-hero.jpg"
+          alt=""
+          loading="lazy" decoding="async">
+    </div>
+  </div>
+
+  <!-- Bloc 2 -->
+  <div class="about-grid">
+    <section class="about-copy" aria-labelledby="about-title-2">
+      <h2 id="about-title-2" class="about-title">Et demain ?</h2>
+      <p>
+        WorkSpot pourrait aussi devenir un réseau vivant :
+        des lieux pour organiser des sessions de groupe, accueillir des profs particuliers ou des coachs, créer des événements à thème entre freelances…
+        Vous aimez l’idée ?
+        Partagez vos spots préférés ou soufflez-nous vos envies. On construit ça avec vous!
+      </p>
+    </section>
+
+    <div class="about-media" aria-hidden="true">
+      <img class="media-img"
+          src="/assets/about-future.jpg"
+          alt=""
+          loading="lazy" decoding="async">
+    </div>
+  </div>
+
+
 
     <!-- Bouton d'installation Android -->
     <div id="android-instructions" class="android-instructions" style="display:none;">
