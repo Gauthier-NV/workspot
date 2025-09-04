@@ -182,7 +182,7 @@
 
 
 <!-- Bouton d'installation Android -->
-<div id="android-instructions" class="android-instructions" style="display:;">
+<div id="android-instructions" class="android-instructions" style="display:none;">
   <!-- logo Android -->
   <div class="card-logo">
     <%= image_tag "android.svg", alt: "Android", class: "logo-top", aria: { hidden: true } %>
@@ -205,7 +205,7 @@
 </div>
 
 <!-- Conteneur du tuto iOS -->
-<div id="ios-instructions" class="ios-instructions">
+<div id="ios-instructions" class="ios-instructions"  style="display:none;">
   <!-- logo Apple -->
   <div class="card-logo">
     <%= image_tag "apple.svg", alt: "Apple", class: "logo-top", aria: { hidden: true } %>
@@ -218,7 +218,7 @@
         <span>
           Appuyez sur <strong>Partager</strong> en haut de l'écran.
         </span>
-        <%= inline_svg_tag "share-ios.svg", alt: "", class: "icon-right icon-share-ios", aria: { hidden: true } %>
+        <%= inline_svg_tag "share.svg", alt: "", class: "icon-right icon-share-ios", aria: { hidden: true } %>
       </div>
     </li>
     <li>
@@ -226,7 +226,7 @@
         <span>
           Sélectionnez <strong>« Sur l'écran d'accueil »</strong>.
         </span>
-        <%= image_tag "add-ios.svg", alt: "", class: "icon-right", aria: { hidden: true } %>
+        <%= image_tag "add.svg", alt: "", class: "icon-right", aria: { hidden: true } %>
       </div>
     </li>
     <li>
