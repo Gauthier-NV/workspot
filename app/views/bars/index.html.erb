@@ -183,30 +183,50 @@
 
     <!-- Bouton d'installation Android -->
     <div id="android-instructions" class="android-instructions" style="display:;">
-    <h2>Ajoutez Workspot sur votre smartphone :</h2>
-    <ol>
-      <li>Appuyez sur le bouton ci-dessous</li>
-      <li>Validez l'installation dans la fenêtre</li>
-    </ol>
-      <a id="install-button" class="btn install-cta">Ajouter à l'écran d'accueil</a>
-    </div>
-    <!-- Conteneur du tuto iOS -->
-    <div id="ios-instructions" class="ios-instructions">
-      <h1>Ajoutez Workspot sur votre smartphone :</h1>
-      <ol>
-        <li>
+  <h2>Ajoutez Workspot sur votre smartphone :</h2>
+  <ol>
+    <li>
+      <div class="step-row">
+        <span>Appuyez sur le bouton ci-dessous</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-row">
+        <span>Validez l'installation dans la fenêtre</span>
+      </div>
+    </li>
+  </ol>
+  <a id="install-button" class="btn install-cta">Ajouter à l'écran d'accueil</a>
+</div>
+
+<!-- Conteneur du tuto iOS -->
+<div id="ios-instructions" class="ios-instructions">
+  <h2>Ajoutez Workspot sur votre smartphone :</h2>
+  <ol>
+    <li>
+      <div class="step-row">
+        <span>
           Appuyez sur <strong>Partager</strong> <span style="font-size: 1.2em;">🔗</span> en haut à droite de l'écran.
-          <img src="/images/ios-logo.png" alt="iOS" class="icon-right">
-        </li>
-        <li>
+        </span>
+        <%= inline_svg_tag "add-ios.svg",  class: "icon-right", aria: { hidden: true } %>
+      </div>
+    </li>
+    <li>
+      <div class="step-row">
+        <span>
           Sélectionnez <strong>« Sur l'écran d'accueil »</strong> <span style="font-size: 1.2em;">➕</span>.
-          <img src="/images/ios-logo.png" alt="iOS" class="icon-right">
-        </li>
-        <li>
-          Confirmez avec <strong>Ajouter</strong>.
-        </li>
-      </ol>
-    </div>
+        </span>
+        <%= inline_svg_tag "Ei-share-apple.svg", alt: "", class: "icon-right", aria: { hidden: true } %>
+      </div>
+    </li>
+    <li>
+      <div class="step-row">
+        <span>Confirmez avec <strong>Ajouter</strong>.</span>
+        <%= inline_svg_tag "add-ios.svg", alt: "", class: "icon-right", aria: { hidden: true } %>
+      </div>
+    </li>
+  </ol>
+</div>
 
     <script>
   document.addEventListener("DOMContentLoaded", function () {

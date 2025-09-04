@@ -84,3 +84,5 @@ gem 'sqlite3', group: [:development, :test]
 gem 'activeadmin'
 
 gem 'devise'
+
+gem "inline_svg"

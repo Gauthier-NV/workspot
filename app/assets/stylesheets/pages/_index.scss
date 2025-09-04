@@ -220,6 +220,8 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
   ol {
     margin: 8px 0 0;
     padding-left: 1.25rem;
+    list-style: decimal;         /* on garde la numérotation */
+    list-style-position: outside;
 
     li {
       margin: 8px 0;
@@ -227,27 +229,29 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
       line-height: 1.5;
       color: #ffffff;
 
-      /* Si tu ajoutes une icône dans la li (span.step-icon, svg, img), on aligne proprement */
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      .step-icon {
-        flex: 0 0 32px;
-        width: 32px; height: 32px;
-        border-radius: 8px;
-        display: grid; place-items: center;
-        background: rgba(54,86,227,.10);   /* accent doux */
-        color: var(--accent);
+      /* ⚠️ Ne PAS mettre display:flex sur li, sinon on perd les marqueurs */
+      .step-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
       }
-      /* inline SVG ou <img> dans .step-icon */
-      .step-icon .icon,
-      .step-icon img {
-        width: 18px; height: 18px; display: block;
-        /* si SVG inline : il prendra la couleur via currentColor */
-        fill: currentColor;
+
+      .step-row > span {
+        /* prend tout l’espace, pousse l’icône à droite */
+        flex: 1 1 auto;
+      }
+
+      .icon-right {
+        flex: 0 0 auto;
+        width: 22px;
+        height: 22px;
+        display: block;
+        margin-left: 12px;
+        opacity: .95;         /* léger polissage visuel */
+        color: #ffffff;
       }
     }
+
   }
 
   .install-cta {
