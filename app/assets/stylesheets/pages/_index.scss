@@ -261,6 +261,18 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 
   }
 
+  .card-logo {
+  text-align: center;
+  margin-bottom: 12px;
+
+  .logo-top {
+    width: 40px;   /* ajuste la taille */
+    height: auto;
+    display: inline-block;
+    opacity: .95; /* léger polissage visuel */
+  }
+  }
+
   .install-cta {
     display: block;
     width: 100%;
@@ -293,7 +305,8 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
     linear-gradient(to right, rgba(15,15,15,.94) 0%, rgba(15,15,15,.82) 60%, rgba(15,15,15,.32) 100%),
     url("About-us-ws.jpg");
   color: #fff;
-  padding: 8px;
+  padding-top: 10px;
+  padding-bottom: 30px;
 
   .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
 
