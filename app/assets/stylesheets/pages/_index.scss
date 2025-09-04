@@ -218,7 +218,7 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 
   /* Étapes (avec ou sans icône) */
   ol {
-    margin: 8px 0 0;
+    margin:  15px 0;
     padding-left: 1.25rem;
     list-style: decimal;         /* on garde la numérotation */
     list-style-position: outside;
@@ -243,13 +243,20 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 
       .icon-right {
         flex: 0 0 auto;
-        width: 22px;
-        height: 22px;
-        display: block;
+        width: 23px;
+        height: 23px;
+        display: inline-block;
         margin-left: 12px;
         opacity: .95;         /* léger polissage visuel */
-        color: #ffffff;
+
+        /* léger polissage visuel car cet icon (share ios parait plus petit*/
+
       }
+      .icon-share-ios {
+        width: 27px;
+        height: 27px;
+
+        }
     }
 
   }

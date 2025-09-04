@@ -181,8 +181,13 @@
 
 
 
-    <!-- Bouton d'installation Android -->
-    <div id="android-instructions" class="android-instructions" style="display:;">
+<!-- Bouton d'installation Android -->
+<div id="android-instructions" class="android-instructions" style="display:;">
+  <!-- logo Android -->
+  <div class="card-logo">
+    <%= image_tag "android.svg", alt: "Android", class: "logo-top", aria: { hidden: true } %>
+  </div>
+
   <h2>Ajoutez Workspot sur votre smartphone :</h2>
   <ol>
     <li>
@@ -201,32 +206,37 @@
 
 <!-- Conteneur du tuto iOS -->
 <div id="ios-instructions" class="ios-instructions">
+  <!-- logo Apple -->
+  <div class="card-logo">
+    <%= image_tag "apple.svg", alt: "Apple", class: "logo-top", aria: { hidden: true } %>
+  </div>
+
   <h2>Ajoutez Workspot sur votre smartphone :</h2>
   <ol>
     <li>
       <div class="step-row">
         <span>
-          Appuyez sur <strong>Partager</strong> <span style="font-size: 1.2em;">🔗</span> en haut à droite de l'écran.
+          Appuyez sur <strong>Partager</strong> en haut de l'écran.
         </span>
-        <%= inline_svg_tag "add-ios.svg",  class: "icon-right", aria: { hidden: true } %>
+        <%= inline_svg_tag "share-ios.svg", alt: "", class: "icon-right icon-share-ios", aria: { hidden: true } %>
       </div>
     </li>
     <li>
       <div class="step-row">
         <span>
-          Sélectionnez <strong>« Sur l'écran d'accueil »</strong> <span style="font-size: 1.2em;">➕</span>.
+          Sélectionnez <strong>« Sur l'écran d'accueil »</strong>.
         </span>
-        <%= inline_svg_tag "Ei-share-apple.svg", alt: "", class: "icon-right", aria: { hidden: true } %>
+        <%= image_tag "add-ios.svg", alt: "", class: "icon-right", aria: { hidden: true } %>
       </div>
     </li>
     <li>
       <div class="step-row">
         <span>Confirmez avec <strong>Ajouter</strong>.</span>
-        <%= inline_svg_tag "add-ios.svg", alt: "", class: "icon-right", aria: { hidden: true } %>
       </div>
     </li>
   </ol>
 </div>
+
 
     <script>
   document.addEventListener("DOMContentLoaded", function () {
