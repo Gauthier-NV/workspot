@@ -304,11 +304,22 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
   background-image:
     linear-gradient(to right, rgba(15,15,15,.94) 0%, rgba(15,15,15,.82) 60%, rgba(15,15,15,.32) 100%),
     url("About-us-ws.jpg");
+  background-size: cover;
+  background-position: center;
   color: #fff;
-  padding-top: 10px;
-  padding-bottom: 30px;
+  padding: 40px 0 60px;
 
-  .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+  .container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 16px;
+
+    @media (min-width: 576px)  { max-width: 540px; }
+    @media (min-width: 768px)  { max-width: 720px; }
+    @media (min-width: 992px)  { max-width: 960px; }
+    @media (min-width: 1200px) { max-width: 1140px; }
+    @media (min-width: 1400px) { max-width: 1320px; }
+  }
 
   /* Grille */
   .about-grid {
@@ -316,6 +327,12 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
     grid-template-columns: 1fr; /* mobile */
     gap: 24px;
     margin: clamp(24px, 4vw, 48px) 0;
+
+    @media (min-width: 1024px) {
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, .6fr); /* 60/40 doux */
+      gap: 28px;
+      align-items: center;
+    }
   }
 
   .about-title {
@@ -324,37 +341,45 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
     line-height: 1.2; font-weight: 800; letter-spacing: .2px;
 
     &::after {
-      content:""; display:block; width:72px; height:3px; margin-top:12px;
+      content:"";
+      display:block;
+      width:72px; height:3px; margin-top:12px;
       background: linear-gradient(90deg,#fff,rgba(255,255,255,0));
       border-radius: 999px; opacity:.85;
     }
   }
 
-  .about-copy { max-width: 65ch; }
-  .about-copy p { margin: 0 0 1rem; font-size: 1.05rem; line-height: 1.7; color: #f3f4f6; text-align: left; hyphens: auto; }
+  /* Texte : lisible mais pas étriqué */
+  .about-copy {
+    max-width: none; /* plein de sa colonne par défaut */
 
-  .about-media { overflow: visible; } /* pas de crop */
+    @media (min-width: 1200px) {
+      max-width: 68ch; /* re-limite légèrement sur très grands écrans */
+    }
+  }
+
+  .about-copy p {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #f3f4f6;
+    text-align: left;      /* plus propre par défaut */
+    hyphens: auto;
+  }
+
+  /* Media (image) */
+  .about-media { overflow: visible; }
 
   .media-img {
     width: 100%;
-    height: auto;               /* ratio naturel */
     display: block;
-    object-fit: contain;        /* ✅ pas de crop */
+    aspect-ratio: 4 / 3;     /* cadre stable */
+    object-fit: cover;       /* rendu visuel plein et net */
     object-position: center;
-    aspect-ratio: auto;         /* override le ratio mobile en desktop */
-    max-height: clamp(260px, 50vh, 520px);
-  }
 
-  /* Desktop */
-  @media (min-width: 1024px) {
-    .about-grid {
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-      gap: 50px;
-      align-items: center;      /* image centrée vs texte */
-    }
+
   }
 }
-
 /* ================================
    Map (responsive embed)
 ================================ */
