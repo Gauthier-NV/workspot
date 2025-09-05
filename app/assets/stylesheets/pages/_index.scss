@@ -20,6 +20,27 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 .is-hidden { display:none !important; }
 
 /* ================================
+   Échelle d'espacement + container
+================================ */
+$space-1: .25rem;   // 4px
+$space-2: .5rem;    // 8px
+$space-3: 1rem;     // 16px
+$space-4: 1.5rem;   // 24px
+$space-5: 2rem;     // 32px
+$space-6: 5.5rem;     // 88px
+$space-7: 4rem;     // 64px
+
+/* Conteneur latéral cohérent (hors about + footer) */
+.page-container {
+  max-width: 1100px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 4vw, 32px);
+}
+
+/* Utilitaire de rythme vertical interne */
+.stack > * + * { margin-top: var(--stack, #{$space-4}); }
+
+/* ================================
    Boutons (unifiés)
 ================================ */
 .btn-outline,
@@ -51,47 +72,59 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 }
 
 /* ================================
-   Présentation / intro
+   Présentation / intro (harmonisée)
 ================================ */
 .workspot-presentation {
-  max-width: 1000px;
-  margin: 60px auto;
-  padding: 0 16px;
+  @extend .page-container;
+  margin-block: $space-6;
   font-family: $font;
   color: $text-color;
 
-  h1 { margin: 0 0 16px; line-height: 1.2; }
-  h2 {
-    font-size: 2rem; font-weight: 700; line-height: 1.4; margin: 20px 0;
+  /* Rythme vertical global dans la section */
+  > * + * { margin-top: $space-4; }
 
+  h1 { margin: 0 0 $space-3; line-height: 1.2; }
+
+  h2 {
+    font-size: 2rem; font-weight: 700; line-height: 1.4;
+    margin: $space-5 0 $space-3;
     em { font-weight: 400; font-style: italic; }
   }
   h2#spots-map { text-transform: none; letter-spacing: 0; }
+
   h3 {
-    margin-top: 32px; font-size: 1.2rem; color: $blue-electric;
+    margin-top: $space-5; font-size: 1.2rem; color: $blue-electric;
     text-transform: uppercase; letter-spacing: .5px;
   }
-  p { font-size: 1.1rem; line-height: 1.7; margin: 0 0 1.5rem; }
+
+  p { font-size: 1.1rem; line-height: 1.7; margin: 0 0 $space-3; }
 
   .underline { text-decoration: underline; }
 
-  /* Pacte */
+  /* Pacte – espacements internes cohérents */
   .pact {
     background: $blue-pastel;
-    padding: 40px;
+    padding: clamp(24px, 3vw, 40px);
     border-radius: 8px;
-    box-shadow: 0 10px 20px rgba(0,0,0,.08); /* (supprime le doublon) */
-    margin-top: 50px;
+    box-shadow: 0 10px 20px rgba(0,0,0,.08);
+    margin-top: $space-6;
 
-    h2 { font-size: 1.8rem; font-weight: 800; text-align: center; margin-bottom: 30px; }
+    /* Rythme interne */
+    > * + * { margin-top: $space-4; }
+
+    h2 {
+      font-size: 1.8rem; font-weight: 800; text-align: center;
+      margin: 0 0 $space-3;
+    }
 
     .rules {
-      display: flex; justify-content: space-between; gap: 24px; margin-top: 24px; flex-wrap: wrap;
+      display: flex; justify-content: space-between; gap: $space-3;
+      flex-wrap: wrap; margin-top: $space-3;
 
       .rule {
         flex: 1; min-width: 250px;
-        display: flex; align-items: center; gap: 16px;
-        background: #f6f9fc; padding: 20px; border-radius: 8px; text-align: left;
+        display: flex; align-items: center; gap: $space-3;
+        background: #f6f9fc; padding: $space-3; border-radius: 8px; text-align: left;
 
         .rule-number {
           font-size: 2.2rem; font-weight: 800; color: #000; min-width: 40px; text-align: center;
@@ -101,7 +134,7 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
     }
 
     .reminder {
-      text-align: center; font-size: .95rem; margin-top: 28px; color: $text-muted;
+      text-align: center; font-size: .95rem; margin-top: $space-3; color: $text-muted;
       strong { font-weight: 700; }
       em { font-style: italic; }
     }
@@ -109,70 +142,7 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 }
 
 /* ================================
-   Contact
-================================ */
-.contact-section {
-  padding: 60px 20px;
-  display: flex; justify-content: center;
-
-  .contact-box {
-    background: $blue-pastel; border-radius: 8px; padding: 40px; max-width: 1000px; width: 100%;
-    box-shadow: 0 10px 20px rgba(0,0,0,.08);
-    display: flex; flex-direction: column; gap: 30px;
-  }
-
-  .contact-title { text-align: center; font-size: 2rem; color: $blue-electric; font-weight: 800; }
-
-  .contact-content {
-    display: flex; flex-direction: column; gap: 30px;
-  }
-
-  .contact-cards { display: flex; flex-direction: column; gap: 20px; }
-
-  .contact-card {
-    background: lighten($background, 5%); padding: 20px; border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,.05);
-
-    h4 { font-size: 1.1rem; color: $blue-electric; font-weight: 700; margin: 0 0 8px; }
-    p  { font-size: .95rem; color: $text-muted; margin: 0; }
-  }
-
-  .contact-form {
-    flex: 1; display: flex; flex-direction: column; gap: 15px;
-
-    input, select, textarea {
-      border: 0; border-radius: 25px; background: $background;
-      padding: 14px 20px; font-size: 1rem; color: #111; outline: none;
-      transition: box-shadow .2s ease, background-color .2s ease;
-
-      &:focus { background: lighten($background, 2%); box-shadow: 0 0 0 3px rgba(54,86,227,.2); }
-    }
-
-    select { appearance: none; padding-right: 40px; background-image: none; }
-    textarea { min-height: 140px; resize: vertical; line-height: 1.5; font-family: inherit; }
-  }
-
-  .select-wrapper {
-    position: relative;
-
-    select { width: 100%; }
-    &::after {
-      content: '';
-      position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-      pointer-events: none; width: 16px; height: 16px; background-repeat: no-repeat; background-size: contain;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 298.04'%3E%3Cpath fill='black' d='M12.08 70.78c-16.17-16.24-16.09-42.54.15-58.7 16.25-16.17 42.54-16.09 58.71.15L256 197.76 441.06 12.23c16.17-16.24 42.46-16.32 58.71-.15 16.24 16.16 16.32 42.46.15 58.7L285.27 285.96c-16.24 16.17-42.54 16.09-58.7-.15L12.08 70.78z'/%3E%3C/svg%3E");
-    }
-  }
-}
-
-/* Bouton d’envoi dans le form */
-.contact-form button.btn-outline {
-  background: $blue-electric; color: #fff; border: 2px solid $blue-electric;
-  &:hover { background: darken($blue-electric, 5%); border-color: darken($blue-electric, 5%); }
-}
-
-/* ================================
-   Banner générique + PWA cards
+   Banner générique + PWA cards (inchangé)
 ================================ */
 .banner {
   background-size: cover; background-position: center;
@@ -183,122 +153,106 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 
   .android-instructions,
   .ios-instructions {
-  --accent: #{$blue-electric};
+    --accent: #{$blue-electric};
 
-  background: #000000;
-  border-radius: 16px;
-  box-shadow:
-    0 1px 2px rgba(0,0,0,.06),
-    0 8px 24px -12px rgba(0,0,0,.12);
-  padding: 20px;
-  max-width: 420px;
-  margin: 24px auto 0;
-  font-family: "Inter", $font;
-  color: #0f172a;
-  text-align: left;
-  transition: box-shadow .2s ease, transform .04s ease;
+    background: #000000;
+    border-radius: 16px;
+    box-shadow:
+      0 1px 2px rgba(0,0,0,.06),
+      0 8px 24px -12px rgba(0,0,0,.12);
+    padding: 20px;
+    max-width: 420px;
+    margin: 24px auto 0;
+    font-family: "Inter", $font;
+    color: #0f172a;
+    text-align: left;
+    transition: box-shadow .2s ease, transform .04s ease;
 
-  &:hover { box-shadow:
-    0 2px 6px rgba(0,0,0,.08),
-    0 12px 28px -14px rgba(0,0,0,.18); }
+    &:hover { box-shadow:
+      0 2px 6px rgba(0,0,0,.08),
+      0 12px 28px -14px rgba(0,0,0,.18); }
 
-  h2, h1 {
-    margin: 0 0 8px;
-    font: 700 1.1rem/1.3 system-ui, -apple-system, Segoe UI, Roboto, "Inter", sans-serif;
-    letter-spacing: .2px;
-    color: #ffffff;
-    display: block;
-  }
-
-  p {
-    font: 400 .98rem/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Inter", sans-serif;
-    color: #ffffff;  /* slate-600 */
-    margin: 0 0 12px;
-  }
-
-  /* Étapes (avec ou sans icône) */
-  ol {
-    margin:  15px 0;
-    padding-left: 1.25rem;
-    list-style: decimal;         /* on garde la numérotation */
-    list-style-position: outside;
-
-    li {
-      margin: 8px 0;
-      font-size: .98rem;
-      line-height: 1.5;
+    h2, h1 {
+      margin: 0 0 8px;
+      font: 700 1.1rem/1.3 system-ui, -apple-system, Segoe UI, Roboto, "Inter", sans-serif;
+      letter-spacing: .2px;
       color: #ffffff;
+      display: block;
+    }
 
-      /* ⚠️ Ne PAS mettre display:flex sur li, sinon on perd les marqueurs */
-      .step-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
+    p {
+      font: 400 .98rem/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Inter", sans-serif;
+      color: #ffffff;
+      margin: 0 0 12px;
+    }
 
-      .step-row > span {
-        /* prend tout l’espace, pousse l’icône à droite */
-        flex: 1 1 auto;
-      }
+    /* Étapes (avec ou sans icône) */
+    ol {
+      margin:  15px 0;
+      padding-left: 1.25rem;
+      list-style: decimal;
+      list-style-position: outside;
 
-      .icon-right {
-        flex: 0 0 auto;
-        width: 30px;
-        height: 30px;
-        display: inline-block;
-        margin-left: 12px;
-        opacity: .95;         /* léger polissage visuel */
+      li {
+        margin: 8px 0;
+        font-size: .98rem;
+        line-height: 1.5;
+        color: #ffffff;
 
-        /* léger polissage visuel car cet icon (share ios parait plus petit*/
-
-      }
-      .icon-share-ios {
-        width: 30px;
-        height: 30px;
-
+        .step-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
         }
+
+        .step-row > span { flex: 1 1 auto; }
+
+        .icon-right {
+          flex: 0 0 auto;
+          width: 30px;
+          height: 30px;
+          display: inline-block;
+          margin-left: 12px;
+          opacity: .95;
+        }
+        .icon-share-ios { width: 30px; height: 30px; }
+      }
     }
 
-  }
+    .card-logo {
+      text-align: center;
+      margin-bottom: 12px;
 
-  .card-logo {
-  text-align: center;
-  margin-bottom: 12px;
-
-  .logo-top {
-    width: 40px;   /* ajuste la taille */
-    height: auto;
-    display: inline-block;
-    opacity: .95; /* léger polissage visuel */
-  }
-  }
-
-  .install-cta {
-    display: block;
-    width: 100%;
-    text-align: center;
-    background: var(--accent);
-    color: #fff;
-    padding: 12px 16px;
-    font-size: 1rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-weight: 600;
-    border: 1px solid var(--accent);
-    transition: background .2s ease, border-color .2s ease, transform .04s ease;
-
-    &:hover {
-      background: lighten($blue-electric, 4%);
-      border-color: lighten($blue-electric, 4%);
+      .logo-top {
+        width: 40px; height: auto; display: inline-block; opacity: .95;
+      }
     }
-    &:active { transform: translateY(1px); }
-  }
-}
 
+    .install-cta {
+      display: block;
+      width: 100%;
+      text-align: center;
+      background: var(--accent);
+      color: #fff;
+      padding: 12px 16px;
+      font-size: 1rem;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid var(--accent);
+      transition: background .2s ease, border-color .2s ease, transform .04s ease;
+
+      &:hover {
+        background: lighten($blue-electric, 4%);
+        border-color: lighten($blue-electric, 4%);
+      }
+      &:active { transform: translateY(1px); }
+    }
+  }
 }
 
 /* ================================
-   Section "À propos" (banner dédiée)
+   Section "À propos" (about-banner) — LAISSÉE INCHANGÉE
 ================================ */
 .banner.about-banner {
   background-image:
@@ -307,7 +261,7 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
   background-size: cover;
   background-position: center;
   color: #fff;
-  padding: 40px 0 60px;
+  padding: 40px 0 30px;
 
   .container {
     width: 100%;
@@ -349,12 +303,11 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
     }
   }
 
-  /* Texte : lisible mais pas étriqué */
   .about-copy {
-    max-width: none; /* plein de sa colonne par défaut */
+    max-width: none;
 
     @media (min-width: 1200px) {
-      max-width: 68ch; /* re-limite légèrement sur très grands écrans */
+      max-width: 68ch;
     }
   }
 
@@ -363,32 +316,31 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
     font-size: 1.05rem;
     line-height: 1.7;
     color: #f3f4f6;
-    text-align: left;      /* plus propre par défaut */
+    text-align: left;
     hyphens: auto;
   }
 
-  /* Media (image) */
   .about-media { overflow: visible; }
 
   .media-img {
     width: 100%;
     display: block;
-    aspect-ratio: 4 / 3;     /* cadre stable */
-    object-fit: cover;       /* rendu visuel plein et net */
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
     object-position: center;
-
-
   }
 }
+
 /* ================================
-   Map (responsive embed)
+   Map (responsive embed — harmonisée)
 ================================ */
 .map-container {
-  position: relative; width: 100%; max-width: 100%;
+  @extend .page-container;
+  position: relative; width: 100%;
   height: 0; padding-bottom: 62.5%; /* ✅ 16:9 */
   overflow: hidden; border-radius: 5px;
   box-shadow: 0 4px 12px rgba(0,0,0,.1);
-  margin: 40px auto;
+  margin-block: 0 $space-5;
 
   iframe {
     position: absolute; inset: 0;
@@ -398,7 +350,76 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 }
 
 /* ================================
-   Footer
+   Contact (harmonisé)
+================================ */
+.contact-section {
+  @extend .page-container;
+  padding-block: 0 $space-6;
+  display: block;
+
+  .contact-box {
+    background: $blue-pastel; border-radius: 8px;
+    padding: clamp(24px, 2.5vw, 40px);
+    max-width: 100%;
+    box-shadow: 0 10px 20px rgba(0,0,0,.08);
+    display: flex; flex-direction: column; gap: $space-5;
+  }
+
+  .contact-title {
+    text-align: center; font-size: 2rem; color: $blue-electric; font-weight: 800;
+    margin: 0;
+  }
+
+  .contact-content {
+    display: flex; flex-direction: column; gap: $space-5;
+  }
+
+  .contact-cards { display: flex; flex-direction: column; gap: $space-3; }
+
+  .contact-card {
+    background: lighten($background, 5%); padding: $space-3; border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.05);
+
+    h4 { font-size: 1.1rem; color: $blue-electric; font-weight: 700; margin: 0 0 $space-1; }
+    p  { font-size: .95rem; color: $text-muted; margin: 0; }
+  }
+
+  .contact-form {
+    flex: 1; display: flex; flex-direction: column; gap: $space-3;
+
+    input, select, textarea {
+      border: 0; border-radius: 25px; background: $background;
+      padding: 14px 20px; font-size: 1rem; color: #111; outline: none;
+      transition: box-shadow .2s ease, background-color .2s ease;
+
+      &:focus { background: lighten($background, 2%); box-shadow: 0 0 0 3px rgba(54,86,227,.2); }
+    }
+
+    select { appearance: none; padding-right: 40px; background-image: none; }
+    textarea { min-height: 140px; resize: vertical; line-height: 1.5; font-family: inherit; }
+  }
+
+  .select-wrapper {
+    position: relative;
+
+    select { width: 100%; }
+    &::after {
+      content: '';
+      position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+      pointer-events: none; width: 16px; height: 16px; background-repeat: no-repeat; background-size: contain;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 298.04'%3E%3Cpath fill='black' d='M12.08 70.78c-16.17-16.24-16.09-42.54.15-58.7 16.25-16.17 42.54-16.09 58.71.15L256 197.76 441.06 12.23c16.17-16.24 42.46-16.32 58.71-.15 16.24 16.16 16.32 42.46.15 58.7L285.27 285.96c-16.24 16.17-42.54 16.09-58.7-.15L12.08 70.78z'/%3E%3C/svg%3E");
+    }
+  }
+
+  /* Bouton d’envoi */
+  .contact-form button.btn-outline {
+    background: $blue-electric; color: #fff; border: 2px solid $blue-electric;
+    &:hover { background: darken($blue-electric, 5%); border-color: darken($blue-electric, 5%); }
+  }
+}
+
+/* ================================
+   Footer — LAISSÉ INCHANGÉ
 ================================ */
 .footer {
   background: $blue-electric; color: #fff;
@@ -443,17 +464,16 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 /* Mobile ≤ 768px */
 @media (max-width: 768px) {
   .workspot-presentation {
-    margin: 20px 0; padding: 0 10px; font-size: 1rem;
-    .pact .rules { flex-direction: column; }
+    margin-block: $space-4;
+    > * + * { margin-top: $space-3; }
+    .pact .rules { flex-direction: column; gap: $space-3; }
     .pact .rule  { width: 100%; }
-    h2 { font-size: 1.5rem; }
-    h3 { font-size: 1rem; }
+    h2 { font-size: 1.5rem; margin: $space-4 0 $space-2; }
+    h3 { font-size: 1rem; margin-top: $space-4; }
     p  { font-size: .95rem; }
   }
 
-  .btn-outline { font-size: .9rem; padding: 10px 16px; width: 100%; }
-
-  .map-container { padding-bottom: 150%; } /* 4:3 pour + de hauteur sur mobile */
+  .map-container { padding-bottom: 150%; margin-block: $space-4; }
 
   .footer {
     font-size: .85rem; text-align: center; padding: 20px 5px;
@@ -470,12 +490,14 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
     }
   }
 
-  .contact-section { padding: 10px; }
-  .contact-section .contact-box#contact { padding: 24px; gap: 16px; }
-  .contact-section .contact-title { font-size: 1.5rem; }
-  .contact-card h4 { font-size: 1rem; }
-  .contact-card p  { font-size: .85rem; }
-  .contact-form input, .contact-form textarea, .contact-form select { font-size: .95rem; }
+  .contact-section {
+    padding-block: $space-5;
+    .contact-box#contact { padding: clamp(20px, 4vw, 24px); gap: $space-4; }
+    .contact-title { font-size: 1.5rem; }
+    .contact-card h4 { font-size: 1rem; }
+    .contact-card p  { font-size: .85rem; }
+    .contact-form input, .contact-form textarea, .contact-form select { font-size: .95rem; }
+  }
 
   .banner .android-instructions,
   .banner .ios-instructions {
@@ -488,19 +510,19 @@ $font:          'Helvetica Neue', system-ui, -apple-system, Segoe UI, Roboto, sa
 /* Tablette 769–1024px */
 @media (min-width: 769px) and (max-width: 1024px) {
   .workspot-presentation {
-    max-width: 90vw; padding: 0 20px; font-size: 1.05rem; margin-bottom: 0;
-
-    .pact .rules { flex-direction: column; gap: 20px; }
+    @extend .page-container;
+    margin-block: $space-5;
+    > * + * { margin-top: $space-4; }
+    .pact .rules { flex-direction: column; gap: $space-3; }
   }
 
-  .contact-section { padding: 30px 10px; }
-  .contact-section .contact-box { padding: 30px; margin: 40px auto; }
-  .btn-outline { font-size: 1rem; padding: 12px 18px; }
+  .contact-section { padding-block: $space-6; }
+  .contact-section .contact-box { padding: clamp(24px, 3vw, 30px); margin: 0 auto; }
 }
 
 /* Desktop ≥ 768px: layout contact en colonnes */
 @media (min-width: 768px) {
   .contact-section .contact-content {
-    flex-direction: row; align-items: stretch;
+    flex-direction: row; align-items: stretch; gap: $space-5;
   }
 }

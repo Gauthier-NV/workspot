@@ -1,30 +1,35 @@
 .navbar-workspot {
-position: sticky;
-top: 0;
-width: 100%;
-z-index: 1000;
-background: linear-gradient(
-  to bottom,
-  rgba(241, 244, 249, 0.8) 0%,   /* presque opaque en haut */
-  rgba(241, 244, 249, 0.5) 50%,   /* intermédiaire */
-  rgba(241, 244, 249, 0.2) 100%   /* plus translucide en bas */
-);
-backdrop-filter: blur(3px); /* optionnel: effet verre dépoli */
-display: flex;
-justify-content: space-evenly;
-align-items: center;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
 
+  /* Fond vitre dépoli ultra simple */
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(10px);
+
+  /* Layout */
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 0.6rem 1.2rem;
+
+  /* ✅ La transition DOIT être sur l’élément lui-même (pas imbriqué) */
+  transition:
+    opacity 3s cubic-bezier(.25,.1,.25,1),
+    transform 3.2s cubic-bezier(.25,.1,.25,1) .1s;
+  will-change: opacity, transform;
+  transform: translateY(0); /* état initial explicite */
+
+  /* état shrink existant */
   .logo {
-    height: 150px; // avant : 300px, beaucoup plus raisonnable
+    height: 150px;
     width: auto;
     transition: height 0.2s ease-in-out;
     will-change: height;
   }
-
-
-  &.shrink .logo {
-    height: 80px; // plus fin aussi pour état réduit
-  }
+  &.shrink .logo { height: 80px; }
 
   .btn-outline {
     border: 2px solid black;
@@ -40,26 +45,33 @@ align-items: center;
     white-space: normal;
     word-break: break-word;
 
-    &:hover {
-      background-color: black;
-      color: white;
-    }
+    &:hover { background-color: black; color: white; }
+  }
+
+  /* ✅ l’état hidden avec la transition */
+  &.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-20px) scale(0.99);
   }
 }
+
+/* Respecte les préférences d’accessibilité */
+@media (prefers-reduced-motion: reduce) {
+  .navbar-workspot { transition: none; }
+}
+
+/* Mobile */
 @media (max-width: 768px) {
-
-   .navbar-workspot {
-
+  .navbar-workspot {
     display: flex;
     justify-content: space-evenly;
-    height : 60px;
+    height: 60px;
     padding: 5px 5px;
     padding-top: env(safe-area-inset-top, 12px);
     gap: 5px;
 
-    .logo {
-      height: 50px;
-    }
+    .logo { height: 50px; }
 
     .btn-outline {
       border: 0.8px solid black;
