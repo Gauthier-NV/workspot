@@ -11,8 +11,8 @@
 
       <!-- MAPS  -->
 
-     <div class="map-container">
-         <iframe
+    <div class="map-container">
+      <iframe
         src="https://my.atlist.com/map/a77842ff-5762-4570-b2c3-9f6a495216f3?share=true"
         allow="geolocation 'self' https://my.atlist.com"
         width="100%"
@@ -23,12 +23,15 @@
         allowfullscreen
         id="atlist-embed">
       </iframe>
-
-    <div class="contact-card with-cta">
-        <%= link_to "Je connais un Spot !", "#contact", class: "btn-cta" %>
     </div>
 
-      </div>
+    <!-- CTA collée sous la carte (sibling, pas inside) -->
+    <div class="contact-card map-cta">
+      <%= link_to "Je connais un Spot !", "#contact", class: "btn-cta" %>
+    </div>
+
+
+
 
       <!-- PACTE DU WORKSPOTTER -->
 
