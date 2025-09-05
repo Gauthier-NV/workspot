@@ -79,34 +79,102 @@
           </div>
           <div class="contact-card">
             <h4>Un souci avec un spot ?</h4>
-            <p>Signale-nous tout comportement déplacé ou incohérence.</p>
+            <p>Signale-nous tout comportement déplacé ou incohérent.</p>
           </div>
         </div>
 
 
       <!-- Contact Form -->
-        <form action="<%= messages_path %>" method="post" class="contact-form">
-        <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+       <!-- Contact Form -->
+  <form action="<%= messages_path %>"
+        method="post"
+        class="contact-form"
+        enctype="multipart/form-data"
+        data-controller="contact-form"                  <!-- ✅ ajoute -->
+        data-action="submit->contact-form#submit">      <!-- ✅ ajoute -->
 
-        <input type="text" name="message[name]" placeholder="Prénom Nom..." />
-        <input type="text" name="message[email]" placeholder="Votre adresse email..." />
-        <input type="text" name="message[establishment]" placeholder="Nom de l’établissement..." />
-        <input type="text" name="message[address]" placeholder="Adresse de l’établissement..." />
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
 
-        <div class="select-wrapper">
-          <select name="message[role]">
-            <option disabled selected>Je ...</option>
-            <option>Je recommande un spot</option>
-            <option>Je suis propriétaire d'un spot</option>
-            <option>J'ai une remarque à propos d'un spot</option>
-            <option>J'ai une autre demande...</option>
-          </select>
-        </div>
+    <!-- Contexte auto (caché, rempli via JS) -->
+    <input type="hidden" name="message[current_url]"     id="msg_current_url">
+    <input type="hidden" name="message[referrer]"        id="msg_referrer">
+    <input type="hidden" name="message[user_agent]"      id="msg_ua">
+    <input type="hidden" name="message[viewport_w]"      id="msg_vw">
+    <input type="hidden" name="message[viewport_h]"      id="msg_vh">
+    <input type="hidden" name="message[submitted_in_ms]" id="msg_submit_ms">
 
-        <textarea name="message[content]" placeholder="Commentaire..."></textarea>
+    <!-- Honeypot anti-spam -->
+    <div class="hp-field" aria-hidden="true">
+      <label for="msg_website">Laissez ce champ vide</label>
+      <input type="text" id="msg_website" name="message[website]" tabindex="-1" autocomplete="off">
+    </div>
 
-        <button type="submit" class="btn-outline">Envoyez votre commentaire</button>
-      </form>
+    <!-- Identité / contact -->
+    <input type="text"  name="message[name]"  placeholder="Prénom Nom..." />
+    <input type="email" name="message[email]" placeholder="Ton adresse email..." />
+
+    <!-- Type de retour (obligatoire) -->
+    <div class="select-wrapper">
+      <select name="message[feedback_type]" required>
+        <option disabled selected value="">Type de retour…</option>
+        <option>Je recommande un spot</option>
+        <option>Je suis propriétaire d'un spot</option>
+        <option>J'ai une remarque à propos d'un spot</option>
+        <option>Suggestion d’amélioration du site</option>
+        <option>Autre</option>
+      </select>
+    </div>
+
+    <!-- Etablissement (si pertinent) -->
+    <input type="text" name="message[establishment]" placeholder="Nom de l’établissement..." />
+    <input type="text" name="message[address]"       placeholder="Adresse de l’établissement..." />
+
+    <!-- Satisfaction rapide (CSAT) -->
+    <fieldset class="rating" aria-label="Satisfaction">
+      <legend class="sr-only">Satisfaction</legend>
+      <input type="radio" id="csat5" name="message[csat]" value="5"><label for="csat5">★</label>
+      <input type="radio" id="csat4" name="message[csat]" value="4"><label for="csat4">★</label>
+      <input type="radio" id="csat3" name="message[csat]" value="3"><label for="csat3">★</label>
+      <input type="radio" id="csat2" name="message[csat]" value="2"><label for="csat2">★</label>
+      <input type="radio" id="csat1" name="message[csat]" value="1"><label for="csat1">★</label>
+      <span class="rating-hint">Ta satisfaction globale (optionnel)</span>
+    </fieldset>
+
+    <!-- Message -->
+    <div class="textarea-wrap">
+      <textarea name="message[content]"
+                placeholder="Commentaire..."
+                maxlength="1000"
+                required
+                data-contact-form-target="textarea"                 <!-- ✅ ajoute -->
+                data-action="input->contact-form#updateCount"></textarea> <!-- ✅ ajoute -->
+      <small class="form-hint">
+        <span class="cc" data-contact-form-target="counter">0</span> <!-- ✅ ajoute -->
+        /1000
+      </small>
+    </div>
+
+    <!-- Pièce jointe -->
+    <div class="file-field">
+      <input type="file" id="msg_file" name="message[attachment]"
+            accept="image/*,.png,.jpg,.jpeg,.webp,.heic,.pdf"
+            data-contact-form-target="fileInput"                  <!-- ✅ ajoute -->
+            data-action="change->contact-form#showFileName">      <!-- ✅ ajoute -->
+      <label for="msg_file" class="file-label">📎 Joindre une image/capture (optionnel)</label>
+      <span class="file-name" aria-live="polite"
+            data-contact-form-target="fileName"></span>            <!-- ✅ ajoute -->
+    </div>
+
+    <!-- Consentement -->
+    <label class="consent">
+      <input type="checkbox" name="message[consent]">
+      J’accepte d’être recontacté à propos de mon retour.
+    </label>
+
+    <button type="submit" class="btn-outline">Envoyez votre commentaire</button>
+  </form>
+
+
     </div>
   </div>
 </section>

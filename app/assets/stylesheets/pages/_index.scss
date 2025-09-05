@@ -416,6 +416,54 @@ $space-7: 4rem;     // 64px
     background: $blue-electric; color: #fff; border: 2px solid $blue-electric;
     &:hover { background: darken($blue-electric, 5%); border-color: darken($blue-electric, 5%); }
   }
+  .hp-field {
+  position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;
+  label { display: none; }
+}
+
+/* Rating (étoiles) */
+.rating {
+  display: inline-flex; align-items: center; gap: 6px; user-select: none;
+  input { position: absolute; opacity: 0; width: 0; height: 0; }
+  label {
+    font-size: 1.2rem; line-height: 1; cursor: pointer;
+    filter: grayscale(1) opacity(.7); transition: transform .1s ease, filter .2s ease;
+  }
+  input:checked ~ label { filter: grayscale(1) opacity(.7); } /* reset */
+  input#csat1:checked ~ label[for="csat1"],
+  input#csat2:checked ~ label[for="csat2"],
+  input#csat3:checked ~ label[for="csat3"],
+  input#csat4:checked ~ label[for="csat4"],
+  input#csat5:checked ~ label[for="csat5"] { filter: none; }
+  label:hover { transform: scale(1.05); filter: none; }
+  .rating-hint { margin-left: 8px; font-size: .9rem; color: $text-muted; }
+}
+
+/* Compteur de caractères */
+.textarea-wrap { position: relative; }
+.form-hint {
+  position: absolute; right: 12px; bottom: 8px; font-size: .8rem; color: $text-muted;
+}
+
+/* Fichier joint visuel */
+.file-field {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  input[type="file"] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .file-label {
+    display: inline-block; border: 1px dashed rgba(0,0,0,.25);
+    background: $background; border-radius: 25px; padding: 10px 14px;
+    cursor: pointer; font-size: .95rem; transition: background .2s, border-color .2s;
+    &:hover { background: lighten($background, 2%); border-color: rgba(0,0,0,.35); }
+  }
+  .file-name { font-size: .9rem; color: $text-muted; }
+}
+
+/* Consentement */
+.consent {
+  display: flex; align-items: center; gap: 10px; font-size: .95rem; color: $text-muted;
+  input { width: 18px; height: 18px; }
+}
+
 }
 
 /* ================================
