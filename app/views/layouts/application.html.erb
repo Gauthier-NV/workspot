@@ -46,7 +46,15 @@
     </script>
 
     <!-- Mapbox access token pour ton JS -->
-    <meta name="mapbox-token" content="<%= Rails.application.credentials.dig(:mapbox, :access_token) %>">
+  <meta name="mapbox-token" content="<%= Rails.application.credentials.dig(:mapbox, :access_token) %>">
+  <!-- Mapbox CSS -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet">
+
+<!-- Mapbox JS -->
+<%= javascript_include_tag "https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js" %>
+
+
+
   </head>
 
   <body data-controller="anchor-scroll">

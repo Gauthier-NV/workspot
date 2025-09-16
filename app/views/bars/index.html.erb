@@ -7,29 +7,66 @@
     restos, hôtels — parfait pour travailler, étudier, échanger… ou simplement changer d’air.
   </p>
 
-  <h3 id="spots-map" >TOUS LES SPOTS DISPONIBLES :</h3>
+  <h3 id="spots-map">TOUS LES SPOTS DISPONIBLES :</h3>
 
-      <!-- MAPS  -->
+<!-- MAP -->
+<div class="map-container" aria-labelledby="spots-map" role="region">
+  <div id="map" class="map" tabindex="0" aria-label="Carte des spots"></div>
+</div>
 
-    <div class="map-container">
-      <iframe
-        src="https://my.atlist.com/map/a77842ff-5762-4570-b2c3-9f6a495216f3?share=true"
-        allow="geolocation 'self' https://my.atlist.com"
-        width="100%"
-        height="400px"
-        loading="lazy"
-        frameborder="0"
-        scrolling="no"
-        allowfullscreen
-        id="atlist-embed">
-      </iframe>
-    </div>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1) Clé Mapbox depuis la balise <meta name="mapbox-token" content="...">
+    const tokenMeta = document.querySelector('meta[name="mapbox-token"]');
+    if (!tokenMeta || !tokenMeta.content) {
+      console.error('Mapbox token manquant : ajoutez <meta name="mapbox-token" content="...">');
+      return;
+    }
 
-    <!-- CTA collée sous la carte (sibling, pas inside) -->
-    <div class="contact-card map-cta">
-      <%= link_to "Je connais un Spot !", "#contact", class: "btn-cta" %>
-    </div>
+    mapboxgl.accessToken = tokenMeta.content;
 
+    // 2) Carte
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/workspots/cmflemqjc007y01secq3x89ng',
+      center: [2.3522, 48.8566], // Paris [lng, lat]
+      zoom: 10000,
+      scrollZoom: true,
+      dragRotate: false,
+      attributionControl: false,
+      locale: 'fr'
+    });
+
+    // 3) Contrôles utiles
+    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
+    map.addControl(new mapboxgl.FullscreenControl({ container: document.querySelector('.map-container') }), 'top-right');
+    map.addControl(new mapboxgl.ScaleControl({ maxWidth: 80, unit: 'metric' }));
+    map.addControl(new mapboxgl.AttributionControl({ compact: true }));
+
+    // 4) S'assure que la carte prend bien la taille du conteneur
+    map.once('load', () => map.resize());
+
+    // 5) Marqueur par défaut (Paris)
+    new mapboxgl.Marker({ color: '#3656e3' })
+      .setLngLat([2.3522, 48.8566])
+      .addTo(map);
+
+    // 6) Géolocalisation (optionnel)
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          const { longitude, latitude } = coords;
+          map.easeTo({ center: [longitude, latitude], zoom: 14, duration: 600 });
+          new mapboxgl.Marker({ color: '#165ca3ff' })
+            .setLngLat([longitude, latitude])
+            .addTo(map);
+        },
+        (err) => console.warn('Erreur de géolocalisation :', err),
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 30000 }
+      );
+    }
+  });
+</script>
 
 
 

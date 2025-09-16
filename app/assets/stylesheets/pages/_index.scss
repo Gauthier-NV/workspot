@@ -334,22 +334,58 @@ $space-7: 4rem;     // 64px
 /* ================================
    Map (responsive embed — harmonisée)
 ================================ */
+/* ================================
+   Map (responsive, accessible)
+================================ */
 .map-container {
   @extend .page-container;
-  position: relative; width: 100%;
-  height: 0; padding-bottom: 62.5%; /* ✅ 16:9 */
-  overflow: hidden; border-radius: 5px;
+  position: relative;
+  width: 100%;
+  /* ratio confortable desktop, plus haut en mobile (voir media query) */
+  aspect-ratio: 16 / 10;
+  min-height: 360px;
+
+  border-radius: 12px;
+  overflow: hidden; /* arrondis appliqués au canvas Mapbox */
   box-shadow: 0 4px 12px rgba(0,0,0,.1);
-  margin-block: 0 $space-5;
-
-  iframe {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    border: none; border-radius: 5px;
-  }
-
-
+  margin-block: $space-4 $space-5;
 }
+
+.map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  /* focus clavier visible pour l’accessibilité */
+  &:focus-visible {
+    outline: 3px solid rgba(54,86,227,.5);
+    outline-offset: 2px;
+  }
+}
+
+/* Harmonise un peu les contrôles Mapbox */
+.map-container {
+  .mapboxgl-ctrl-top-right { margin: 10px; }
+  .mapboxgl-ctrl-group {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  }
+  .mapboxgl-ctrl button {
+    width: 34px; height: 34px;
+  }
+}
+
+/* Mobile : carte plus haute (lecture confortable) */
+@media (max-width: 768px) {
+  .map-container {
+    aspect-ratio: 3 / 4;   /* plus verticale en mobile */
+    min-height: 420px;
+    margin-block: $space-4;
+  }
+}
+
 
 .contact-card.map-cta {
   text-align: center;
