@@ -23,3 +23,11 @@
 #   # Report violations without enforcing the policy.
 #   # config.content_security_policy_report_only = true
 # end
+
+
+# Mapbox autorisation :
+
+#policy.connect_src :self, :https, "https://api.mapbox.com", "https://events.mapbox.com", "https://*.tiles.mapbox.com"
+#policy.img_src     :self, :https, :data, "https://api.mapbox.com", "https://*.tiles.mapbox.com"
+#policy.script_src  :self, :https, "https://api.mapbox.com"
+#policy.style_src   :self, :https, :unsafe_inline # (ou nonce si tu gères un nonce)
