@@ -16,10 +16,10 @@ ActiveAdmin.register_page "Dashboard" do
   columns do
 
         column do
-          panel "Derniers bars ajoutés" do
+          panel "Derniers spots ajoutés" do
             ul do
-              Bar.order(created_at: :desc).limit(5).map do |bar|
-                li link_to(bar.name, admin_bar_path(bar))
+              Spot.order(created_at: :desc).limit(5).map do |spot|
+                li link_to(spot.name, admin_spot_path(spot))
               end
             end
           end
@@ -28,9 +28,9 @@ ActiveAdmin.register_page "Dashboard" do
 
         column do
           panel "Statistiques rapides" do
-            para "Nombre total de bars : #{Bar.count}"
-            para "Avec Wi-Fi : #{Bar.where(has_wifi: true).count}"
-            para "Avec prises électriques : #{Bar.where(has_power_outlets: true).count}"
+            para "Nombre total de Spots : #{Spot.count}"
+            para "Avec Wi-Fi : #{Spot.where(has_wifi: true).count}"
+            para "Avec prises électriques : #{Spot.where(has_power_outlets: true).count}"
           end
         end
       end
