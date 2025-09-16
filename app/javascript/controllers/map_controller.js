@@ -15,24 +15,19 @@ export default class extends Controller {
     mapboxgl.accessToken = token;
 
     this.map = new mapboxgl.Map({
-  container: this.element,
-  style: this.styleValue || "mapbox://styles/workspots/cmflemqjc007y01secq3x89ng",
-  center: [2.3522, 48.8566],
-  zoom: 11.4,
-  pitch: 0,         // ← copie les valeurs de Studio
-  bearing: 0,      // ← idem
-  attributionControl: false
-});
+      container: this.element,
+      style: this.styleValue || "mapbox://styles/workspots/cmflemqjc007y01secq3x89ng",
+      center: [2.3522, 48.8566],
+      zoom: 11.4,
+      pitch: 0,         // ← copie les valeurs de Studio
+      bearing: 0,       // ← idem
+      attributionControl: false
+    });
 
     // Contrôles
     this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
     this.map.addControl(new mapboxgl.ScaleControl({ maxWidth: 80, unit: "metric" }));
     this.map.addControl(new mapboxgl.AttributionControl({ compact: true }));
-
-    // Marqueur par défaut
-    new mapboxgl.Marker({ color: "#652d56" })
-      .setLngLat((this.centerValue && this.centerValue.length === 2) ? this.centerValue : [2.3522, 48.8566])
-      .addTo(this.map);
 
     // 👉 Charge tous les spots quand le style est prêt
     this.map.on("load", () => this.loadAndRenderSpots());
@@ -49,7 +44,12 @@ export default class extends Controller {
 
       const features = spots.map(s => ({
         type: "Feature",
-        properties: { id: s.id, name: s.name },
+        properties: {
+          id: s.id,
+          name: s.name,
+          address: s.address || "",
+          button_link: s.button_link || ""
+        },
         geometry: { type: "Point", coordinates: [s.lng, s.lat] }
       }));
 
@@ -76,6 +76,38 @@ export default class extends Controller {
             "circle-stroke-width": 2,
             "circle-opacity": 0.9
           }
+        });
+
+        // Curseur main au survol
+        this.map.on("mouseenter", "spots-circles", () => {
+          this.map.getCanvas().style.cursor = "pointer";
+        });
+        this.map.on("mouseleave", "spots-circles", () => {
+          this.map.getCanvas().style.cursor = "";
+        });
+
+        // Popup au clic
+        this.map.on("click", "spots-circles", (e) => {
+          const f = e.features?.[0];
+          if (!f) return;
+
+          const [lng, lat] = f.geometry.coordinates;
+          const name = f.properties.name || "Spot";
+          const address = f.properties.address || "";
+          const link = f.properties.button_link;
+
+          const html = `
+            <div style="min-width:200px">
+              <strong>${name}</strong><br/>
+              ${address ? `<small>${address}</small><br/>` : ""}
+              ${link ? `<a href="${link}" target="_blank" rel="noopener">Ouvrir le site ↗</a>` : ""}
+            </div>
+          `;
+
+          new mapboxgl.Popup({ offset: 8 })
+            .setLngLat([lng, lat])
+            .setHTML(html)
+            .addTo(this.map);
         });
       }
 
