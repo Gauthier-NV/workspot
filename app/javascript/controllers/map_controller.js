@@ -28,7 +28,7 @@ export default class extends Controller {
     this.map.addControl(new mapboxgl.AttributionControl({ compact: true }));
 
     // Marqueur par défaut
-    new mapboxgl.Marker({ color: "#652d56ff" })
+    new mapboxgl.Marker({ color: "#652d56" })
       .setLngLat((this.centerValue && this.centerValue.length === 2) ? this.centerValue : [2.3522, 48.8566])
       .addTo(this.map);
 
