@@ -15,12 +15,14 @@ export default class extends Controller {
     mapboxgl.accessToken = token;
 
     this.map = new mapboxgl.Map({
-      container: this.element,
-      style: this.styleValue || "mapbox://styles/workspots/cmflemqjc007y01secq3x89ng",
-      center: (this.centerValue && this.centerValue.length === 2) ? this.centerValue : [2.3522, 48.8566],
-      zoom: this.hasZoomValue ? this.zoomValue : 12,
-      attributionControl: false
-    });
+  container: this.element,
+  style: this.styleValue || "mapbox://styles/workspots/cmflemqjc007y01secq3x89ng",
+  center: [2.3522, 48.8566],
+  zoom: 11.4,
+  pitch: 0,         // ← copie les valeurs de Studio
+  bearing: 0,      // ← idem
+  attributionControl: false
+});
 
     // Contrôles
     this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
