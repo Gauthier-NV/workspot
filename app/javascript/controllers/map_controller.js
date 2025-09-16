@@ -1,7 +1,7 @@
 import mapboxgl from "mapbox-gl";
 
 // Mets ta propre clé ici
-mapboxgl.accessToken = "TA_CLE_MAPBOX";
+mapboxgl.accessToken = "pk.eyJ1Ijoid29ya3Nwb3RzIiwiYSI6ImNtZmwyZ2s2djAwanoya3M3dTE3N3BqcXkifQ.WK6ZLjalksr_cWvfHKXIKg";
 
 const map = new mapboxgl.Map({
   container: "map", // id du div
