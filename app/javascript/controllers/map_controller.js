@@ -18,7 +18,7 @@ export default class extends Controller {
       container: this.element,
       style: this.styleValue || "mapbox://styles/workspots/cmflemqjc007y01secq3x89ng",
       center: (this.centerValue && this.centerValue.length === 2) ? this.centerValue : [2.3522, 48.8566],
-      zoom: this.hasZoomValue ? this.zoomValue : 11.5,
+      zoom: this.hasZoomValue ? this.zoomValue : 12,
       attributionControl: false
     });
 
