@@ -1,5 +1,8 @@
- ActiveAdmin.register Bar do
-  permit_params :name, :address, :description, :has_wifi, :has_power_outlets, :latitude, :longitude, :image_url
+ActiveAdmin.register Spot do
+  menu label: "Spots" # optionnel, sinon AA affichera "Spots" par défaut
+
+  permit_params :name, :address, :arrondissement, :description,
+                :has_wifi, :has_power_outlets, :latitude, :longitude, :image_url
 
   controller do
     before_action :authorize_ceo!
@@ -24,11 +27,11 @@
     actions
   end
 
-    filter :name
-    filter :address
-    filter :arrondissement
-    filter :has_wifi
-    filter :has_power_outlets
+  filter :name
+  filter :address
+  filter :arrondissement
+  filter :has_wifi
+  filter :has_power_outlets
 
   form do |f|
     f.inputs "Informations générales" do
