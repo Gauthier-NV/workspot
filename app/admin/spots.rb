@@ -1,20 +1,10 @@
 ActiveAdmin.register Spot do
-  menu label: "Spots" # optionnel, sinon AA affichera "Spots" par défaut
+  menu label: "Spots"
 
   permit_params :name, :address, :arrondissement, :description,
-                :has_wifi, :has_power_outlets, :latitude, :longitude, :image_url
-
-  controller do
-    before_action :authorize_ceo!
-
-    private
-
-    def authorize_ceo!
-      unless current_admin_user&.email == "admin@workspots.fr"
-        redirect_to root_path, alert: "Accès réservé."
-      end
-    end
-  end
+                :has_wifi, :has_power_outlets, :latitude, :longitude,
+                :image_url, :button_link,               # ← ajout
+                tags_list: []                           # ← ajout (champ virtuel)
 
   index do
     selectable_column
@@ -22,16 +12,12 @@ ActiveAdmin.register Spot do
     column :name
     column :address
     column :arrondissement
+    column("Tags") { |s| s.tags_list.join(" · ") }      # ← ajout
+    column :button_link                                 # ← ajout
     column :has_wifi
     column :has_power_outlets
     actions
   end
-
-  filter :name
-  filter :address
-  filter :arrondissement
-  filter :has_wifi
-  filter :has_power_outlets
 
   form do |f|
     f.inputs "Informations générales" do
@@ -39,11 +25,15 @@ ActiveAdmin.register Spot do
       f.input :address
       f.input :arrondissement
       f.input :description
+      f.input :button_link, label: "Button Link (URL)"  # ← ajout
       f.input :has_wifi, label: "Wi-Fi disponible"
       f.input :has_power_outlets, label: "Prises électriques"
       f.input :latitude
       f.input :longitude
       f.input :image_url, label: "URL de l'image"
+
+      f.input :tags_list, as: :check_boxes, label: "Tags",  # ← ajout
+              collection: Spot::TAGS.map { |t| [t.tr("_", " ").capitalize, t] }
     end
     f.actions
   end
