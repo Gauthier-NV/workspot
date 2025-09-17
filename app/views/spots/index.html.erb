@@ -43,7 +43,7 @@
           <div class="rule">
             <div class="rule-number">2.</div>
             <div class="rule-text">
-              <p><strong>Lors du déjeuner</strong><br>Pensez à prendre un repas<br>ou à libérer l’espace</p>
+              <p><strong>Lors du déjeuner</strong><br>Pensez à prendre un repas ou à libérer l’espace</p>
             </div>
           </div>
         </div>
@@ -118,71 +118,48 @@
 
 <div class="banner about-banner">
   <div class="container">
-   <div class="about-grid">
+<div class="about">
+  <!-- Grille texte 2 colonnes -->
+  <div class="about-textgrid">
     <section class="about-copy" aria-labelledby="about-title-1">
       <h2 id="about-title-1" class="about-title">Qui sommes-nous ?</h2>
-       <p>
-        Trouver un bon endroit pour <strong>travailler hors de chez soi</strong>,
-        c’est souvent galère.
-        <strong>Trop bruyant</strong>, <strong>pas de prises</strong>,
-        <strong>mauvaise connexion…</strong>
-      </p>
 
-      <p>
-        On a passé des heures à chercher le bon spot pour faire une visio après un rendez-vous,
-        avancer sur un dossier, ou simplement se réunir dans un endroit central.
+      <!-- paragraphe d'intro plus lisible -->
+      <p class="lead">
+        On galérait souvent à trouver un bon spot où bosser tranquillement :<br>
+        avant un train, entre deux rendez-vous, ou simplement bien placé.<br>
+        Pas le temps de rentrer chez soi. Pas envie d’un Starbucks ni d’une brasserie bondée...
       </p>
-
+      <br >
+      <!-- sous-titre visible mais pas un vrai titre -->
+      <p id="about-subtitle" class="about-subtitle">Alors on a créé WorkSpot.</p>
+      <br >
       <p>
-        <strong>Alors on a créé WorkSpot.</strong><br>
-        Une carte <strong>claire et intuitive</strong> qui référence
-        les <strong>meilleurs lieux où il fait bon télétravailler</strong> :
-        cafés, restaurants, hôtels…
-        Tous sont accueillants, connectés, et ouverts à cette nouvelle façon de travailler.
+        <strong>Une carte claire et intuitive</strong> qui référence les meilleurs lieux où il fait bon télétravailler : cafés, coffee shop, restaurants, hôtels et même certains coworking...<br>
+        Tous adaptés au télétravail, connectés, et ouverts à cette nouvelle façon d’occuper la ville.<br>
+        Comme, on est pas les seuls à en avoir besoin,
+        on s’est dit qu’on pouvait faire grandir le projet ensemble.
       </p>
-
-      <p>
-        Pas besoin de se demander si on dérange :
-        <strong>ici, vous êtes les bienvenus.</strong>
-      </p>
-
-      <p>
-        Certains lieux proposent même des <strong>offres dédiées aux télétravailleurs</strong>,
-        histoire de ne manquer de rien pendant la matinée ou l’après-midi.
-      </p>
+      <p><em>Partagez vos lieux préférés ou soufflez-nous vos envies.</em></p>
     </section>
 
-   <div class="about-media" aria-hidden="true">
-    <%= image_tag "about-us-img1.png", class: "media-img", alt: "" %>
-  </div>
-  </div>
-
-  <!-- Bloc 2 -->
-  <div class="about-grid">
     <section class="about-copy" aria-labelledby="about-title-2">
       <h2 id="about-title-2" class="about-title">Et demain ?</h2>
-     <p>
-      WorkSpot pourrait aussi devenir <strong>un réseau vivant</strong> :
-      des lieux pour <strong>organiser des sessions de groupe</strong>,
-      <strong>accueillir des profs particuliers ou des coachs</strong>,
-      <strong>créer des événements à thème entre freelances…</strong>
-    </p>
 
-    <p>
-      <strong>Vous aimez l’idée ?</strong>
-      Partagez vos spots préférés ou soufflez-nous vos envies.
-    </p>
-
-    <p>
-      <strong>On construit ça avec vous&nbsp;!</strong>
-    </p>
+      <p>
+        WorkSpot vise à devenir un réseau vivant...<br>
+        Demain, ce sera peut-être :<br>
+        → Des lieux partenaires pour recevoir un cours particulier ou un coaching.<br>
+        → Des événements ou du networking entre freelances, entrepreneurs...<br>
+        → Une carte utile partout en France validées par les usagers.<br>
+      </p>
+      <p>Vous aimez l’idée ? <br> <strong>Faites-la avancer avec nous.</strong></p>
+      <figure class="about-media" aria-hidden="true">
+        <%= image_tag "about-us-ws.png", class: "media-img", alt: "" %>
+      </figure>
     </section>
-
-    <div class="about-media" aria-hidden="true">
-    <%= image_tag "about-us-img2.png", class: "media-img", alt: "" %>
-    </div>
-
   </div>
+</div>
 
 
 

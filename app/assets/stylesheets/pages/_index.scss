@@ -256,7 +256,7 @@ $space-7: 4rem;     // 64px
 ================================ */
 .banner.about-banner {
   background-image:
-    linear-gradient(to right, rgba(15,15,15,.94) 0%, rgba(15,15,15,.82) 60%, rgba(15,15,15,.32) 100%),
+    linear-gradient(to right, rgba(#7f7f7f, 0.9) 0%, rgba(#7f7f7f, 0.9) 60%, rgba(#7f7f7f, 0.9) 100%),
     url("About-us-ws.jpg");
   background-size: cover;
   background-position: center;
@@ -274,63 +274,93 @@ $space-7: 4rem;     // 64px
     @media (min-width: 1200px) { max-width: 1140px; }
     @media (min-width: 1400px) { max-width: 1320px; }
   }
+.about {
+  display: grid;
+  gap: clamp(20px, 3vw, 32px); /* espace entre grille texte et image */
+  margin: clamp(24px, 4vw, 48px) 0;
+}
 
-  /* Grille */
-  .about-grid {
-    display: grid;
-    grid-template-columns: 1fr; /* mobile */
-    gap: 24px;
-    margin: clamp(24px, 4vw, 48px) 0;
+/* Grille 2 colonnes pour le texte */
+.about-textgrid {
+  display: grid;
+  grid-template-columns: 1fr; /* mobile */
+  gap: 24px;
 
-    @media (min-width: 1024px) {
-      grid-template-columns: minmax(0, 1.4fr) minmax(0, .6fr); /* 60/40 doux */
-      gap: 28px;
-      align-items: center;
-    }
-  }
-
-  .about-title {
-    margin: 0 0 12px;
-    font-size: clamp(1.6rem, 2.5vw, 2.25rem);
-    line-height: 1.2; font-weight: 800; letter-spacing: .2px;
-
-    &::after {
-      content:"";
-      display:block;
-      width:72px; height:3px; margin-top:12px;
-      background: linear-gradient(90deg,#fff,rgba(255,255,255,0));
-      border-radius: 999px; opacity:.85;
-    }
-  }
-
-  .about-copy {
-    max-width: none;
-
-    @media (min-width: 1200px) {
-      max-width: 68ch;
-    }
-  }
-
-  .about-copy p {
-    margin: 0 0 1rem;
-    font-size: 1.05rem;
-    line-height: 1.7;
-    color: #f3f4f6;
-    text-align: left;
-    hyphens: auto;
-  }
-
-  .about-media { overflow: visible; }
-
-  .media-img {
-    width: 100%;
-    display: block;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    object-position: center;
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1fr; /* deux colonnes sur desktop */
+    gap: 125px;
+    align-items: start;
   }
 }
 
+/* ====== TYPO UNIQUEMENT ====== */
+
+/* Titres H2 */
+.about-title {
+  text-align: left;
+  margin: 0 0 16px;
+  font-size: clamp(1.8rem, 2.8vw, 2.4rem); /* + grand = hiérarchie claire */
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: 0;
+
+  &::after {
+    content:"";
+    display:block;
+    width:56px; height:3px; margin-top:10px;
+    background: linear-gradient(90deg,#fff,rgba(255,255,255,0));
+    border-radius: 999px; opacity:.85;
+  }
+}
+
+/* Sous-titre visible (remplace l'ancien h4) */
+.about-copy p.about-subtitle {
+  font-size: clamp(1.4rem, 1.4vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.4;
+  color: #ffffff;
+  margin: 0 0 1rem;
+}
+
+/* Paragraphe standard */
+.about-copy {
+  max-width: none;
+
+  @media (min-width: 1200px) {
+    max-width: 68ch;
+  }
+}
+
+.about-copy p {
+  margin: 0 0 1rem;
+  font-size: clamp(1.1rem, 1.2vw, 1.25rem);  /* corps légèrement responsive */
+  line-height: 1.7;
+  color: #ffffff;
+  text-align: left;
+  hyphens: auto;
+  font-weight: 350;
+}
+
+/* Paragraphe d'intro (lead) — un peu plus grand & plus clair */
+.about-copy p.lead {
+  font-size: clamp(1.1rem, 1.2vw, 1.25rem);
+  line-height: 1.8;
+  color: #ffffff;
+  font-weight: 350;
+}
+
+/* Image sous la grille, pleine largeur (inchangé) */
+.about-media { overflow: visible; }
+
+.media-img {
+  width: 100%;
+  display: block;
+  aspect-ratio: 16 / 9;      /* ajuste si tu veux 4/3 */
+  object-fit: cover;
+  object-position: center;
+  border-radius: 12px;        /* optionnel: arrondi propre */
+}
+}
 /* ================================
    Map (responsive embed — harmonisée)
 ================================ */
