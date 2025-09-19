@@ -176,7 +176,7 @@ _onSpotClick(e) {
   this.map.flyTo({
     center: coords,
     zoom: this.map.getZoom(),
-    offset: [0, -150], // Décale le point de 150px vers le bas
+    offset: [0, 75], // Décale le point de 150px vers le bas
     speed: 1.2,
     essential: true
   });
@@ -215,8 +215,8 @@ openSpotPopup(coords, props) {
 
   // Ancrage toujours en haut, offset pour éviter de cacher le point
   this.popup = new mapboxgl.Popup({
-    anchor: "top",
-    offset: [0, 16],
+    anchor: "bottom",
+    offset: [0, -16],
     closeButton: true,
     closeOnClick: false,
     maxWidth: "360px",
