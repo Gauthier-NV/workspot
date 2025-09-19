@@ -1,0 +1,119 @@
+/* ============================================= */
+/* MAPBOX OVERRIDES — card compacte & lisible    */
+/* ============================================= */
+
+/* Conteneur carte (si ton élément a la classe .map) */
+.map {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Popup compacte */
+.mapboxgl-popup.ws-popup { border-radius: 8px; }
+.mapboxgl-popup.ws-popup .mapboxgl-popup-content {
+  padding: 0 !important;              /* on gère le padding dans .mp-body */
+  border-radius: 8px !important;
+  max-width: 320px !important;         /* ✦ compacte */
+  box-shadow: 0 8px 20px rgba(17,24,39,.14);
+  overscroll-behavior: contain;
+}
+
+/* Card interne */
+.map-popup { background: transparent; }
+.mp-body { padding: 10px 12px 12px; }
+
+.mp-title {
+  margin: 0 0 2px;
+  font-size: 11px;                     /* petit */
+  line-height: 1.35;
+  color: #111827;
+  font-weight: 700;
+}
+.mp-address {
+  margin: 0 0 6px;
+  font-size: 10px;
+  color: #4b5563;
+}
+
+.mp-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+.mp-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #F3F4F6;
+  color: #374151;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Description petite */
+.mp-desc {
+  margin: 6px 0 8px;
+  color: #1f2937;
+  font-size: 10px;                   /* très lisible mais discret */
+}
+
+/* Actions */
+.mp-actions { display: flex; gap: 8px; align-items: center; }
+.mp-link {
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #E5E7EB;
+  background: #fff;
+  color: #1f2a72;
+  font-size: 13px;
+  font-weight: 600;
+}
+.mp-primary {
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #2563EB;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 3px 8px rgba(37,99,235,.18);
+}
+
+/* Contrôles (légères ombres) */
+.mapboxgl-ctrl-top-right,
+.mapboxgl-ctrl-bottom-right { margin: 12px; }
+
+.mapboxgl-ctrl-group {
+  box-shadow: 0 1px 6px rgba(17,24,39,.10);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mapboxgl-popup.ws-popup .mapboxgl-popup-content {
+    max-width: 90vw !important;
+  }
+  .map { min-height: 380px; }
+}
+
+/* Forcer la petite taille dans la description et son contenu */
+.mapboxgl-popup.ws-popup .mp-desc,
+.mapboxgl-popup.ws-popup .mp-desc p,
+.mapboxgl-popup.ws-popup .mp-desc li,
+.mapboxgl-popup.ws-popup .mp-desc a,
+.mapboxgl-popup.ws-popup .mp-desc span {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Marges sobres dans la desc */
+.mapboxgl-popup.ws-popup .mp-desc p { margin: 4px 0; }
+
+/* Si le HTML contient des titres, on les ramène à petit */
+.mapboxgl-popup.ws-popup .mp-desc h1,
+.mapboxgl-popup.ws-popup .mp-desc h2,
+.mapboxgl-popup.ws-popup .mp-desc h3 {
+  font-size: 12px;
+  margin: 6px 0 4px;
+  line-height: 1.3;
+  font-weight: 600;
+}

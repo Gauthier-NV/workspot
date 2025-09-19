@@ -1,0 +1,57 @@
+/* ============================================= */
+/* MAPBOX BASE — fondations sobres               */
+/* ============================================= */
+
+:root {
+  --mbx-font: 400 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mbx-radius: 8px;
+  --mbx-shadow: rgba(17, 24, 39, 0.12);
+}
+
+/* Popup */
+.mapboxgl-popup {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  pointer-events: auto;
+  will-change: transform;
+  z-index: 100;
+  font: var(--mbx-font);
+}
+
+.mapboxgl-popup-content {
+  background: #fff;
+  border-radius: var(--mbx-radius);
+  padding: 10px;
+  box-shadow: 0 6px 16px var(--mbx-shadow);
+  border: 1px solid rgba(17,24,39,0.06);
+  max-width: 320px;
+}
+
+.mapboxgl-popup-tip {
+  width: 0; height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #fff;
+}
+
+/* Contrôles */
+.mapboxgl-ctrl { font: var(--mbx-font); }
+.mapboxgl-ctrl-group {
+  display: flex; flex-direction: column;
+  margin: 12px;
+  border-radius: var(--mbx-radius);
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(17,24,39,0.06);
+  box-shadow: 0 2px 8px rgba(17,24,39,0.08);
+}
+.mapboxgl-ctrl button {
+  width: 36px; height: 36px;
+  background: #fff; border: none; cursor: pointer;
+}
+.mapboxgl-ctrl button:hover { background: #f9fafb; }
+
+/* Canvas cursors */
+.mapboxgl-canvas-container { cursor: grab; }
+.mapboxgl-canvas-container:active { cursor: grabbing; }
