@@ -2,118 +2,144 @@
 /* MAPBOX OVERRIDES — card compacte & lisible    */
 /* ============================================= */
 
-/* Conteneur carte (si ton élément a la classe .map) */
+/* La taille/les coins se gèrent côté conteneur (.map-container) */
 .map {
   width: 100%;
   height: 100%;
-  min-height: 420px;
   position: relative;
   border-radius: 10px;
   overflow: hidden;
 }
 
 /* Popup compacte */
-.mapboxgl-popup.ws-popup { border-radius: 8px; }
-.mapboxgl-popup.ws-popup .mapboxgl-popup-content {
-  padding: 0 !important;              /* on gère le padding dans .mp-body */
-  border-radius: 8px !important;
-  max-width: 320px !important;         /* ✦ compacte */
-  box-shadow: 0 8px 20px rgba(17,24,39,.14);
+.mapboxgl-popup.ws-popup > .mapboxgl-popup-content {
+  padding: 0;                 /* padding géré dans .mp-body */
+  border-radius: 8px;
+  max-width: 320px;
+  background: #fff;
+  border: 1px solid rgba(17,24,39,0.06);
+  box-shadow: 0 6px 16px rgba(17,24,39,.12); /* ombre plus légère = look épuré */
   overscroll-behavior: contain;
 }
+
+/* Masquer la pointe en mode mobile */
+.mapboxgl-popup.ws-popup.ws-popup--mobile .mapboxgl-popup-tip { display: none; }
 
 /* Card interne */
 .map-popup { background: transparent; }
 .mp-body { padding: 10px 12px 12px; }
 
+/* Titre & adresse (clamp) */
 .mp-title {
   margin: 0 0 2px;
-  font-size: 11px;                     /* petit */
+  font-size: 13px;
   line-height: 1.35;
   color: #111827;
   font-weight: 700;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 .mp-address {
   margin: 0 0 6px;
-  font-size: 10px;
-  color: #4b5563;
-}
-
-.mp-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
-.mp-tag {
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #F3F4F6;
+  font-size: 12px;
   color: #374151;
-  font-size: 11px;
-  font-weight: 600;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
 }
 
-/* Description petite */
-.mp-desc {
-  margin: 6px 0 8px;
-  color: #1f2937;
-  font-size: 10px;                   /* très lisible mais discret */
+/* Tags */
+.mp-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+.mp-tag { padding: 2px 8px; border-radius: 999px; background: #F3F4F6; color: #374151; font-size: 11px; font-weight: 600; }
+
+/* Description — source unique */
+.mapboxgl-popup.ws-popup .mp-desc,
+.mapboxgl-popup.ws-popup .mp-desc * { font-size: 13px; line-height: 1.5; color: #1f2937; }
+
+/* Tronquage + lien “Voir la suite” */
+.mp-desc-wrapper {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px; /* ⬅️ plus d’espace avant les boutons */
 }
+
+/* Par défaut : 2 lignes visibles (1 ligne: 1.5em / 3 lignes: 4.5em) */
+.mp-desc { max-height: 3em; overflow: hidden; position: relative; }
+.mp-desc::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5em;
+  background: linear-gradient(to top, #fff, rgba(255,255,255,0));
+}
+.mp-desc.expanded { max-height: none; }
+.mp-desc.expanded::after { display: none; }
+
+/* Lien “Voir la suite” */
+.mp-toggle-link {
+  color: #1f2a72;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline;
+  line-height: 1.5;
+}
+.mp-toggle-link:hover { color: #14308f; }
+.mp-toggle-link:focus-visible,
+.mp-link:focus-visible,
+.mp-primary:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; border-radius: 6px; }
 
 /* Actions */
 .mp-actions { display: flex; gap: 8px; align-items: center; }
-.mp-link {
+.mp-link, .mp-primary {
   text-decoration: none;
   padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #E5E7EB;
-  background: #fff;
-  color: #1f2a72;
-  font-size: 13px;
-  font-weight: 600;
+  border-radius: 8px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px; font-weight: 600;
 }
-.mp-primary {
-  text-decoration: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  background: #2563EB;
-  color: #fff;
-  font-weight: 700;
-  font-size: 13px;
-  box-shadow: 0 3px 8px rgba(37,99,235,.18);
-}
+.mp-link { border: 1px solid #E5E7EB; background: #fff; color: #1f2a72; }
+.mp-link:hover { background: #F9FAFB; }
+.mp-primary { background: #2563EB; color: #fff; box-shadow: 0 3px 8px rgba(37,99,235,.18); }
 
-/* Contrôles (légères ombres) */
-.mapboxgl-ctrl-top-right,
-.mapboxgl-ctrl-bottom-right { margin: 12px; }
+/* Contrôles Mapbox */
+.mapboxgl-ctrl-top-right, .mapboxgl-ctrl-bottom-right { margin: 12px; }
+.mapboxgl-ctrl-group { box-shadow: 0 1px 6px rgba(17,24,39,.10); }
 
-.mapboxgl-ctrl-group {
-  box-shadow: 0 1px 6px rgba(17,24,39,.10);
-}
-
-/* Responsive */
+/* ---------- Responsive ---------- */
 @media (max-width: 768px) {
-  .mapboxgl-popup.ws-popup .mapboxgl-popup-content {
-    max-width: 90vw !important;
+  .mapboxgl-popup.ws-popup > .mapboxgl-popup-content { max-width: 90vw; }
+}
+
+/* Mode mobile : largeur raisonnable + safe-area iOS */
+.mapboxgl-popup.ws-popup.ws-popup--mobile > .mapboxgl-popup-content {
+  width: 92vw;         /* remplace min(92vw, 420px) pour éviter le conflit Sass */
+  max-width: 300px;    /* cap équivalent */
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(17,24,39,.14);
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+.mapboxgl-popup.ws-popup.ws-popup--mobile .mp-body {
+  padding: 14px 16px 16px;
+  overflow: auto; -webkit-overflow-scrolling: touch;
+  max-height: 56vh;
+}
+
+/* ---------- Dark mode léger ---------- */
+@media (prefers-color-scheme: dark) {
+  .mapboxgl-popup.ws-popup > .mapboxgl-popup-content {
+    background: #0b111e; border-color: rgba(255,255,255,.08); box-shadow: 0 10px 24px rgba(0,0,0,.5);
   }
-  .map { min-height: 380px; }
-}
-
-/* Forcer la petite taille dans la description et son contenu */
-.mapboxgl-popup.ws-popup .mp-desc,
-.mapboxgl-popup.ws-popup .mp-desc p,
-.mapboxgl-popup.ws-popup .mp-desc li,
-.mapboxgl-popup.ws-popup .mp-desc a,
-.mapboxgl-popup.ws-popup .mp-desc span {
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-/* Marges sobres dans la desc */
-.mapboxgl-popup.ws-popup .mp-desc p { margin: 4px 0; }
-
-/* Si le HTML contient des titres, on les ramène à petit */
-.mapboxgl-popup.ws-popup .mp-desc h1,
-.mapboxgl-popup.ws-popup .mp-desc h2,
-.mapboxgl-popup.ws-popup .mp-desc h3 {
-  font-size: 12px;
-  margin: 6px 0 4px;
-  line-height: 1.3;
-  font-weight: 600;
+  .mp-title { color: #e5e7eb; }
+  .mp-address, .mp-desc { color: #cbd5e1; }
+  .mp-tag { background: #111827; color: #e5e7eb; }
+  .mp-link { background: #0b111e; border-color: #334155; color: #93c5fd; }
+  .mp-primary { background: #3b82f6; color: #0b111e; }
+  .mp-desc::after { background: linear-gradient(to top, #0b111e, rgba(11,17,30,0)); }
 }
