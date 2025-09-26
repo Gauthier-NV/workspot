@@ -30,27 +30,12 @@
 .mp-body { padding: 10px 12px 12px; }
 
 /* Titre & adresse (clamp) */
-.mp-title {
-  margin: 0 0 2px;
-  font-size: 13px;
-  line-height: 1.35;
-  color: #111827;
-  font-weight: 700;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow: hidden;
-}
-.mp-address {
-  margin: 0 0 6px;
-  font-size: 12px;
-  color: #374151;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  overflow: hidden;
+
+
+.mapboxgl-popup .mp-title {
+  margin: 0;
+  margin-block-start: 0;
+  margin-block-end: 4px;  // petit espace bas contrôlé
 }
 
 /* Tags */
@@ -142,4 +127,64 @@
   .mp-link { background: #0b111e; border-color: #334155; color: #93c5fd; }
   .mp-primary { background: #3b82f6; color: #0b111e; }
   .mp-desc::after { background: linear-gradient(to top, #0b111e, rgba(11,17,30,0)); }
+}
+
+/* Mini carousel compact (au-dessus du titre) */
+.mp-carousel {
+  position: relative;
+  border-radius:  8px 8px 0 0;
+  overflow: hidden;
+   // léger espace, compact
+  height: 200px;       // 👈 hauteur fixe compacte (ne grossit pas la card)
+  background: #f3f4f6;
+}
+
+.mpc-viewport {
+  width: 100%; height: 100%;
+  position: relative;
+}
+
+.mpc-slide {
+  position: absolute; inset: 0;
+  opacity: 0; transition: opacity .22s ease;
+}
+.mpc-slide.is-active { opacity: 1; }
+.mpc-slide img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+
+.mpc-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: rgba(255,255,255,.9);
+  display: grid; place-items: center;
+  cursor: pointer; padding: 0;
+}
+.mpc-prev { left: 6px; }
+.mpc-next { right: 6px; }
+.mpc-nav:hover { background: #fff; }
+
+.mpc-dots {
+  position: absolute; left: 0; right: 0; bottom: 6px;
+  display: flex; gap: 6px; justify-content: center;
+}
+.mpc-dot {
+  width: 6px; height: 6px; border-radius: 999px; border: none;
+  background: rgba(255,255,255,.7); box-shadow: 0 0 0 1px rgba(0,0,0,.15) inset;
+  padding: 0; cursor: pointer;
+}
+.mpc-dot.is-active { background: #fff; }
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .mp-carousel { background: #0f172a; }
+  .mpc-nav { background: rgba(15,23,42,.9); border-color: rgba(255,255,255,.14); color: #e5e7eb; }
+  .mpc-dot { background: rgba(255,255,255,.35); }
+  .mpc-dot.is-active { background: #fff; }
+}
+
+/* Mobile : un poil plus bas */
+@media (max-width: 480px) {
+  .mp-carousel { height: 150px;  }
 }

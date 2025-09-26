@@ -6,9 +6,22 @@ class Spot < ApplicationRecord
     %w[
       id name description address arrondissement
       has_wifi has_power_outlets
-      latitude longitude image_url button_link
+      latitude longitude image_url image_url1 image_url2 image_url3 button_link
       tags created_at updated_at
     ]
+  end
+
+  # --- Validation URL (bouton) ---
+  validates :button_link, format: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true
+
+  # --- Validation URLs images (optionnel mais utile) ---
+  validates :image_url1, :image_url2, :image_url3,
+           format: URI::DEFAULT_PARSER.make_regexp(%w[http https]),
+           allow_blank: true
+
+  # --- Helper photos: retourne max 3 URLs valides ---
+  def image_urls
+    [image_url1, image_url2, image_url3, image_url].compact_blank.uniq.first(3)
   end
 
   def self.ransackable_associations(_auth_object = nil)

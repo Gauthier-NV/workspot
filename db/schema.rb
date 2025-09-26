@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_16_151228) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_26_143123) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -65,6 +65,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_16_151228) do
     t.string "arrondissement"
     t.string "button_link"
     t.text "tags"
+    t.string "image_url1"
+    t.string "image_url2"
+    t.string "image_url3"
   end
 
 end

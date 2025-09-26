@@ -33,6 +33,82 @@ const saneCoords = (lng, lat) => {
 
 const spotCoords = (s) => saneCoords(s.lng ?? s.longitude, s.lat ?? s.latitude);
 
+/* ---------- Mini Carousel (compact) ---------- */
+/* Renvoie un petit slider 16:9 ~120px de haut, avec obj-fit: cover */
+function buildMiniCarouselHTML(imageUrls, spotId) {
+  const urls = (imageUrls || []).filter(Boolean).slice(0, 3);
+  if (!urls.length) return "";
+
+  const slides = urls.map((u, i) => `
+    <div class="mpc-slide ${i === 0 ? "is-active" : ""}" data-index="${i}">
+      <img src="${u}" alt="Photo ${i + 1}" loading="lazy" decoding="async" />
+    </div>
+  `).join("");
+
+  // flèches uniquement si >1 image
+  const arrows = urls.length > 1 ? `
+    <button class="mpc-nav mpc-prev" aria-label="Précédent" data-dir="-1">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    </button>
+    <button class="mpc-nav mpc-next" aria-label="Suivant" data-dir="1">
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    </button>
+  ` : "";
+
+  const dots = urls.length > 1 ? `
+    <div class="mpc-dots">
+      ${urls.map((_, i) => `<button class="mpc-dot ${i === 0 ? "is-active" : ""}" data-to="${i}" aria-label="Aller à l’image ${i+1}"></button>`).join("")}
+    </div>
+  ` : "";
+
+  return `
+    <div class="mp-carousel" id="mpc-${spotId}" data-count="${urls.length}" data-active="0">
+      <div class="mpc-viewport">
+        ${slides}
+      </div>
+      ${arrows}
+      ${dots}
+    </div>
+  `;
+}
+
+/* Active les interactions (à appeler après insertion dans le DOM) */
+function wireMiniCarousel(rootEl) {
+  const car = rootEl.querySelector(".mp-carousel");
+  if (!car) return;
+  let active = Number(car.getAttribute("data-active") || 0);
+  const count = Number(car.getAttribute("data-count") || 0);
+  const slides = Array.from(car.querySelectorAll(".mpc-slide"));
+  const dots   = Array.from(car.querySelectorAll(".mpc-dot"));
+
+  const go = (idx) => {
+    if (!count) return;
+    active = (idx + count) % count;
+    car.setAttribute("data-active", String(active));
+    slides.forEach((s, i) => s.classList.toggle("is-active", i === active));
+    dots.forEach((d, i)   => d.classList.toggle("is-active", i === active));
+  };
+
+  car.addEventListener("click", (e) => {
+    const prev = e.target.closest(".mpc-prev");
+    const next = e.target.closest(".mpc-next");
+    const dot  = e.target.closest(".mpc-dot");
+    if (prev) { e.stopPropagation(); go(active - 1); }
+    if (next) { e.stopPropagation(); go(active + 1); }
+    if (dot)  { e.stopPropagation(); go(Number(dot.dataset.to || 0)); }
+  });
+
+  // swipe (simple)
+  let startX = null;
+  car.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; }, { passive: true });
+  car.addEventListener("touchend", (e) => {
+    if (startX == null) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 30) go(active + (dx < 0 ? 1 : -1));
+    startX = null;
+  }, { passive: true });
+}
+
 /* ---------- Controller ---------- */
 export default class extends Controller {
   static values = {
@@ -110,7 +186,8 @@ export default class extends Controller {
             address: s.address || "",
             description: s.description || "",
             button_link: s.button_link || "",
-            tags: normalizeArray(s.tags)
+            tags: normalizeArray(s.tags),
+            image_urls: normalizeArray(s.image_urls)
           },
           geometry: { type: "Point", coordinates: coords }
         };
@@ -199,6 +276,7 @@ openSpotPopup(coords, props) {
   const description = props.description || "";
   const button_link = props.button_link || "";
   const tags = normalizeArray(props.tags);
+  const images = normalizeArray(props.image_urls);
 
   const isMobile = window.matchMedia("(max-width: 480px)").matches;
   const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
@@ -206,8 +284,12 @@ openSpotPopup(coords, props) {
   const el = document.createElement("div");
   el.className = "map-popup";
 
+  const carouselHTML = buildMiniCarouselHTML(images, props.id || Math.random().toString(36).slice(2));
+
+
   // HTML popup
   el.innerHTML = `
+    ${carouselHTML}
     <div class="mp-body">
       <h3 class="mp-title">${name}</h3>
       ${address ? `<p class="mp-address">${address}</p>` : ""}
@@ -246,6 +328,8 @@ openSpotPopup(coords, props) {
     .setLngLat(coords)
     .setDOMContent(el)
     .addTo(this.map);
+    wireMiniCarousel(el);
+
 
   // Toggle "Voir la suite"
   const descEl   = el.querySelector(".mp-desc");
