@@ -156,7 +156,8 @@
 }
 .mapboxgl-popup.ws-popup.ws-popup--mobile .mp-body {
   padding: 14px 16px 16px;
-  overflow: auto; -webkit-overflow-scrolling: auto;
+  overflow: hidden; -webkit-overflow-scrolling: auto;
+  touch-action: pan-x;
   max-height: 56vh;
 }
 
