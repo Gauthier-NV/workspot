@@ -150,9 +150,13 @@ export default class extends Controller {
     // Géoloc (manuel)
     this.map.addControl(new mapboxgl.GeolocateControl({
       positionOptions: { enableHighAccuracy: true },
-      trackUserLocation: false,
-      showUserHeading: true
+      trackUserLocation: true,
+      showUserHeading: false,
+      fitBoundsOptions: { maxZoom: 14 }
     }), "top-right");
+
+
+
 
     this.map.on("error", (e) => console.error("Mapbox error:", e?.error || e));
     this.map.on("load",  () => this._loadAndRenderSpots());
@@ -220,7 +224,7 @@ export default class extends Controller {
             "circle-stroke-width": [
               "case",
               ["boolean", ["feature-state", "selected"], false],
-              3, 2
+              3, 1.5
             ],
             "circle-opacity": 0.96
           }
@@ -258,7 +262,7 @@ _onSpotClick(e) {
   this.map.flyTo({
     center: coords,
     zoom: this.map.getZoom(),
-    offset: [0, 75], // Décale le point de 150px vers le bas
+    offset: [0, 90], // Décale le point de 150px vers le bas
     speed: 1.2,
     essential: true
   });
@@ -317,7 +321,7 @@ openSpotPopup(coords, props) {
   // Création de la popup
   const popupOpts = {
     anchor: "bottom",
-    offset: isMobile ? [0, 0] : [0, -16],
+    offset: isMobile ? [0, -14] : [0, -14],
     closeButton: true,
     closeOnClick: false,
     maxWidth: isMobile ? "92vw" : "360px", // largeur raisonnable sur mobile

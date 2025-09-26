@@ -38,9 +38,9 @@
 
 /* Adresse (plus petite et compacte) */
 .mapboxgl-popup .mp-address {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.3;
-  color: #6b7280;
+  color: #343b48;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;   /* 2 lignes max */
@@ -48,15 +48,19 @@
   overflow: hidden;        /* coupe le surplus */
   white-space: normal;     /* autorise retour ligne */
   margin: 0 0 8px;
+
 }
 
 /* Tags */
-.mp-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.mp-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
 .mp-tag { padding: 2px 8px; border-radius: 999px; background: #F3F4F6; color: #374151; font-size: 11px; font-weight: 600; }
 
 /* Description — source unique */
 .mapboxgl-popup.ws-popup .mp-desc,
-.mapboxgl-popup.ws-popup .mp-desc * { font-size: 13px; line-height: 1.5; color: #1f2937; }
+.mapboxgl-popup.ws-popup .mp-desc * { font-size: 13px; font-weight: 350; line-height: 1.5; color: #1f2937;text-align: justify;  text-align-last: left;     /* dernière ligne non étirée */
+  hyphens: auto;             /* césure autom. (Chrome/Firefox) */
+  -webkit-hyphens: auto;     /* césure autom. (Safari) */
+  overflow-wrap: break-word;   }
 
 /* Tronquage + lien “Voir la suite” */
 .mp-desc-wrapper {
@@ -76,16 +80,16 @@
 
 /* Lien “Voir la suite” */
 .mp-toggle-link {
-  color: #1f2a72;
+  color: #2d2e36b8;
   text-decoration: underline;
   text-underline-offset: 2px;
-  font-weight: 600;
+  font-weight: 400;
   font-size: 12px;
   cursor: pointer;
   display: inline;
   line-height: 1.5;
 }
-.mp-toggle-link:hover { color: #14308f; }
+.mp-toggle-link:hover { color: #06080d; }
 .mp-toggle-link:focus-visible,
 .mp-link:focus-visible,
 .mp-primary:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; border-radius: 6px; }
@@ -102,11 +106,11 @@
 /* Boutons de base */
 .mp-link, .mp-primary {
   text-decoration: none;
-  border-radius: 999px;      /* ⬅️ arrondis type pill */
-  padding: 8px 14px;         /* ⬅️ plus d’espace interne */
+  border-radius: 8px;      /* ⬅️ arrondis type pill */
+  padding: 6px 9px;         /* ⬅️ plus d’espace interne */
   min-height: unset;         /* supprime la contrainte 40px */
   font-size: 12px;           /* ⬅️ taille plus compacte */
-  font-weight: 600;
+  font-weight: 550;
   line-height: 1.3;
   display: flex;
   align-items: center;
@@ -152,7 +156,7 @@
 }
 .mapboxgl-popup.ws-popup.ws-popup--mobile .mp-body {
   padding: 14px 16px 16px;
-  overflow: auto; -webkit-overflow-scrolling: touch;
+  overflow: auto; -webkit-overflow-scrolling: auto;
   max-height: 56vh;
 }
 
@@ -174,7 +178,7 @@
   position: relative;
   border-radius:  8px 8px 0 0;
   overflow: hidden;
-  height: 200px;
+  height: 180px;
   background: #f3f4f6;
 }
 
@@ -195,14 +199,14 @@
 .mpc-nav {
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 28px; height: 28px; border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.12);
-  background: rgba(255,255,255,.9);
+  border: 0px solid rgba(253, 253, 253, 0.513);
+  background: rgba(255, 255, 255, 0.532);
   display: grid; place-items: center;
   cursor: pointer; padding: 0;
 }
 .mpc-prev { left: 6px; }
 .mpc-next { right: 6px; }
-.mpc-nav:hover { background: #fff; }
+.mpc-nav:hover { background: #ffffffc6; }
 
 .mpc-dots {
   position: absolute; left: 0; right: 0; bottom: 6px;
@@ -219,8 +223,8 @@
 @media (prefers-color-scheme: dark) {
   .mp-carousel { background: #0f172a; }
   .mpc-nav { background: rgba(15,23,42,.9); border-color: rgba(255,255,255,.14); color: #e5e7eb; }
-  .mpc-dot { background: rgba(255,255,255,.35); }
-  .mpc-dot.is-active { background: #fff; }
+  .mpc-dot { background: rgba(255, 255, 255, 0.283); }
+  .mpc-dot.is-active { background: #ffffffcb; }
 }
 
 /* Mobile : un poil plus bas */
