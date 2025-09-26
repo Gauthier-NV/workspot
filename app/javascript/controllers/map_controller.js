@@ -34,7 +34,6 @@ const saneCoords = (lng, lat) => {
 const spotCoords = (s) => saneCoords(s.lng ?? s.longitude, s.lat ?? s.latitude);
 
 /* ---------- Mini Carousel (compact) ---------- */
-/* Renvoie un petit slider 16:9 ~120px de haut, avec obj-fit: cover */
 function buildMiniCarouselHTML(imageUrls, spotId) {
   const urls = (imageUrls || []).filter(Boolean).slice(0, 3);
   if (!urls.length) return "";
@@ -45,7 +44,6 @@ function buildMiniCarouselHTML(imageUrls, spotId) {
     </div>
   `).join("");
 
-  // flèches uniquement si >1 image
   const arrows = urls.length > 1 ? `
     <button class="mpc-nav mpc-prev" aria-label="Précédent" data-dir="-1">
       <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
@@ -138,16 +136,13 @@ export default class extends Controller {
       dragRotate: false,
       touchPitch: false,
       pitchWithRotate: false,
-      // 🔽 élargis, ou supprime complètement si besoin
       maxBounds: [[-1.0, 47.8], [5.5, 50.5]]
     });
-
-
 
     // Contrôles sobres
     this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
 
-    // Géoloc (manuel)
+    // Géoloc
     this.map.addControl(new mapboxgl.GeolocateControl({
       positionOptions: { enableHighAccuracy: true },
       trackUserLocation: true,
@@ -155,24 +150,17 @@ export default class extends Controller {
       fitBoundsOptions: { maxZoom: 14 }
     }), "top-right");
 
-
-
-
     this.map.on("error", (e) => console.error("Mapbox error:", e?.error || e));
     this.map.on("load",  () => this._loadAndRenderSpots());
 
-    // Ferme la popup si clic hors spot
+    // ⭐ CHANGED: clic hors spot -> on désélectionne et ferme la popup
     this.map.on("click", (e) => {
       const hits = this.map.queryRenderedFeatures(e.point, { layers: [this.layerId] });
-      if (!hits.length && this.popup) { this.popup.remove(); this.popup = null; }
+      if (!hits.length) this._clearSelection();
     });
-
-    // ❌ PAS d’_ensurePopupInView() sur moveend/resize -> évite les dérives
   }
 
   async _loadAndRenderSpots() {
-
-
     try {
       const res = await fetch(this.apiUrlValue, { credentials: "same-origin" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -235,7 +223,6 @@ export default class extends Controller {
         this.map.on("click",      this.layerId, (e) => this._onSpotClick(e));
       }
 
-
       // Vue d’ensemble
       if (features.length > 0) {
         const b = new mapboxgl.LngLatBounds();
@@ -247,135 +234,148 @@ export default class extends Controller {
     }
   }
 
-_onSpotClick(e) {
-  const f = e.features?.[0];
-  if (!f) return;
-  if (this.selectedId) this.map.setFeatureState({ source: this.sourceId, id: this.selectedId }, { selected: false });
-  const id = f.id || f.properties.id;
-  this.map.setFeatureState({ source: this.sourceId, id }, { selected: true });
-  this.selectedId = id;
-  const c = f.geometry?.coordinates;
-  const coords = Array.isArray(c) ? saneCoords(c[0], c[1]) : null;
-  if (!coords) { console.warn("Coords invalides au clic:", c); return; }
+  _onSpotClick(e) {
+    const f = e.features?.[0];
+    if (!f) return;
 
-  // Recentrage avec offset pour décaler le point vers le bas
-  this.map.flyTo({
-    center: coords,
-    zoom: this.map.getZoom(),
-    offset: [0, 90], // Décale le point de 150px vers le bas
-    speed: 1.2,
-    essential: true
-  });
-
-  // Ouverture de la popup (toujours ancrée en haut)
-  this.openSpotPopup(coords, f.properties);
-}
-
-
-openSpotPopup(coords, props) {
-  if (this.popup) this.popup.remove();
-
-  const name = props.name || "Café";
-  const address = props.address || "";
-  const description = props.description || "";
-  const button_link = props.button_link || "";
-  const tags = normalizeArray(props.tags);
-  const images = normalizeArray(props.image_urls);
-
-  const isMobile = window.matchMedia("(max-width: 480px)").matches;
-  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
-
-  const el = document.createElement("div");
-  el.className = "map-popup";
-
-  const carouselHTML = buildMiniCarouselHTML(images, props.id || Math.random().toString(36).slice(2));
-
-
-  // HTML popup
-  el.innerHTML = `
-    ${carouselHTML}
-    <div class="mp-body">
-      <h3 class="mp-title">${name}</h3>
-      ${address ? `<p class="mp-address">${address}</p>` : ""}
-      ${tags.length ? `<div class="mp-tags">${tags.map(t => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
-
-      ${description ? `
-    <div class="mp-desc-wrapper">
-      <div class="mp-desc" id="mp-desc" data-collapsed="true">${description}</div>
-      <a href="#" class="mp-toggle-link" aria-expanded="false" aria-controls="mp-desc">Voir la suite</a>
-    </div>
-  ` : ""}
-
-      <div class="mp-actions">
-        ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
-        <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
-      </div>
-    </div>
-  `;
-
-  // Empêche la fermeture si clic sur un bouton/lien
-  el.addEventListener("click", (ev) => {
-    if (ev.target.closest("a,button")) ev.stopPropagation();
-  });
-
-  // Création de la popup
-  const popupOpts = {
-    anchor: "bottom",
-    offset: isMobile ? [0, -14] : [0, -14],
-    closeButton: true,
-    closeOnClick: false,
-    maxWidth: isMobile ? "92vw" : "360px", // largeur raisonnable sur mobile
-    className: `ws-popup ${isMobile ? "ws-popup--mobile" : ""}`
-  };
-
-  this.popup = new mapboxgl.Popup(popupOpts)
-    .setLngLat(coords)
-    .setDOMContent(el)
-    .addTo(this.map);
-    wireMiniCarousel(el);
-
-
-  // Toggle "Voir la suite"
-  const descEl   = el.querySelector(".mp-desc");
-const toggleEl = el.querySelector(".mp-toggle-link");
-
-if (descEl && toggleEl) {
-  const measure = () => {
-    requestAnimationFrame(() => {
-      const needsToggle = descEl.scrollHeight > descEl.clientHeight + 2;
-      toggleEl.style.display = needsToggle ? "inline" : "none";
-    });
-  };
-  measure();
-
-  const toggle = (ev) => {
-    ev.preventDefault();             // évite de remonter la page
-    ev.stopPropagation();            // évite de fermer la popup
-    const collapsed = descEl.getAttribute("data-collapsed") === "true";
-    if (collapsed) {
-      descEl.classList.add("expanded");
-      descEl.setAttribute("data-collapsed", "false");
-      toggleEl.textContent = "Réduire";
-      toggleEl.setAttribute("aria-expanded", "true");
-    } else {
-      descEl.classList.remove("expanded");
-      descEl.setAttribute("data-collapsed", "true");
-      toggleEl.textContent = "Voir la suite";
-      toggleEl.setAttribute("aria-expanded", "false");
+    // retire l’ancienne sélection
+    if (this.selectedId) {
+      this.map.setFeatureState({ source: this.sourceId, id: this.selectedId }, { selected: false });
     }
-    measure();
-  };
 
-  toggleEl.addEventListener("click", toggle);
-  // Accessibilité clavier (Entrée / Espace)
-  toggleEl.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") { toggle(e); }
-  });
-}
+    const id = f.id || f.properties.id;
+    this.map.setFeatureState({ source: this.sourceId, id }, { selected: true });
+    this.selectedId = id;
 
-}
+    const c = f.geometry?.coordinates;
+    const coords = Array.isArray(c) ? saneCoords(c[0], c[1]) : null;
+    if (!coords) { console.warn("Coords invalides au clic:", c); return; }
 
+    this.map.flyTo({
+      center: coords,
+      zoom: this.map.getZoom(),
+      offset: [0, 90],
+      speed: 1.2,
+      essential: true
+    });
 
+    this.openSpotPopup(coords, f.properties);
+  }
+
+  openSpotPopup(coords, props) {
+    if (this.popup) this.popup.remove();
+
+    const name = props.name || "Café";
+    const address = props.address || "";
+    const description = props.description || "";
+    const button_link = props.button_link || "";
+    const tags = normalizeArray(props.tags);
+    const images = normalizeArray(props.image_urls);
+
+    const isMobile = window.matchMedia("(max-width: 480px)").matches;
+    const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
+
+    const el = document.createElement("div");
+    el.className = "map-popup";
+
+    const carouselHTML = buildMiniCarouselHTML(images, props.id || Math.random().toString(36).slice(2));
+
+    el.innerHTML = `
+      ${carouselHTML}
+      <div class="mp-body">
+        <h3 class="mp-title">${name}</h3>
+        ${address ? `<p class="mp-address">${address}</p>` : ""}
+        ${tags.length ? `<div class="mp-tags">${tags.map(t => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
+        ${description ? `
+          <div class="mp-desc-wrapper">
+            <div class="mp-desc" id="mp-desc" data-collapsed="true">${description}</div>
+            <a href="#" class="mp-toggle-link" aria-expanded="false" aria-controls="mp-desc">Voir la suite</a>
+          </div>
+        ` : ""}
+        <div class="mp-actions">
+          ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
+          <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
+        </div>
+      </div>
+    `;
+
+    el.addEventListener("click", (ev) => {
+      if (ev.target.closest("a,button")) ev.stopPropagation();
+    });
+
+    const popupOpts = {
+      anchor: "bottom",
+      offset: isMobile ? [0, -14] : [0, -14],
+      closeButton: true,
+      closeOnClick: false,
+      maxWidth: isMobile ? "92vw" : "360px",
+      className: `ws-popup ${isMobile ? "ws-popup--mobile" : ""}`
+    };
+
+    this.popup = new mapboxgl.Popup(popupOpts)
+      .setLngLat(coords)
+      .setDOMContent(el)
+      .addTo(this.map);
+
+    // ⭐ keep: clean selection when closing with the “X”
+    this.popup.on("close", () => {
+      this.popup = null;
+      this._clearSelection(); // ⭐ NEW
+    });
+
+    wireMiniCarousel(el); // ⭐ keep only once
+
+    // Toggle "Voir la suite"
+    const descEl   = el.querySelector(".mp-desc");
+    const toggleEl = el.querySelector(".mp-toggle-link");
+    if (descEl && toggleEl) {
+      const measure = () => {
+        requestAnimationFrame(() => {
+          const needsToggle = descEl.scrollHeight > descEl.clientHeight + 2;
+          toggleEl.style.display = needsToggle ? "inline" : "none";
+        });
+      };
+      measure();
+
+      const toggle = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const collapsed = descEl.getAttribute("data-collapsed") === "true";
+        if (collapsed) {
+          descEl.classList.add("expanded");
+          descEl.setAttribute("data-collapsed", "false");
+          toggleEl.textContent = "Réduire";
+          toggleEl.setAttribute("aria-expanded", "true");
+        } else {
+          descEl.classList.remove("expanded");
+          descEl.setAttribute("data-collapsed", "true");
+          toggleEl.textContent = "Voir la suite";
+          toggleEl.setAttribute("aria-expanded", "false");
+        }
+        measure();
+      };
+
+      toggleEl.addEventListener("click", toggle);
+      toggleEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { toggle(e); }
+      });
+    }
+  }
+
+  // ⭐ NEW: utilitaire pour nettoyer sélection + popup
+  _clearSelection() {
+    if (this.selectedId != null) {
+      this.map.setFeatureState(
+        { source: this.sourceId, id: this.selectedId },
+        { selected: false }
+      );
+      this.selectedId = null;
+    }
+    if (this.popup) {
+      this.popup.remove();
+      this.popup = null;
+    }
+  }
 
   _nudgeIntoViewOnce() {
     if (!this.popup || this._nudging) return;
