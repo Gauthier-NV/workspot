@@ -117,6 +117,7 @@ export default class extends Controller {
   };
 
   connect() {
+
     const token = document.querySelector('meta[name="mapbox-token"]')?.content;
     if (!token) { console.error("Mapbox token manquant"); return; }
     mapboxgl.accessToken = token;
@@ -158,6 +159,11 @@ export default class extends Controller {
       const hits = this.map.queryRenderedFeatures(e.point, { layers: [this.layerId] });
       if (!hits.length) this._clearSelection();
     });
+
+    this.map.addControl(new mapboxgl.FullscreenControl(), "top-right");
+// Quand l’état de plein écran change, on redimensionne la map
+["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
+  .forEach(evt => document.addEventListener(evt, () => this.map?.resize(), { passive: true }));
   }
 
   async _loadAndRenderSpots() {
