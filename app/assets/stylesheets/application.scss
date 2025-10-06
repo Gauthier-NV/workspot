@@ -43,3 +43,10 @@ body {
     transform: translateY(-10px);
   }
 }
+
+
+.only-desktop { display: block; }
+
+@media (max-width: 768px) {
+  .only-desktop { display: none !important; }
+}
