@@ -177,7 +177,7 @@
       </p>
       <p>Vous aimez l’idée ? <br> <strong>Faites-la avancer avec nous.</strong></p>
       <figure class="about-media" aria-hidden="true">
-        <%= image_tag "about-us-ws-people.webp", class: "media-img", alt: "" %>
+        <%= image_tag "about-us-ws-people.webp", class: "media-img", loading: "lazy", decoding: "async", fetchpriority: "low", alt: "" %>
       </figure>
     </section>
   </div>
@@ -189,7 +189,7 @@
 <div id="android-instructions" class="android-instructions" style="display:none;">
   <!-- logo Android -->
   <div class="card-logo">
-    <%= image_tag "android.svg", alt: "Android", class: "logo-top", aria: { hidden: true } %>
+    <%= image_tag "android.svg", alt: "Android", class: "logo-top", loading: "lazy", decoding: "async", fetchpriority: "low", aria: { hidden: true } %>
   </div>
 
   <h2>Ajoute Workspots sur ton smartphone :</h2>
@@ -212,7 +212,7 @@
 <div id="ios-instructions" class="ios-instructions"  style="display:none;">
   <!-- logo Apple -->
   <div class="card-logo">
-    <%= image_tag "apple.svg", alt: "Apple", class: "logo-top", aria: { hidden: true } %>
+    <%= image_tag "apple.svg", alt: "Apple", class: "logo-top", loading: "lazy", decoding: "async", fetchpriority: "low", aria: { hidden: true } %>
   </div>
 
   <h2>Ajoute Workspots sur ton smartphone :</h2>
@@ -230,7 +230,7 @@
         <span>
           Sélectionne<strong>«Sur l'écran d'accueil»</strong>.
         </span>
-        <%= image_tag "add.svg", alt: "", class: "icon-right", aria: { hidden: true } %>
+        <%= image_tag "add.svg", alt: "", class: "icon-right", loading: "lazy", decoding: "async", fetchpriority: "low", aria: { hidden: true } %>
       </div>
     </li>
     <li>
@@ -289,22 +289,22 @@
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-left">
-        <%= image_tag("logo-ws-white.webp", alt: "Workspot Logo", class: "footer-logo") %>
+        <%= image_tag("logo-ws-white.webp", alt: "Workspot Logo", class: "footer-logo", loading: "lazy", decoding: "async", fetchpriority: "low") %>
       </div>
 
       <div class="footer-center">
       <!-- SOCIAL FOOTER À FAIRE-->
         <div class="footer-social">
           <%= link_to "https://www.facebook.com/workspotfr", target: "_blank", rel: "noopener" do %>
-            <%= image_tag "facebook.svg", alt: "Facebook", class: "social-icon" %>
+            <%= image_tag "facebook.svg", alt: "Facebook", class: "social-icon", loading: "lazy", decoding: "async", fetchpriority: "low" %>
           <% end %>
 
           <%= link_to "https://www.instagram.com/workspotfr", target: "_blank", rel: "noopener" do %>
-            <%= image_tag "instagram.svg", alt: "Instagram", class: "social-icon" %>
+            <%= image_tag "instagram.svg", alt: "Instagram", class: "social-icon", loading: "lazy", decoding: "async", fetchpriority: "low" %>
           <% end %>
 
           <%= link_to "https://www.linkedin.com/company/workspotfr", target: "_blank", rel: "noopener" do %>
-            <%= image_tag "linkedin.svg", alt: "LinkedIn", class: "social-icon" %>
+            <%= image_tag "linkedin.svg", alt: "LinkedIn", class: "social-icon", loading: "lazy", decoding: "async", fetchpriority: "low" %>
           <% end %>
         </div>
         <!-- SOCIAL FOOTER À FAIRE  -->

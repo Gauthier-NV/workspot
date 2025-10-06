@@ -14,6 +14,9 @@ const normalizeArray = (val) => {
     }
   }
   return [];
+
+
+
 };
 
 const toNum = (v) => {
@@ -34,6 +37,13 @@ const saneCoords = (lng, lat) => {
   }
   return looksLng(L) && looksLat(A) ? [L, A] : null;
 };
+
+async function chunkedForEach(items, fn, chunk = 200) {
+  for (let i = 0; i < items.length; i += chunk) {
+    items.slice(i, i + chunk).forEach(fn);
+    await new Promise(r => setTimeout(r)); // yield le main thread
+  }
+}
 
 const spotCoords = (s) => saneCoords(s.lng ?? s.longitude, s.lat ?? s.latitude);
 
@@ -308,7 +318,7 @@ export default class extends Controller {
 
       if (features.length > 0) {
         const b = new this.mb.LngLatBounds();
-        features.forEach((f) => b.extend(f.geometry.coordinates));
+        await chunkedForEach(features, (f) => b.extend(f.geometry.coordinates), 200);
         const same =
           b.getNorth() === b.getSouth() && b.getEast() === b.getWest();
         if (!same)
