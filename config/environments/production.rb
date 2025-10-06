@@ -16,6 +16,15 @@ Rails.application.configure do
   config.consider_all_requests_local = false
   config.action_controller.perform_caching = true
 
+  # Laisse Rails servir les fichiers statiques si la var Heroku est présente
+config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
+
+# Cache très long pour les assets fingerprintés (OK car nom change si contenu change)
+config.public_file_server.headers = {
+  'Cache-Control' => 'public, max-age=31536000, immutable',
+  'Expires' => 1.year.from_now.httpdate
+}
+
   # Ensures that a master key has been made available in ENV["RAILS_MASTER_KEY"], config/master.key, or an environment
   # key such as config/credentials/production.key. This key is used to decrypt credentials (and other encrypted files).
   # config.require_master_key = true
