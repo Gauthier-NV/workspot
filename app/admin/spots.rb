@@ -13,6 +13,8 @@ ActiveAdmin.register Spot do
       f.input :has_wifi
       f.input :has_power_outlets
       f.input :button_link
+      f.input :latitude
+      f.input :longitude
       f.input :tags, hint: "Ex: lumineux, silencieux..."
     end
 
@@ -20,7 +22,6 @@ ActiveAdmin.register Spot do
       f.input :image_url1, placeholder: "https://.../photo1.jpg"
       f.input :image_url2, placeholder: "https://.../photo2.jpg"
       f.input :image_url3, placeholder: "https://.../photo3.jpg"
-      f.input :image_url,  label: "Ancienne colonne (optionnel)"
     end
     f.actions
   end
