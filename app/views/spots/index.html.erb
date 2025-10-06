@@ -9,6 +9,24 @@
 
   <h3 id="spots-map">TOUS LES SPOTS DISPONIBLES :</h3>
 
+
+<!-- MAP -->
+<%# === HEAD : Mapbox uniquement sur cette page === %>
+<% content_for :mapbox_head do %>
+  <!-- Préconnexions pour réduire la latence -->
+  <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
+  <link rel="dns-prefetch" href="//api.mapbox.com">
+  <!-- CSS Mapbox non bloquante -->
+  <link rel="preload"
+        as="style"
+        href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css">
+  </noscript>
+<% end %>
+
+<%# === CONTENU === %>
 <!-- MAP -->
 <div class="map-container" aria-labelledby="spots-map" role="region">
   <div id="map"
@@ -17,8 +35,9 @@
        data-map-style-value="mapbox://styles/workspots/cmflemqjc007y01secq3x89ng"
        data-map-center-value="[2.3522,48.8566]"
        data-map-zoom-value="11.4"
-       tabindex="0" aria-label="Carte des spots">
-       </div>
+       tabindex="0"
+       aria-label="Carte des spots">
+  </div>
 </div>
 
 
@@ -264,15 +283,13 @@
 
 
 
-
-
     <!--  FOOTER -->
 
 
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-left">
-        <%= image_tag("logo-ws-white.png", alt: "Workspot Logo", class: "footer-logo") %>
+        <%= image_tag("logo-ws-white.webp", alt: "Workspot Logo", class: "footer-logo") %>
       </div>
 
       <div class="footer-center">
