@@ -204,8 +204,8 @@ export default class extends Controller {
     type: "geojson",
     data,
     cluster: true,
-    clusterMaxZoom: 18,
-    clusterRadius: 100,
+    clusterMaxZoom: 13,
+    clusterRadius: 70,
   });
 
   /* ---------- CLUSTERS (bleu unique, clean) ---------- */

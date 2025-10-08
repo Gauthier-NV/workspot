@@ -16,14 +16,14 @@
   padding: 0;                 /* padding géré dans .mp-body */
   border-radius: 8px;
   max-width: 320px;
-  background: #fff;
-  border: 1px solid rgba(17,24,39,0.06);
+  background: #ffffff;
+  border:  rgba(17, 24, 39, 0);
   box-shadow: 0 6px 16px rgba(17,24,39,.12); /* ombre plus légère = look épuré */
   overscroll-behavior: contain;
 }
 
 /* Masquer la pointe en mode mobile */
-.mapboxgl-popup.ws-popup.ws-popup--mobile .mapboxgl-popup-tip { display: none; }
+.mapboxgl-popup.ws-popup.ws-popup--mobile .mapboxgl-popup-tip { display: true; }
 
 /* Card interne */
 .map-popup { background: transparent; }
