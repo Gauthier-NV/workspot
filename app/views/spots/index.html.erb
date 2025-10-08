@@ -1,3 +1,20 @@
+<%# === HEAD : Mapbox uniquement sur cette page === %>
+<% content_for :mapbox_head do %>
+  <!-- Préconnexions pour réduire la latence -->
+  <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
+  <link rel="preconnect" href="https://events.mapbox.com" crossorigin> <!-- +++ AJOUT -->
+  <link rel="dns-prefetch" href="//api.mapbox.com">
+
+  <!-- CSS Mapbox non bloquante -->
+  <link rel="preload"
+        as="style"
+        href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css">
+  </noscript>
+<% end %>
+
 <div class="workspot-presentation">
 
   <h1><strong>Les meilleurs spots pour travailler</strong>,<br><em>partout, près de vous...</em></h1>
@@ -9,22 +26,6 @@
 
   <h3 id="spots-map">TOUS LES SPOTS DISPONIBLES :</h3>
 
-
-<!-- MAP -->
-<%# === HEAD : Mapbox uniquement sur cette page === %>
-<% content_for :mapbox_head do %>
-  <!-- Préconnexions pour réduire la latence -->
-  <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
-  <link rel="dns-prefetch" href="//api.mapbox.com">
-  <!-- CSS Mapbox non bloquante -->
-  <link rel="preload"
-        as="style"
-        href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css"
-        onload="this.onload=null;this.rel='stylesheet'">
-  <noscript>
-    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css">
-  </noscript>
-<% end %>
 
 <%# === CONTENU === %>
 <!-- MAP -->

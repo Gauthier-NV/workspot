@@ -1,29 +1,7 @@
 // app/javascript/controllers/map_controller.js
 import { Controller } from "@hotwired/stimulus";
 
-/* ---------- Lightweight UMD loader (no esm.sh) ---------- */
-const _loaded = new Set();
-function loadScriptOnce(src) {
-  return new Promise((resolve, reject) => {
-    if (window.mapboxgl) return resolve();
-    if (_loaded.has(src)) return resolve();
-    const s = document.createElement("script");
-    s.src = src;
-    s.defer = true;
-    s.onload = () => { _loaded.add(src); resolve(); };
-    s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
-function loadCssOnce(href) {
-  if (document.querySelector(`link[rel="stylesheet"][href="${href}"]`)) return;
-  const l = document.createElement("link");
-  l.rel = "stylesheet";
-  l.href = href;
-  document.head.appendChild(l);
-}
-
-/* ---------- Helpers ---------- */
+/* ---------- Helpers (inchangés) ---------- */
 const normalizeArray = (val) => {
   if (!val) return [];
   if (Array.isArray(val)) return val.filter(Boolean);
@@ -33,39 +11,41 @@ const normalizeArray = (val) => {
   }
   return [];
 };
+
 const toNum = (v) => {
   if (v == null || v === "") return NaN;
-  const s = String(v).replace(",", ".").trim();
-  const n = Number(s);
+  const n = Number(String(v).replace(",", ".").trim());
   return Number.isFinite(n) ? n : NaN;
 };
+
+const coordCache = new Map();
 const saneCoords = (lng, lat) => {
+  const key = `${lng},${lat}`;
+  if (coordCache.has(key)) return coordCache.get(key);
   let L = toNum(lng), A = toNum(lat);
   const looksLng = (x) => Math.abs(x) <= 180;
   const looksLat = (x) => Math.abs(x) <= 85;
-  if (!Number.isFinite(L) || !Number.isFinite(A)) return null;
-  if (!looksLng(L) || !looksLat(A)) {
-    if (looksLng(A) && looksLat(L)) [L, A] = [A, L]; // inversés
-  }
-  return looksLng(L) && looksLat(A) ? [L, A] : null;
+  if (!Number.isFinite(L) || !Number.isFinite(A)) { coordCache.set(key, null); return null; }
+  if (!looksLng(L) || !looksLat(A)) { if (looksLng(A) && looksLat(L)) [L, A] = [A, L]; }
+  const result = looksLng(L) && looksLat(A) ? [L, A] : null;
+  coordCache.set(key, result); return result;
 };
+
 async function chunkedForEach(items, fn, chunk = 200) {
   for (let i = 0; i < items.length; i += chunk) {
     items.slice(i, i + chunk).forEach(fn);
-    await new Promise((r) =>
-      window.requestIdleCallback ? requestIdleCallback(r) : setTimeout(r, 0)
-    );
+    await new Promise((r) => window.requestIdleCallback ? requestIdleCallback(r) : setTimeout(r, 0));
   }
 }
 const spotCoords = (s) => saneCoords(s.lng ?? s.longitude, s.lat ?? s.latitude);
 
-/* ---------- Mini Carousel ---------- */
+/* ---------- Mini Carousel (inchangé) ---------- */
 function buildMiniCarouselHTML(imageUrls, spotId) {
   const urls = (imageUrls || []).filter(Boolean).slice(0, 3);
   if (!urls.length) return "";
   const slides = urls.map((u, i) => `
     <div class="mpc-slide ${i === 0 ? "is-active" : ""}" data-index="${i}">
-      <img src="${u}" alt="Photo ${i + 1}" loading="lazy" decoding="async" />
+      <img src="${u}" alt="Photo ${i + 1}" loading="lazy" decoding="async" style="background:#f0f0f0;" />
     </div>`).join("");
   const arrows = urls.length > 1 ? `
     <button class="mpc-nav mpc-prev" aria-label="Précédent" data-dir="-1">
@@ -84,6 +64,7 @@ function buildMiniCarouselHTML(imageUrls, spotId) {
       ${arrows}${dots}
     </div>`;
 }
+
 function wireMiniCarousel(rootEl) {
   const car = rootEl.querySelector(".mp-carousel");
   if (!car) return;
@@ -106,7 +87,6 @@ function wireMiniCarousel(rootEl) {
     if (next) { e.stopPropagation(); go(active + 1); }
     if (dot)  { e.stopPropagation(); go(Number(dot.dataset.to || 0)); }
   });
-  // swipe mobile
   let startX = null;
   car.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; });
   car.addEventListener("touchend", (e) => {
@@ -117,10 +97,10 @@ function wireMiniCarousel(rootEl) {
   });
 }
 
-/* ---------- Stimulus Controller ---------- */
+/* ---------- Controller (amélioré) ---------- */
 export default class extends Controller {
   static values = {
-    style: String,
+    style: String,          // TON STYLE PERSONNALISÉ
     center: Array,
     zoom: Number,
     apiUrl: { type: String, default: "/spots.json" },
@@ -128,179 +108,251 @@ export default class extends Controller {
   static targets = ["loading"];
 
   connect() {
-    // Lazy: on attend que la carte soit dans le viewport
-    if (!("IntersectionObserver" in window)) { this._initWhenIdle(); return; }
+    if (!("IntersectionObserver" in window)) { this._init(); return; }
     this._io = new IntersectionObserver((entries) => {
-      if (entries.some((e) => e.isIntersecting)) {
-        this._io.disconnect();
-        this._initWhenIdle();
-      }
+      if (entries.some(e => e.isIntersecting)) { this._io.disconnect(); this._init(); }
     }, { rootMargin: "200px" });
     this._io.observe(this.element);
   }
 
-  _initWhenIdle() {
-    const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 0));
-    idle(() => this._init());
-  }
-
   async _init() {
-    try {
-      const token = document.querySelector('meta[name="mapbox-token"]')?.content;
-      if (!token) { console.error("Mapbox token manquant"); return; }
+    const token = document.querySelector('meta[name="mapbox-token"]')?.content;
+    if (!token) { console.error("Mapbox token manquant"); return; }
+    const mapboxgl = (await import("mapbox-gl")).default;
+    mapboxgl.accessToken = token;
+    this.mb = mapboxgl;
 
-      // Charger Mapbox GL (UMD) uniquement maintenant (pas d'esm.sh)
-      const ver = "v3.6.0"; // même version CSS & JS
-      loadCssOnce(`https://api.mapbox.com/mapbox-gl-js/${ver}/mapbox-gl.css`);
-      await loadScriptOnce(`https://api.mapbox.com/mapbox-gl-js/${ver}/mapbox-gl.js`);
-      const mapboxgl = window.mapboxgl;
-      if (!mapboxgl) throw new Error("Mapbox GL non chargé");
-      mapboxgl.accessToken = token;
-      this.mb = mapboxgl;
+    this.map = new mapboxgl.Map({
+      container: this.element,
+      style: this.styleValue, // ← TON STYLE
+      center: Array.isArray(this.centerValue) ? this.centerValue : [2.3522, 48.8566],
+      zoom: Number.isFinite(this.zoomValue) ? this.zoomValue : 11.4,
+      attributionControl: false,
+      dragRotate: false,
+      touchPitch: false,
+      pitchWithRotate: false,
+      boxZoom: false,
+      doubleClickZoom: false,
+      keyboard: false,
+      fadeDuration: 0,
+      maxBounds: [[-1.0, 47.8], [5.5, 50.5]],
+    });
 
-      // Config CPU-friendly
-      const defaultCenter = [2.3522, 48.8566];
-      const centerArr = Array.isArray(this.centerValue) ? this.centerValue : defaultCenter;
-      const center = saneCoords(centerArr[0], centerArr[1]) || defaultCenter;
+    this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+    this.map.addControl(new mapboxgl.GeolocateControl({
+      positionOptions: { enableHighAccuracy: true },
+      trackUserLocation: true,
+      showUserHeading: false,
+      fitBoundsOptions: { maxZoom: 14 },
+    }), "top-right");
+    this.map.addControl(new mapboxgl.FullscreenControl(), "top-right");
 
-      this.sourceId = "spots-source";
-      this.layerId = "spots-circles";
-      this.highlightLayerId = "spots-circles--selected";
-      this.selectedId = null;
-      this.popup = null;
+    this.map.on("load", () => {
+      this._loadAndRenderSpots();
+      const ph = this.element.querySelector(".map-placeholder");
+      if (ph) ph.remove();
+      this.map.on("moveend", () => this._loadSpotsForBounds());
+    });
 
-      this.map = new mapboxgl.Map({
-        container: this.element,
-        style: this.styleValue || "mapbox://styles/mapbox/light-v11",
-        center,
-        zoom: Number.isFinite(this.zoomValue) ? this.zoomValue : 11.4,
-        attributionControl: false,
-        dragRotate: false,
-        touchPitch: false,
-        pitchWithRotate: false,
-        antialias: false,
-        fadeDuration: 0,
-        collectResourceTiming: false,
-        trackResize: true,
-        maxBounds: [[-1.0, 47.8], [5.5, 50.5]],
-      });
+    this.map.on("click", (e) => {
+      const hits = this.map.queryRenderedFeatures(e.point, { layers: ["spots-circles","spots-circles--selected"].filter(l => this.map.getLayer(l)) });
+      if (!hits.length) this._clearSelection();
+    });
 
-      this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
-      this.map.addControl(new mapboxgl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-        showUserHeading: false,
-        fitBoundsOptions: { maxZoom: 14 },
-      }), "top-right");
-      this.map.addControl(new mapboxgl.FullscreenControl(), "top-right");
-
-      this.map.on("error", (e) => console.error("Mapbox error:", e?.error || e));
-      this.map.on("load", () => this._loadAndRenderSpots());
-
-      // clic “dans le vide” = clear (vérifie les deux calques)
-      this.map.on("click", (e) => {
-        const hasBase = !!this.map.getLayer?.(this.layerId);
-        const hasHL = !!this.map.getLayer?.(this.highlightLayerId);
-        if (!hasBase && !hasHL) return;
-        const layers = [hasBase ? this.layerId : null, hasHL ? this.highlightLayerId : null].filter(Boolean);
-        const hits = this.map.queryRenderedFeatures(e.point, { layers });
-        if (!hits.length) this._clearSelection();
-      });
-
-      this._fsHandler = () => this.map?.resize();
-      ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
-        .forEach((evt) => document.addEventListener(evt, this._fsHandler, { passive: true }));
-    } catch (e) {
-      console.error("[map] load error", e);
-    }
+    this._fsHandler = () => this.map?.resize();
+    ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
+      .forEach(evt => document.addEventListener(evt, this._fsHandler, { passive: true }));
   }
 
   async _loadAndRenderSpots() {
+    if (this.hasLoadingTarget) this.loadingTarget.style.display = "block";
     try {
-      if (this.hasLoadingTarget) this.loadingTarget.style.display = "block";
+      const bounds = this.map.getBounds();
+      const url = `${this.apiUrlValue}?bounds=${bounds.toArray().join(",")}`;
 
-      const res = await fetch(this.apiUrlValue, { credentials: "same-origin" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const spots = await res.json();
+      this._spotsAbort?.abort();
+      this._spotsAbort = new AbortController();
+      const signal = this._spotsAbort.signal;
 
-      const features = spots.map((s) => {
+      const cached = sessionStorage.getItem(`spotsData-${url}`);
+      const spots = cached
+        ? JSON.parse(cached)
+        : await (await fetch(url, { credentials: "same-origin", signal })).json();
+      if (!cached) sessionStorage.setItem(`spotsData-${url}`, JSON.stringify(spots));
+
+      const features = [];
+      await chunkedForEach(spots, (s) => {
         const coords = spotCoords(s);
-        if (!coords) { console.warn("Spot ignoré (coords invalides):", s.id, s.name); return null; }
+        if (!coords) return;
         const fid = String(s.id ?? s.slug ?? Math.random().toString(36).slice(2));
-        return {
-          type: "Feature",
-          id: fid,
+        features.push({
+          type: "Feature", id: fid,
           properties: {
-            __fid: fid,
-            name: s.name || "Café",
-            address: s.address || "",
-            description: s.description || "",
-            button_link: s.button_link || "",
-            tags: normalizeArray(s.tags),
-            image_urls: normalizeArray(s.image_urls),
+            __fid: fid, name: s.name || "Café", address: s.address || "",
+            description: s.description || "", button_link: s.button_link || "",
+            tags: normalizeArray(s.tags), image_urls: normalizeArray(s.image_urls),
           },
           geometry: { type: "Point", coordinates: coords },
-        };
-      }).filter(Boolean);
+        });
+      });
 
-      const data = { type: "FeatureCollection", features };
+      const data = { type: "FeatureCollection", features: features.filter(Boolean) };
+      const src = "spots-source";
 
-      if (this.map.getSource(this.sourceId)) {
-        this.map.getSource(this.sourceId).setData(data);
-      } else {
-        this.map.addSource(this.sourceId, { type: "geojson", data });
+     if (!this.map.getSource(src)) {
+  this.map.addSource(src, {
+    type: "geojson",
+    data,
+    cluster: true,
+    clusterMaxZoom: 18,
+    clusterRadius: 100,
+  });
 
-        if (!this.map.getLayer(this.layerId)) {
-          this.map.addLayer({
-            id: this.layerId,
-            type: "circle",
-            source: this.sourceId,
-            paint: {
-              "circle-color": "#2563EB",
-              "circle-radius": 6,
-              "circle-stroke-color": "#ffffff",
-              "circle-stroke-width": 1.5,
-              "circle-opacity": 0.96,
-            },
-          });
-        }
+  /* ---------- CLUSTERS (bleu unique, clean) ---------- */
+  /* ---------- CLUSTERS (bleu clair + plus de transparence) ---------- */
+this.map.addLayer({
+  id: "clusters",
+  type: "circle",
+  source: src,
+  filter: ["has", "point_count"],
+  paint: {
+    // Bleu plus clair (blue-400) ; tu peux essayer #93C5FD si tu veux encore plus clair
+    "circle-color": "#2f93eb",
+    // Plus transparent
+    "circle-opacity": 0.6,
+    // Tailles fluides inchangées
+   "circle-radius": [
+  "interpolate", ["exponential", 1.2], ["get","point_count"],
+  1,   24,
+  10,  30,
+  25,  36,
+  75,  44,
+  150, 54
+],
+    // Liseré blanc léger pour la lisibilité
 
-        if (!this.map.getLayer(this.highlightLayerId)) {
-          this.map.addLayer({
-            id: this.highlightLayerId,
-            type: "circle",
-            source: this.sourceId,
-            filter: ["==", ["to-string", ["get", "__fid"]], "__none__"],
-            paint: {
-              "circle-color": "#1E3A8A",
-              "circle-radius": 8,
-              "circle-stroke-color": "#ffffff",
-              "circle-stroke-width": 2.5,
-              "circle-opacity": 0.98,
-            },
-          });
-        }
+    // Très léger flou pour un rendu soft moderne
+    "circle-blur": 0.05
+  }
+});
 
-        try { this.map.moveLayer(this.highlightLayerId); } catch {}
-        this.map.on("mouseenter", this.layerId, () => { this.map.getCanvas().style.cursor = "pointer"; });
-        this.map.on("mouseleave", this.layerId, () => { this.map.getCanvas().style.cursor = ""; });
-        this.map.on("mouseenter", this.highlightLayerId, () => { this.map.getCanvas().style.cursor = "pointer"; });
-        this.map.on("mouseleave", this.highlightLayerId, () => { this.map.getCanvas().style.cursor = ""; });
-        this.map.on("click", this.layerId, (e) => this._onSpotClick(e));
-        this.map.on("click", this.highlightLayerId, (e) => this._onSpotClick(e));
+this.map.addLayer({
+  id: "cluster-count",
+  type: "symbol",
+  source: src,
+  filter: ["has", "point_count"],
+  layout: {
+  "text-field": ["get", "point_count_abbreviated"],
+  // +1 à +3 pts selon la taille du cluster
+  "text-size": ["interpolate", ["linear"], ["get","point_count"],
+    1, 13,     10, 14,     25, 15,     75, 16,     150, 18
+  ],
+  "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+  "text-allow-overlap": true,
+  "text-ignore-placement": true
+},
+paint: {
+  "text-color": "#FFFFFF",
+  // (recommandé) un halo léger pour rester lisible sur le bleu plus clair
+  "text-halo-width": 1.2,
+  "text-halo-blur": 0.2
+}});
+
+
+  /* ---------- Points individuels & sélection ---------- */
+  this.map.addLayer({
+    id: "spots-circles",
+    type: "circle",
+    source: src,
+    filter: ["!", ["has", "point_count"]],
+    paint: {
+      "circle-color": "#2563EB",
+      "circle-radius": 6,
+      "circle-stroke-color": "#ffffff",
+      "circle-stroke-width": 1.5,
+      "circle-opacity": 0.9
+    }
+  });
+
+  this.map.addLayer({
+    id: "spots-circles--selected",
+    type: "circle",
+    source: src,
+    filter: ["==", ["to-string", ["get", "__fid"]], "__none__"],
+    paint: {
+      "circle-color": "#1E3A8A",
+      "circle-radius": 8,
+      "circle-stroke-color": "#ffffff",
+      "circle-stroke-width": 2,
+      "circle-opacity": 1
+    }
+  }, "spots-circles");
+
+  // Interactions clusters
+  ["clusters", "cluster-count"].forEach((layerId) => {
+    this.map.on("click", layerId, (e) => this._zoomCluster(e));
+    this.map.on("mouseenter", layerId, () => this.map.getCanvas().style.cursor = "pointer");
+    this.map.on("mouseleave", layerId, () => this.map.getCanvas().style.cursor = "");
+  });
+
+  // Interactions points
+  this.map.on("mouseenter", "spots-circles", () => this.map.getCanvas().style.cursor = "pointer");
+  this.map.on("mouseleave", "spots-circles", () => this.map.getCanvas().style.cursor = "");
+  this.map.on("click", "spots-circles", (e) => this._onSpotClick(e));
+}
+
+
+      else {
+        this.map.getSource(src).setData(data);
       }
 
       if (features.length > 0) {
         const b = new this.mb.LngLatBounds();
-        await chunkedForEach(features, (f) => b.extend(f.geometry.coordinates), 200);
+        features.forEach(f => b.extend(f.geometry.coordinates));
         const same = b.getNorth() === b.getSouth() && b.getEast() === b.getWest();
         if (!same) this.map.fitBounds(b, { padding: 60, maxZoom: 14, duration: 450 });
       }
     } catch (err) {
-      console.error("Chargement spots échoué:", err);
+      if (err?.name !== "AbortError") console.error("Erreur chargement spots:", err);
     } finally {
       if (this.hasLoadingTarget) this.loadingTarget.style.display = "none";
     }
+  }
+
+  async _loadSpotsForBounds() {
+    const bounds = this.map.getBounds();
+    const url = `${this.apiUrlValue}?bounds=${bounds.toArray().join(",")}`;
+
+    this._spotsAbort?.abort();
+    this._spotsAbort = new AbortController();
+    const signal = this._spotsAbort.signal;
+
+    const res = await fetch(url, { credentials: "same-origin", signal }).catch((e)=>e);
+    if (!res || !res.ok) return;
+    const spots = await res.json();
+    const features = spots.map((s) => {
+      const coords = spotCoords(s);
+      if (!coords) return null;
+      return {
+        type: "Feature",
+        id: String(s.id ?? s.slug),
+        properties: { __fid: String(s.id ?? s.slug), ...s },
+        geometry: { type: "Point", coordinates: coords },
+      };
+    }).filter(Boolean);
+    this.map.getSource("spots-source").setData({ type: "FeatureCollection", features });
+  }
+
+  _zoomCluster(e) {
+    const feats = this.map.queryRenderedFeatures(e.point, {
+      layers: ["clusters", "cluster-count"]
+    });
+    if (!feats.length) return;
+    const clusterId = feats[0].properties.cluster_id;
+    this.map.getSource("spots-source").getClusterExpansionZoom(clusterId, (err, zoom) => {
+      if (err) return;
+      this.map.easeTo({ center: feats[0].geometry.coordinates, zoom });
+    });
   }
 
   _onSpotClick(e) {
@@ -308,25 +360,16 @@ export default class extends Controller {
     if (!f) return;
     const id = String(f.properties?.__fid);
     this._clearSelection();
-    this.selectedId = id;
-
-    if (this.map.getLayer(this.highlightLayerId)) {
-      this.map.setFilter(this.highlightLayerId, ["==", ["to-string", ["get", "__fid"]], String(id)]);
-    }
-
-    const c = f.geometry?.coordinates;
-    const coords = Array.isArray(c) ? saneCoords(c[0], c[1]) : null;
-    if (!coords) { console.warn("Coords invalides au clic:", c); return; }
-
-    this.map.flyTo({
-      center: coords,
+    this.map.setFilter("spots-circles--selected", ["==", ["to-string", ["get", "__fid"]], id]);
+    this.map.easeTo({
+      center: f.geometry.coordinates,
       zoom: this.map.getZoom(),
       offset: [0, 120],
-      speed: 1.1,
+      duration: 300,
+      easing: (t) => t,
       essential: true,
     });
-
-    this.openSpotPopup(coords, f.properties);
+    this.openSpotPopup(f.geometry.coordinates, f.properties);
   }
 
   openSpotPopup(coords, props) {
@@ -341,101 +384,110 @@ export default class extends Controller {
     const isMobile = window.matchMedia("(max-width: 480px)").matches;
     const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
 
+    const descId = `mp-desc-${props.__fid || Math.random().toString(36).slice(2)}`;
+
     const el = document.createElement("div");
     el.className = "map-popup";
-    const carouselHTML = buildMiniCarouselHTML(images, props.__fid || Math.random().toString(36).slice(2));
-
     el.innerHTML = `
-      ${carouselHTML}
+      ${buildMiniCarouselHTML(images, props.__fid)}
       <div class="mp-body">
         <h3 class="mp-title">${name}</h3>
         ${address ? `<p class="mp-address">${address}</p>` : ""}
-        ${tags.length ? `<div class="mp-tags">${tags.map((t) => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
-        ${
-          description
-            ? `<div class="mp-desc-wrapper">
-                 <div class="mp-desc" id="mp-desc" data-collapsed="true">${description}</div>
-                 <a href="#" class="mp-toggle-link" aria-expanded="false" aria-controls="mp-desc">Voir la suite</a>
-               </div>`
-            : ""
-        }
+        ${tags.length ? `<div class="mp-tags">${tags.map(t => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
+        ${description ? `
+          <div class="mp-desc-wrapper">
+            <div class="mp-desc" id="${descId}" data-collapsed="true" style="max-height:60px; overflow:hidden;">${description}</div>
+            <a href="#" class="mp-toggle-link" role="button" aria-controls="${descId}" aria-expanded="false" style="display:none;margin-top:6px;">Voir plus</a>
+          </div>` : ""}
         <div class="mp-actions">
           ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
           <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
         </div>
       </div>`;
 
-    el.addEventListener("click", (ev) => { if (ev.target.closest("a,button")) ev.stopPropagation(); });
-
-    const popupOpts = {
+    this.popup = new this.mb.Popup({
       anchor: "bottom",
       offset: [0, -14],
       closeButton: true,
       closeOnClick: false,
       maxWidth: isMobile ? "92vw" : "360px",
       className: `ws-popup ${isMobile ? "ws-popup--mobile" : ""}`,
-    };
-
-    this.popup = new this.mb.Popup(popupOpts)
-      .setLngLat(coords)
-      .setDOMContent(el)
-      .addTo(this.map);
-
-    this.popup.on("close", () => {
-      this.popup = null;
-      this._clearSelection();
-    });
+    }).setLngLat(coords).setDOMContent(el).addTo(this.map);
 
     wireMiniCarousel(el);
 
-    const descEl = el.querySelector(".mp-desc");
+    const descEl = el.querySelector(`#${CSS.escape(descId)}`);
     const toggleEl = el.querySelector(".mp-toggle-link");
+    let cleanupResize = null;
+
     if (descEl && toggleEl) {
+      const COLLAPSED_MAX = 60;
+
+      const collapse = () => {
+        descEl.style.maxHeight = `${COLLAPSED_MAX}px`;
+        descEl.setAttribute("data-collapsed", "true");
+        toggleEl.textContent = "Voir plus";
+        toggleEl.setAttribute("aria-expanded", "false");
+      };
+
+      const expand = () => {
+        descEl.style.maxHeight = "none";
+        descEl.setAttribute("data-collapsed", "false");
+        toggleEl.textContent = "Voir moins";
+        toggleEl.setAttribute("aria-expanded", "true");
+      };
+
       const measure = () => {
-        requestAnimationFrame(() => {
-          const needsToggle = descEl.scrollHeight > descEl.clientHeight + 2;
-          toggleEl.style.display = needsToggle ? "inline" : "none";
-        });
+        const wasNone = descEl.style.maxHeight === "none";
+        if (wasNone) descEl.style.maxHeight = `${COLLAPSED_MAX}px`;
+        const needs = descEl.scrollHeight > descEl.clientHeight + 1;
+        toggleEl.style.display = needs ? "inline" : "none";
+        if (wasNone) descEl.style.maxHeight = "none";
       };
-      measure();
-      const toggle = (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
+
+      const onToggle = (e) => {
+        e.preventDefault();
         const collapsed = descEl.getAttribute("data-collapsed") === "true";
-        if (collapsed) {
-          descEl.classList.add("expanded");
-          descEl.setAttribute("data-collapsed", "false");
-          toggleEl.textContent = "Réduire";
-          toggleEl.setAttribute("aria-expanded", "true");
-        } else {
-          descEl.classList.remove("expanded");
-          descEl.setAttribute("data-collapsed", "true");
-          toggleEl.textContent = "Voir la suite";
-          toggleEl.setAttribute("aria-expanded", "false");
-        }
-        measure();
+        if (collapsed) expand(); else collapse();
+        requestAnimationFrame(measure);
       };
-      toggleEl.addEventListener("click", toggle);
-      toggleEl.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") toggle(e); });
+
+      collapse();
+      requestAnimationFrame(measure);
+      setTimeout(measure, 60);
+
+      toggleEl.addEventListener("click", onToggle);
+      toggleEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") onToggle(e);
+      });
+
+      const onResize = () => measure();
+      window.addEventListener("resize", onResize, { passive: true });
+      cleanupResize = () => window.removeEventListener("resize", onResize, { passive: true });
     }
+
+    this.popup.on("close", () => {
+      cleanupResize?.();
+      this.popup = null;
+      this._clearSelection();
+    });
   }
 
   _clearSelection() {
-    this.selectedId = null;
-    if (this.map?.getLayer(this.highlightLayerId)) {
-      this.map.setFilter(this.highlightLayerId, ["==", ["to-string", ["get", "__fid"]], "__none__"]);
+    if (this.map?.getLayer("spots-circles--selected")) {
+      this.map.setFilter("spots-circles--selected", ["==", ["to-string", ["get", "__fid"]], "__none__"]);
     }
-    if (this.popup) { this.popup.remove(); this.popup = null; }
+    this.popup?.remove();
   }
 
   disconnect() {
-    this._io && this._io.disconnect();
-    if (this.map) { this.map.remove(); this.map = null; }
+    this._io?.disconnect();
+    this._spotsAbort?.abort();
+    this.map?.remove();
     if (this._fsHandler) {
       ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
-        .forEach((evt) => document.removeEventListener(evt, this._fsHandler));
-      this._fsHandler = null;
+        .forEach(evt => document.removeEventListener(evt, this._fsHandler));
     }
-    this.popup && this.popup.remove();
+    this.popup?.remove();
   }
 }
