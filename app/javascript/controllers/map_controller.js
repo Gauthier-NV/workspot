@@ -1,7 +1,6 @@
-
-// app/javascript/controllers/map_controller.js
 import { Controller } from "@hotwired/stimulus";
-/* ---------- Helpers ---------- */
+
+/* ---------- Helpers (optimisés) ---------- */
 const normalizeArray = (val) => {
   if (!val) return [];
   if (Array.isArray(val)) return val.filter(Boolean);
@@ -11,32 +10,45 @@ const normalizeArray = (val) => {
   }
   return [];
 };
+
 const toNum = (v) => {
   if (v == null || v === "") return NaN;
   const s = String(v).replace(",", ".").trim();
   const n = Number(s);
   return Number.isFinite(n) ? n : NaN;
 };
+
+// Cache pour saneCoords
+const coordCache = new Map();
 const saneCoords = (lng, lat) => {
+  const key = `${lng},${lat}`;
+  if (coordCache.has(key)) return coordCache.get(key);
   let L = toNum(lng), A = toNum(lat);
   const looksLng = (x) => Math.abs(x) <= 180;
   const looksLat = (x) => Math.abs(x) <= 85;
-  if (!Number.isFinite(L) || !Number.isFinite(A)) return null;
+  if (!Number.isFinite(L) || !Number.isFinite(A)) {
+    coordCache.set(key, null);
+    return null;
+  }
   if (!looksLng(L) || !looksLat(A)) {
     if (looksLng(A) && looksLat(L)) [L, A] = [A, L]; // inversés
   }
-  return looksLng(L) && looksLat(A) ? [L, A] : null;
+  const result = looksLng(L) && looksLat(A) ? [L, A] : null;
+  coordCache.set(key, result);
+  return result;
 };
+
 async function chunkedForEach(items, fn, chunk = 200) {
   for (let i = 0; i < items.length; i += chunk) {
-    items.slice(i, i + chunk).forEach(fn);
-    await new Promise((r) =>
-      window.requestIdleCallback ? requestIdleCallback(r) : setTimeout(r, 0)
-    );
+    const chunkItems = items.slice(i, i + chunk);
+    chunkItems.forEach(fn);
+    await new Promise((r) => window.requestIdleCallback ? requestIdleCallback(r) : setTimeout(r, 0));
   }
 }
+
 const spotCoords = (s) => saneCoords(s.lng ?? s.longitude, s.lat ?? s.latitude);
-/* ---------- Mini Carousel ---------- */
+
+/* ---------- Mini Carousel (inchangé) ---------- */
 function buildMiniCarouselHTML(imageUrls, spotId) {
   const urls = (imageUrls || []).filter(Boolean).slice(0, 3);
   if (!urls.length) return "";
@@ -61,6 +73,7 @@ function buildMiniCarouselHTML(imageUrls, spotId) {
       ${arrows}${dots}
     </div>`;
 }
+
 function wireMiniCarousel(rootEl) {
   const car = rootEl.querySelector(".mp-carousel");
   if (!car) return;
@@ -83,7 +96,6 @@ function wireMiniCarousel(rootEl) {
     if (next) { e.stopPropagation(); go(active + 1); }
     if (dot)  { e.stopPropagation(); go(Number(dot.dataset.to || 0)); }
   });
-  // swipe mobile
   let startX = null;
   car.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; });
   car.addEventListener("touchend", (e) => {
@@ -93,7 +105,8 @@ function wireMiniCarousel(rootEl) {
     startX = null;
   });
 }
-/* ---------- Controller ---------- */
+
+/* ---------- Controller (corrigé et optimisé) ---------- */
 export default class extends Controller {
   static values = {
     style: String,
@@ -113,6 +126,7 @@ export default class extends Controller {
     }, { rootMargin: "200px" });
     this._io.observe(this.element);
   }
+
   async _init() {
     const token = document.querySelector('meta[name="mapbox-token"]')?.content;
     if (!token) { console.error("Mapbox token manquant"); return; }
@@ -145,7 +159,6 @@ export default class extends Controller {
     this.map.addControl(new mapboxgl.FullscreenControl(), "top-right");
     this.map.on("error", (e) => console.error("Mapbox error:", e?.error || e));
     this.map.on("load", () => this._loadAndRenderSpots());
-    // clic “dans le vide” = clear (vérifie les deux calques)
     this.map.on("click", (e) => {
       const hasBase = !!this.map.getLayer?.(this.layerId);
       const hasHL = !!this.map.getLayer?.(this.highlightLayerId);
@@ -158,18 +171,25 @@ export default class extends Controller {
     ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
       .forEach((evt) => document.addEventListener(evt, this._fsHandler, { passive: true }));
   }
+
   async _loadAndRenderSpots() {
     try {
-      if (this.hasLoadingTarget) {
-        this.loadingTarget.style.display = "block";
+      if (this.hasLoadingTarget) this.loadingTarget.style.display = "block";
+      // Utilisation du cache
+      const cachedData = sessionStorage.getItem("spotsData");
+      let spots = [];
+      if (cachedData) {
+        spots = JSON.parse(cachedData);
+      } else {
+        const res = await fetch(this.apiUrlValue, { credentials: "same-origin" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        spots = await res.json();
+        sessionStorage.setItem("spotsData", JSON.stringify(spots));
       }
-      const res = await fetch(this.apiUrlValue, { credentials: "same-origin" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const spots = await res.json();
       const features = spots.map((s) => {
         const coords = spotCoords(s);
         if (!coords) { console.warn("Spot ignoré (coords invalides):", s.id, s.name); return null; }
-        const fid = String(s.id ?? s.slug ?? Math.random().toString(36).slice(2)); // toujours string
+        const fid = String(s.id ?? s.slug ?? Math.random().toString(36).slice(2));
         return {
           type: "Feature",
           id: fid,
@@ -190,7 +210,6 @@ export default class extends Controller {
         this.map.getSource(this.sourceId).setData(data);
       } else {
         this.map.addSource(this.sourceId, { type: "geojson", data });
-        // Vérification de l'existence des layers avant de les recréer
         if (!this.map.getLayer(this.layerId)) {
           this.map.addLayer({
             id: this.layerId,
@@ -218,11 +237,15 @@ export default class extends Controller {
               "circle-stroke-width": 2.5,
               "circle-opacity": 0.98,
             },
-          });
+          }, "spots-circles"); // Force l'ordre des layers
+          console.log("Layer highlight créé et placé au-dessus");
         }
-        // S'assurer que la surbrillance est au-dessus
-        try { this.map.moveLayer(this.highlightLayerId); } catch {}
-        // Curseur + clics sur LES DEUX calques
+        try {
+          this.map.moveLayer(this.highlightLayerId);
+          console.log("Layer highlight déplacé avec succès");
+        } catch (e) {
+          console.error("Erreur lors du déplacement du layer highlight :", e);
+        }
         this.map.on("mouseenter", this.layerId, () => { this.map.getCanvas().style.cursor = "pointer"; });
         this.map.on("mouseleave", this.layerId, () => { this.map.getCanvas().style.cursor = ""; });
         this.map.on("mouseenter", this.highlightLayerId, () => { this.map.getCanvas().style.cursor = "pointer"; });
@@ -239,19 +262,20 @@ export default class extends Controller {
     } catch (err) {
       console.error("Chargement spots échoué:", err);
     } finally {
-      if (this.hasLoadingTarget) {
-        this.loadingTarget.style.display = "none";
-      }
+      if (this.hasLoadingTarget) this.loadingTarget.style.display = "none";
     }
   }
+
   _onSpotClick(e) {
     const f = e.features?.[0];
     if (!f) return;
     const id = String(f.properties?.__fid);
+    console.log("ID sélectionné :", id); // Debug
     this._clearSelection();
     this.selectedId = id;
     if (this.map.getLayer(this.highlightLayerId)) {
       this.map.setFilter(this.highlightLayerId, ["==", ["to-string", ["get", "__fid"]], String(id)]);
+      console.log("Filtre appliqué pour l'ID :", id); // Debug
     }
     const c = f.geometry?.coordinates;
     const coords = Array.isArray(c) ? saneCoords(c[0], c[1]) : null;
@@ -347,13 +371,16 @@ export default class extends Controller {
       toggleEl.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") toggle(e); });
     }
   }
+
   _clearSelection() {
     this.selectedId = null;
-    if (this.map?.getLayer(this.highlightLayerId)) {
+    if (this.map.getLayer(this.highlightLayerId)) {
       this.map.setFilter(this.highlightLayerId, ["==", ["to-string", ["get", "__fid"]], "__none__"]);
+      console.log("Sélection effacée");
     }
     if (this.popup) { this.popup.remove(); this.popup = null; }
   }
+
   disconnect() {
     this._io && this._io.disconnect();
     if (this.map) { this.map.remove(); this.map = null; }

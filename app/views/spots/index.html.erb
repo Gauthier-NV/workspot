@@ -28,7 +28,7 @@
 
 <%# === CONTENU === %>
 <!-- MAP -->
-<div class="map-container" aria-labelledby="spots-map" role="region">
+<div class="map-container" aria-labelledby="spots-map" role="region" aria-label="Carte interactive des spots de travail">
   <div id="map"
        class="map"
        data-controller="map"
@@ -115,8 +115,8 @@
         <form action="<%= messages_path %>" method="post" class="contact-form">
         <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
 
-        <input type="text" name="message[name]" placeholder="Prénom Nom..." />
-        <input type="text" name="message[email]" placeholder="Ton adresse email..." />
+        <input type="text" name="message[name]" placeholder="Prénom Nom..." required />
+        <input type="text" name="message[email]" placeholder="Ton adresse email..." required/>
         <input type="text" name="message[establishment]" placeholder="Nom de l’établissement..." />
         <input type="text" name="message[address]" placeholder="Adresse de l’établissement..." />
 
