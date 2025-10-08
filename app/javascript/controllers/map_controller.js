@@ -1,6 +1,29 @@
+// app/javascript/controllers/map_controller.js
 import { Controller } from "@hotwired/stimulus";
 
-/* ---------- Helpers (optimisés) ---------- */
+/* ---------- Lightweight UMD loader (no esm.sh) ---------- */
+const _loaded = new Set();
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    if (window.mapboxgl) return resolve();
+    if (_loaded.has(src)) return resolve();
+    const s = document.createElement("script");
+    s.src = src;
+    s.defer = true;
+    s.onload = () => { _loaded.add(src); resolve(); };
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+function loadCssOnce(href) {
+  if (document.querySelector(`link[rel="stylesheet"][href="${href}"]`)) return;
+  const l = document.createElement("link");
+  l.rel = "stylesheet";
+  l.href = href;
+  document.head.appendChild(l);
+}
+
+/* ---------- Helpers ---------- */
 const normalizeArray = (val) => {
   if (!val) return [];
   if (Array.isArray(val)) return val.filter(Boolean);
@@ -10,45 +33,33 @@ const normalizeArray = (val) => {
   }
   return [];
 };
-
 const toNum = (v) => {
   if (v == null || v === "") return NaN;
   const s = String(v).replace(",", ".").trim();
   const n = Number(s);
   return Number.isFinite(n) ? n : NaN;
 };
-
-// Cache pour saneCoords
-const coordCache = new Map();
 const saneCoords = (lng, lat) => {
-  const key = `${lng},${lat}`;
-  if (coordCache.has(key)) return coordCache.get(key);
   let L = toNum(lng), A = toNum(lat);
   const looksLng = (x) => Math.abs(x) <= 180;
   const looksLat = (x) => Math.abs(x) <= 85;
-  if (!Number.isFinite(L) || !Number.isFinite(A)) {
-    coordCache.set(key, null);
-    return null;
-  }
+  if (!Number.isFinite(L) || !Number.isFinite(A)) return null;
   if (!looksLng(L) || !looksLat(A)) {
     if (looksLng(A) && looksLat(L)) [L, A] = [A, L]; // inversés
   }
-  const result = looksLng(L) && looksLat(A) ? [L, A] : null;
-  coordCache.set(key, result);
-  return result;
+  return looksLng(L) && looksLat(A) ? [L, A] : null;
 };
-
 async function chunkedForEach(items, fn, chunk = 200) {
   for (let i = 0; i < items.length; i += chunk) {
-    const chunkItems = items.slice(i, i + chunk);
-    chunkItems.forEach(fn);
-    await new Promise((r) => window.requestIdleCallback ? requestIdleCallback(r) : setTimeout(r, 0));
+    items.slice(i, i + chunk).forEach(fn);
+    await new Promise((r) =>
+      window.requestIdleCallback ? requestIdleCallback(r) : setTimeout(r, 0)
+    );
   }
 }
-
 const spotCoords = (s) => saneCoords(s.lng ?? s.longitude, s.lat ?? s.latitude);
 
-/* ---------- Mini Carousel (inchangé) ---------- */
+/* ---------- Mini Carousel ---------- */
 function buildMiniCarouselHTML(imageUrls, spotId) {
   const urls = (imageUrls || []).filter(Boolean).slice(0, 3);
   if (!urls.length) return "";
@@ -73,7 +84,6 @@ function buildMiniCarouselHTML(imageUrls, spotId) {
       ${arrows}${dots}
     </div>`;
 }
-
 function wireMiniCarousel(rootEl) {
   const car = rootEl.querySelector(".mp-carousel");
   if (!car) return;
@@ -96,6 +106,7 @@ function wireMiniCarousel(rootEl) {
     if (next) { e.stopPropagation(); go(active + 1); }
     if (dot)  { e.stopPropagation(); go(Number(dot.dataset.to || 0)); }
   });
+  // swipe mobile
   let startX = null;
   car.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; });
   car.addEventListener("touchend", (e) => {
@@ -106,7 +117,7 @@ function wireMiniCarousel(rootEl) {
   });
 }
 
-/* ---------- Controller (corrigé et optimisé) ---------- */
+/* ---------- Stimulus Controller ---------- */
 export default class extends Controller {
   static values = {
     style: String,
@@ -117,75 +128,101 @@ export default class extends Controller {
   static targets = ["loading"];
 
   connect() {
-    if (!("IntersectionObserver" in window)) { this._init(); return; }
+    // Lazy: on attend que la carte soit dans le viewport
+    if (!("IntersectionObserver" in window)) { this._initWhenIdle(); return; }
     this._io = new IntersectionObserver((entries) => {
       if (entries.some((e) => e.isIntersecting)) {
         this._io.disconnect();
-        this._init();
+        this._initWhenIdle();
       }
     }, { rootMargin: "200px" });
     this._io.observe(this.element);
   }
 
+  _initWhenIdle() {
+    const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 0));
+    idle(() => this._init());
+  }
+
   async _init() {
-    const token = document.querySelector('meta[name="mapbox-token"]')?.content;
-    if (!token) { console.error("Mapbox token manquant"); return; }
-    const mapboxgl = (await import("mapbox-gl")).default;
-    mapboxgl.accessToken = token;
-    this.mb = mapboxgl;
-    this.sourceId = "spots-source";
-    this.layerId = "spots-circles";
-    this.highlightLayerId = "spots-circles--selected";
-    this.selectedId = null;
-    this.popup = null;
-    this.map = new mapboxgl.Map({
-      container: this.element,
-      style: this.styleValue || "mapbox://styles/mapbox/light-v11",
-      center: Array.isArray(this.centerValue) ? this.centerValue : [2.3522, 48.8566],
-      zoom: Number.isFinite(this.zoomValue) ? this.zoomValue : 11.4,
-      attributionControl: false,
-      dragRotate: false,
-      touchPitch: false,
-      pitchWithRotate: false,
-      maxBounds: [[-1.0, 47.8], [5.5, 50.5]],
-    });
-    this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
-    this.map.addControl(new mapboxgl.GeolocateControl({
-      positionOptions: { enableHighAccuracy: true },
-      trackUserLocation: true,
-      showUserHeading: false,
-      fitBoundsOptions: { maxZoom: 14 },
-    }), "top-right");
-    this.map.addControl(new mapboxgl.FullscreenControl(), "top-right");
-    this.map.on("error", (e) => console.error("Mapbox error:", e?.error || e));
-    this.map.on("load", () => this._loadAndRenderSpots());
-    this.map.on("click", (e) => {
-      const hasBase = !!this.map.getLayer?.(this.layerId);
-      const hasHL = !!this.map.getLayer?.(this.highlightLayerId);
-      if (!hasBase && !hasHL) return;
-      const layers = [hasBase ? this.layerId : null, hasHL ? this.highlightLayerId : null].filter(Boolean);
-      const hits = this.map.queryRenderedFeatures(e.point, { layers });
-      if (!hits.length) this._clearSelection();
-    });
-    this._fsHandler = () => this.map?.resize();
-    ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
-      .forEach((evt) => document.addEventListener(evt, this._fsHandler, { passive: true }));
+    try {
+      const token = document.querySelector('meta[name="mapbox-token"]')?.content;
+      if (!token) { console.error("Mapbox token manquant"); return; }
+
+      // Charger Mapbox GL (UMD) uniquement maintenant (pas d'esm.sh)
+      const ver = "v3.6.0"; // même version CSS & JS
+      loadCssOnce(`https://api.mapbox.com/mapbox-gl-js/${ver}/mapbox-gl.css`);
+      await loadScriptOnce(`https://api.mapbox.com/mapbox-gl-js/${ver}/mapbox-gl.js`);
+      const mapboxgl = window.mapboxgl;
+      if (!mapboxgl) throw new Error("Mapbox GL non chargé");
+      mapboxgl.accessToken = token;
+      this.mb = mapboxgl;
+
+      // Config CPU-friendly
+      const defaultCenter = [2.3522, 48.8566];
+      const centerArr = Array.isArray(this.centerValue) ? this.centerValue : defaultCenter;
+      const center = saneCoords(centerArr[0], centerArr[1]) || defaultCenter;
+
+      this.sourceId = "spots-source";
+      this.layerId = "spots-circles";
+      this.highlightLayerId = "spots-circles--selected";
+      this.selectedId = null;
+      this.popup = null;
+
+      this.map = new mapboxgl.Map({
+        container: this.element,
+        style: this.styleValue || "mapbox://styles/mapbox/light-v11",
+        center,
+        zoom: Number.isFinite(this.zoomValue) ? this.zoomValue : 11.4,
+        attributionControl: false,
+        dragRotate: false,
+        touchPitch: false,
+        pitchWithRotate: false,
+        antialias: false,
+        fadeDuration: 0,
+        collectResourceTiming: false,
+        trackResize: true,
+        maxBounds: [[-1.0, 47.8], [5.5, 50.5]],
+      });
+
+      this.map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+      this.map.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: false,
+        fitBoundsOptions: { maxZoom: 14 },
+      }), "top-right");
+      this.map.addControl(new mapboxgl.FullscreenControl(), "top-right");
+
+      this.map.on("error", (e) => console.error("Mapbox error:", e?.error || e));
+      this.map.on("load", () => this._loadAndRenderSpots());
+
+      // clic “dans le vide” = clear (vérifie les deux calques)
+      this.map.on("click", (e) => {
+        const hasBase = !!this.map.getLayer?.(this.layerId);
+        const hasHL = !!this.map.getLayer?.(this.highlightLayerId);
+        if (!hasBase && !hasHL) return;
+        const layers = [hasBase ? this.layerId : null, hasHL ? this.highlightLayerId : null].filter(Boolean);
+        const hits = this.map.queryRenderedFeatures(e.point, { layers });
+        if (!hits.length) this._clearSelection();
+      });
+
+      this._fsHandler = () => this.map?.resize();
+      ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
+        .forEach((evt) => document.addEventListener(evt, this._fsHandler, { passive: true }));
+    } catch (e) {
+      console.error("[map] load error", e);
+    }
   }
 
   async _loadAndRenderSpots() {
     try {
       if (this.hasLoadingTarget) this.loadingTarget.style.display = "block";
-      // Utilisation du cache
-      const cachedData = sessionStorage.getItem("spotsData");
-      let spots = [];
-      if (cachedData) {
-        spots = JSON.parse(cachedData);
-      } else {
-        const res = await fetch(this.apiUrlValue, { credentials: "same-origin" });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        spots = await res.json();
-        sessionStorage.setItem("spotsData", JSON.stringify(spots));
-      }
+
+      const res = await fetch(this.apiUrlValue, { credentials: "same-origin" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const spots = await res.json();
+
       const features = spots.map((s) => {
         const coords = spotCoords(s);
         if (!coords) { console.warn("Spot ignoré (coords invalides):", s.id, s.name); return null; }
@@ -205,11 +242,14 @@ export default class extends Controller {
           geometry: { type: "Point", coordinates: coords },
         };
       }).filter(Boolean);
+
       const data = { type: "FeatureCollection", features };
+
       if (this.map.getSource(this.sourceId)) {
         this.map.getSource(this.sourceId).setData(data);
       } else {
         this.map.addSource(this.sourceId, { type: "geojson", data });
+
         if (!this.map.getLayer(this.layerId)) {
           this.map.addLayer({
             id: this.layerId,
@@ -224,6 +264,7 @@ export default class extends Controller {
             },
           });
         }
+
         if (!this.map.getLayer(this.highlightLayerId)) {
           this.map.addLayer({
             id: this.highlightLayerId,
@@ -237,15 +278,10 @@ export default class extends Controller {
               "circle-stroke-width": 2.5,
               "circle-opacity": 0.98,
             },
-          }, "spots-circles"); // Force l'ordre des layers
-          console.log("Layer highlight créé et placé au-dessus");
+          });
         }
-        try {
-          this.map.moveLayer(this.highlightLayerId);
-          console.log("Layer highlight déplacé avec succès");
-        } catch (e) {
-          console.error("Erreur lors du déplacement du layer highlight :", e);
-        }
+
+        try { this.map.moveLayer(this.highlightLayerId); } catch {}
         this.map.on("mouseenter", this.layerId, () => { this.map.getCanvas().style.cursor = "pointer"; });
         this.map.on("mouseleave", this.layerId, () => { this.map.getCanvas().style.cursor = ""; });
         this.map.on("mouseenter", this.highlightLayerId, () => { this.map.getCanvas().style.cursor = "pointer"; });
@@ -253,6 +289,7 @@ export default class extends Controller {
         this.map.on("click", this.layerId, (e) => this._onSpotClick(e));
         this.map.on("click", this.highlightLayerId, (e) => this._onSpotClick(e));
       }
+
       if (features.length > 0) {
         const b = new this.mb.LngLatBounds();
         await chunkedForEach(features, (f) => b.extend(f.geometry.coordinates), 200);
@@ -270,16 +307,17 @@ export default class extends Controller {
     const f = e.features?.[0];
     if (!f) return;
     const id = String(f.properties?.__fid);
-    console.log("ID sélectionné :", id); // Debug
     this._clearSelection();
     this.selectedId = id;
+
     if (this.map.getLayer(this.highlightLayerId)) {
       this.map.setFilter(this.highlightLayerId, ["==", ["to-string", ["get", "__fid"]], String(id)]);
-      console.log("Filtre appliqué pour l'ID :", id); // Debug
     }
+
     const c = f.geometry?.coordinates;
     const coords = Array.isArray(c) ? saneCoords(c[0], c[1]) : null;
     if (!coords) { console.warn("Coords invalides au clic:", c); return; }
+
     this.map.flyTo({
       center: coords,
       zoom: this.map.getZoom(),
@@ -287,11 +325,13 @@ export default class extends Controller {
       speed: 1.1,
       essential: true,
     });
+
     this.openSpotPopup(coords, f.properties);
   }
 
   openSpotPopup(coords, props) {
     if (this.popup) this.popup.remove();
+
     const name = props.name || "Café";
     const address = props.address || "";
     const description = props.description || "";
@@ -300,9 +340,11 @@ export default class extends Controller {
     const images = normalizeArray(props.image_urls);
     const isMobile = window.matchMedia("(max-width: 480px)").matches;
     const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
+
     const el = document.createElement("div");
     el.className = "map-popup";
     const carouselHTML = buildMiniCarouselHTML(images, props.__fid || Math.random().toString(36).slice(2));
+
     el.innerHTML = `
       ${carouselHTML}
       <div class="mp-body">
@@ -322,7 +364,9 @@ export default class extends Controller {
           <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
         </div>
       </div>`;
+
     el.addEventListener("click", (ev) => { if (ev.target.closest("a,button")) ev.stopPropagation(); });
+
     const popupOpts = {
       anchor: "bottom",
       offset: [0, -14],
@@ -331,15 +375,19 @@ export default class extends Controller {
       maxWidth: isMobile ? "92vw" : "360px",
       className: `ws-popup ${isMobile ? "ws-popup--mobile" : ""}`,
     };
+
     this.popup = new this.mb.Popup(popupOpts)
       .setLngLat(coords)
       .setDOMContent(el)
       .addTo(this.map);
+
     this.popup.on("close", () => {
       this.popup = null;
       this._clearSelection();
     });
+
     wireMiniCarousel(el);
+
     const descEl = el.querySelector(".mp-desc");
     const toggleEl = el.querySelector(".mp-toggle-link");
     if (descEl && toggleEl) {
@@ -374,9 +422,8 @@ export default class extends Controller {
 
   _clearSelection() {
     this.selectedId = null;
-    if (this.map.getLayer(this.highlightLayerId)) {
+    if (this.map?.getLayer(this.highlightLayerId)) {
       this.map.setFilter(this.highlightLayerId, ["==", ["to-string", ["get", "__fid"]], "__none__"]);
-      console.log("Sélection effacée");
     }
     if (this.popup) { this.popup.remove(); this.popup = null; }
   }
