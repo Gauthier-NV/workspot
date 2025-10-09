@@ -49,7 +49,8 @@ ActiveAdmin.register_page "Dashboard" do
               end
             end
           else
-            status_tag "Le modèle Like n'est pas encore disponible", :warning
+            status_tag :warning, label: "Le modèle Like n'est pas encore disponible"
+            status_tag :error,   label: "Colonne likes_count manquante (migration non appliquée ?)"
           end
         end
       end
@@ -67,7 +68,8 @@ ActiveAdmin.register_page "Dashboard" do
               column(:created_at)
             end
           else
-            status_tag "Colonne likes_count manquante (migration non appliquée ?)", :error
+            status_tag :warning, label: "Le modèle Like n'est pas encore disponible"
+            status_tag :error,   label: "Colonne likes_count manquante (migration non appliquée ?)"
           end
         end
       end
@@ -88,7 +90,8 @@ ActiveAdmin.register_page "Dashboard" do
               em "Aucun like sur la période."
             end
           else
-            status_tag "Le modèle Like n'est pas encore disponible", :warning
+            status_tag :warning, label: "Le modèle Like n'est pas encore disponible"
+            status_tag :error,   label: "Colonne likes_count manquante (migration non appliquée ?)"
           end
         end
       end
