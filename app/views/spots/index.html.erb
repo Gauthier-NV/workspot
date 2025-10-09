@@ -241,44 +241,6 @@
     </li>
   </ol>
 </div>
-
-
-    <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const isAndroid = /android/i.test(navigator.userAgent);
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-    if (!isMobile) return;
-
-    // ANDROID
-    if (isAndroid) {
-      let deferredPrompt;
-      const installButton = document.getElementById("install-button");
-
-      window.addEventListener("beforeinstallprompt", (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        installButton.style.display = "inline-block";
-
-        installButton.addEventListener("click", () => {
-          deferredPrompt.prompt();
-          deferredPrompt.userChoice.then((choiceResult) => {
-            deferredPrompt = null;
-          });
-        });
-      });
-    }
-
-    // iOS SAFARI
-    if (isIOS && isSafari) {
-      const iosBanner = document.getElementById("ios-instructions");
-      if (iosBanner) iosBanner.style.display = "block";
-    }
-  });
-</script>
-
   </div>
 </div>
 
