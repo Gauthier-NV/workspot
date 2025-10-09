@@ -1,6 +1,6 @@
-/* ============================================= */
-/* MAPBOX OVERRIDES — card compacte & lisible    */
-/* ============================================= */
+/* =============================================
+   MAPBOX OVERRIDES — card compacte & lisible
+   ============================================= */
 
 /* La taille/les coins se gèrent côté conteneur (.map-container) */
 .map {
@@ -17,13 +17,13 @@
   border-radius: 8px;
   max-width: 320px;
   background: #ffffff;
-  border:  rgba(17, 24, 39, 0);
+  border: none;               /* fix: bordure invalide -> none ou 1px solid transparent */
   box-shadow: 0 6px 16px rgba(17,24,39,.12); /* ombre plus légère = look épuré */
   overscroll-behavior: contain;
 }
 
-/* Masquer la pointe en mode mobile */
-.mapboxgl-popup.ws-popup.ws-popup--mobile .mapboxgl-popup-tip { display: true; }
+/* Masquer la pointe en mode mobile (fix: display: none) */
+.mapboxgl-popup.ws-popup.ws-popup--mobile .mapboxgl-popup-tip { display: none; }
 
 /* Card interne */
 .map-popup { background: transparent; }
@@ -33,7 +33,7 @@
 .mapboxgl-popup .mp-title {
   margin: 0;
   margin-block-start: 0;
-  margin-block-end: 4px;  // petit espace bas contrôlé
+  margin-block-end: 4px;  /* petit espace bas contrôlé */
 }
 
 /* Adresse (plus petite et compacte) */
@@ -49,7 +49,6 @@
   overflow: hidden;        /* coupe le surplus */
   white-space: normal;     /* autorise retour ligne */
   margin: 0 0 8px;
-
 }
 
 /* Tags */
@@ -58,24 +57,36 @@
 
 /* Description — source unique */
 .mapboxgl-popup.ws-popup .mp-desc,
-.mapboxgl-popup.ws-popup .mp-desc * { font-size: 13px; font-weight: 350; line-height: 1.5; color: #1f2937;text-align: justify;  text-align-last: left;     /* dernière ligne non étirée */
-  hyphens: auto;             /* césure autom. (Chrome/Firefox) */
-  -webkit-hyphens: auto;     /* césure autom. (Safari) */
-  overflow-wrap: break-word;   }
+.mapboxgl-popup.ws-popup .mp-desc * {
+  font-size: 13px; font-weight: 350; line-height: 1.5; color: #1f2937;
+  text-align: justify; text-align-last: left; /* dernière ligne non étirée */
+  hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word;
+}
 
 /* Tronquage + lien “Voir la suite” */
 .mp-desc-wrapper {
   display: grid;
-  gap: 8px;
-  margin-bottom: 10px; /* ⬅️ plus d’espace avant les boutons */
+  gap: 3px;
+  margin-bottom: 10px;
 }
 
-/* Par défaut : 2 lignes visibles (1 ligne: 1.5em / 3 lignes: 4.5em) */
-.mp-desc { max-height: 3em; overflow: hidden; position: relative; }
+/* 1 ligne visible (par défaut) */
+.mp-desc {
+  --mp-desc-lines: 2;           /* ✅ nombre de lignes visibles */
+  line-height: 1.5;             /* doit rester cohérent avec la suite */
+  max-height: calc(var(--mp-desc-lines) * 1.5em);
+  overflow: hidden;
+  position: relative;
+}
+
+/* dégradé en bas (hauteur = 1 ligne) */
 .mp-desc::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5em;
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 2rem;
   background: linear-gradient(to top, #fff, rgba(255,255,255,0));
 }
+
 .mp-desc.expanded { max-height: none; }
 .mp-desc.expanded::after { display: none; }
 
@@ -96,47 +107,28 @@
 .mp-primary:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; border-radius: 6px; }
 
 /* Actions */
-/* Conteneur des actions */
 .mp-actions {
   display: flex;
-  gap: 12px;          /* espace entre les boutons */
-  justify-content: flex-start; /* ou center/flex-start selon ton design */
-  margin-top: 12px;   /* espace au-dessus */
+  gap: 12px;
+  justify-content: flex-start;
+  margin-top: 12px;
 }
-
-/* Boutons de base */
 .mp-link, .mp-primary {
   text-decoration: none;
-  border-radius: 8px;      /* ⬅️ arrondis type pill */
-  padding: 6px 9px;         /* ⬅️ plus d’espace interne */
-  min-height: unset;         /* supprime la contrainte 40px */
-  font-size: 12px;           /* ⬅️ taille plus compacte */
+  border-radius: 8px;
+  padding: 6px 9px;
+  min-height: unset;
+  font-size: 12px;
   font-weight: 550;
   line-height: 1.3;
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
-
-/* Bouton secondaire (Infos) */
-.mp-link {
-  border: 1px solid #E5E7EB;
-  background: #fff;
-  color: #1f2a72;
-}
-.mp-link:hover {
-  background: #F9FAFB;
-}
-
-/* Bouton primaire (Itinéraire) */
-.mp-primary {
-  background: #2563EB;
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(37,99,235,.2);
-}
-.mp-primary:hover {
-  background: #1e3a8a;
-}
+.mp-link { border: 1px solid #E5E7EB; background: #fff; color: #1f2a72; }
+.mp-link:hover { background: #F9FAFB; }
+.mp-primary { background: #2563EB; color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,.2); }
+.mp-primary:hover { background: #1e3a8a; }
 
 /* Contrôles Mapbox */
 .mapboxgl-ctrl-top-right, .mapboxgl-ctrl-bottom-right { margin: 12px; }
@@ -149,9 +141,7 @@
 
 /* Mode mobile : largeur raisonnable + safe-area iOS */
 .mapboxgl-popup.ws-popup.ws-popup--mobile > .mapboxgl-popup-content {
-  width: 92vw;
-  max-width: 300px;
-  border-radius: 12px;
+  width: 92vw; max-width: 300px; border-radius: 12px;
   box-shadow: 0 6px 16px rgba(17,24,39,.14);
   padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
@@ -178,38 +168,24 @@
 /* Mini carousel compact (au-dessus du titre) */
 .mp-carousel {
   position: relative;
-  border-radius:  8px 8px 0 0;
+  border-radius: 8px 8px 0 0;
   overflow: hidden;
   height: 180px;
   background: #f3f4f6;
 }
-
-.mpc-viewport {
-  width: 100%; height: 100%;
-  position: relative;
-}
-
-.mpc-slide {
-  position: absolute; inset: 0;
-  opacity: 0; transition: opacity .22s ease;
-}
+.mpc-viewport { width: 100%; height: 100%; position: relative; }
+.mpc-slide { position: absolute; inset: 0; opacity: 0; transition: opacity .22s ease; }
 .mpc-slide.is-active { opacity: 1; }
-.mpc-slide img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
-}
-
+.mpc-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .mpc-nav {
   position: absolute; top: 50%; transform: translateY(-50%);
-  width: 28px; height: 28px; border-radius: 999px;
-  border: 0px solid rgba(253, 253, 253, 0.513);
+  width: 28px; height: 28px; border-radius: 999px; border: 0;
   background: rgba(255, 255, 255, 0.532);
-  display: grid; place-items: center;
-  cursor: pointer; padding: 0;
+  display: grid; place-items: center; cursor: pointer; padding: 0;
 }
 .mpc-prev { left: 6px; }
 .mpc-next { right: 6px; }
 .mpc-nav:hover { background: #ffffffc6; }
-
 .mpc-dots {
   position: absolute; left: 0; right: 0; bottom: 6px;
   display: flex; gap: 6px; justify-content: center;
@@ -221,10 +197,10 @@
 }
 .mpc-dot.is-active { background: #fff; }
 
-/* Dark mode */
+/* Dark mode carrousel */
 @media (prefers-color-scheme: dark) {
   .mp-carousel { background: #0f172a; }
-  .mpc-nav { background: rgba(15,23,42,.9); border-color: rgba(255,255,255,.14); color: #e5e7eb; }
+  .mpc-nav { background: rgba(15,23,42,.9); color: #e5e7eb; }
   .mpc-dot { background: rgba(255, 255, 255, 0.283); }
   .mpc-dot.is-active { background: #ffffffcb; }
 }
@@ -234,41 +210,135 @@
   .mp-carousel { height: 150px; }
 }
 
+/* ===========================
+   Vote UI — Clean & Minimal
+   =========================== */
 
-.mp-like {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid #E5E7EB;
-  background: #fff;
-  color: #111827;
+/* Contexte pour positionner le FAB en bas à droite de la popup */
+.mp-container { position: relative; }
+
+/* Ancre bottom-right */
+.mp-vote-wrap {
+  position: absolute;
+  right: 10px; bottom: 10px;
+  width: 48px; /* ancre verticale pour les 3 boutons */
+  display: grid; justify-items: center;
+  z-index: 2;
+  transition: opacity .15s ease;
+}
+.mp-vote-wrap.is-loading { opacity:.6; pointer-events:none; }
+
+/* FABs (coeur central, like au-dessus, dislike au-dessous) */
+.mp-vote-fab,
+.mp-vote-like-fab,
+.mp-vote-dislike-fab {
+  --fab-bg: rgba(255,255,255,.92);
+  --fab-border: rgba(0,0,0,.08);
+  --fab-fg: #0f172a;
+
+  width: 40px; height: 40px;
+  display: grid; place-items: center;
   border-radius: 9999px;
-  padding: 6px 10px;
-  font-size: 12px;
-  line-height: 1.2;
+  border: 1px solid var(--fab-border);
+  background: var(--fab-bg);
+  color: var(--fab-fg);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 14px rgba(0,0,0,.10);
   cursor: pointer;
-  transition: transform .08s ease, background .15s ease, border-color .15s ease;
-  user-select: none;
+
+  transition:
+    transform .12s ease,
+    background-color .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease,
+    opacity .12s ease;
+}
+.mp-vote-fab:hover,
+.mp-vote-like-fab:hover,
+.mp-vote-dislike-fab:hover { box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.mp-vote-fab:active,
+.mp-vote-like-fab:active,
+.mp-vote-dislike-fab:active { transform: translateY(1px) scale(.98); }
+
+/* Bouton central => superposition des 3 SVG */
+.mp-vote-fab { position: relative; }
+.mp-vote-icon { position: absolute; width: 22px; height: 22px; opacity: 0; transition: opacity .2s ease, transform .2s ease; }
+.mp-vote-icon svg { width: 100%; height: 100%; display: block; }
+.mp-vote-icon--default { opacity: 1; }
+.mp-vote-fab.is-liked .mp-vote-icon--default,
+.mp-vote-fab.is-disliked .mp-vote-icon--default { opacity: 0; }
+.mp-vote-fab.is-liked .mp-vote-icon--liked { opacity: 1; }
+.mp-vote-fab.is-disliked .mp-vote-icon--disliked { opacity: 1; }
+.mp-vote-fab:hover .mp-vote-icon { transform: scale(1.1); }
+
+/* États visuels sélection */
+.mp-vote-fab.is-liked {
+  --fab-bg: rgba(253, 242, 248, .95);   /* rose-50 */
+  --fab-border: #fda4af;                /* rose-300 */
+  --fab-fg: #be123c;                    /* rose-800 */
+}
+.mp-vote-fab.is-disliked {
+  --fab-bg: rgba(248, 250, 252, .95);   /* slate-50 */
+  --fab-border: #94a3b8;                /* slate-400 */
+  --fab-fg: #334155;                    /* slate-700 */
 }
 
-.mp-like:hover { background: #F9FAFB; }
-.mp-like:active { transform: translateY(1px) scale(0.99); }
-
-.mp-like .mp-like-icon { font-size: 14px; }
-.mp-like .mp-like-count { font-weight: 600; color: #374151; }
-
-.mp-like.is-liked {
-  border-color: #ff89b1;
-  background: #ffeaf1;
-  color: #9b1c47;
+/* Positions (menu fermé) : like/dislike masqués */
+.mp-vote-like-fab,
+.mp-vote-dislike-fab {
+  position: absolute; left: 0; right: 0; margin: 0 auto;
+  opacity: 0; pointer-events: none;
+  transform: translateY(0) scale(.9);
 }
-.mp-like.is-liked .mp-like-count { color: #9b1c47; }
+.mp-vote-like-fab   { bottom: 50px; }  /* au-dessus du central */
+.mp-vote-dislike-fab{ top:   50px; }  /* en dessous du central */
 
-.mp-like.is-loading { opacity: .6; pointer-events: none; }
+/* Ouverture : révèle les deux boutons ronds */
+.mp-vote-wrap.is-open .mp-vote-like-fab,
+.mp-vote-wrap.is-open .mp-vote-dislike-fab {
+  opacity: 1; pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
 
-/* Compact sur petit écran */
-@media (max-width: 480px) {
-  .mp-like { padding: 6px 9px; gap: 6px; }
-  .mp-like .mp-like-label { font-size: 12px; }
-  .mp-like .mp-like-count { font-size: 12px; }
+/* Feedback de sélection */
+.mp-vote-like-fab.is-active  { outline:1.5px solid #fb7185; background:#fff1f2; }
+.mp-vote-dislike-fab.is-active{ outline:1.5px solid #94a3b8; background:#f1f5f9; }
+
+/* Focus visible (a11y) */
+.mp-vote-fab:focus-visible,
+.mp-vote-like-fab:focus-visible,
+.mp-vote-dislike-fab:focus-visible {
+  outline: 2px solid #3b82f6; /* blue-500 */
+  outline-offset: 2px;
+  border-color: #93c5fd;      /* blue-300 */
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .mp-vote-fab,
+  .mp-vote-like-fab,
+  .mp-vote-dislike-fab {
+    --fab-bg: rgba(2,6,23,.70);
+    --fab-border: rgba(255,255,255,.12);
+    --fab-fg: #e5e7eb;
+    box-shadow: 0 8px 24px rgba(0,0,0,.45);
+  }
+  .mp-vote-like-fab.is-active   { background: rgba(251,113,133,.12); }
+  .mp-vote-dislike-fab.is-active{ background: rgba(148,163,184,.12); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .mp-vote-fab,
+  .mp-vote-like-fab,
+  .mp-vote-dislike-fab,
+  .mp-vote-icon { transition: none; }
+}
+
+/* Mobile tweaks */
+@media (max-width:480px){
+  .mp-vote-wrap { right:8px; bottom:8px; width:44px; }
+  .mp-vote-fab, .mp-vote-like-fab, .mp-vote-dislike-fab { width:44px; height:44px; }
+  .mp-vote-like-fab   { bottom: 52px; }
+  .mp-vote-dislike-fab{ top:    52px; }
 }
