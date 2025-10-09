@@ -233,3 +233,42 @@
 @media (max-width: 480px) {
   .mp-carousel { height: 150px; }
 }
+
+
+.mp-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #E5E7EB;
+  background: #fff;
+  color: #111827;
+  border-radius: 9999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: transform .08s ease, background .15s ease, border-color .15s ease;
+  user-select: none;
+}
+
+.mp-like:hover { background: #F9FAFB; }
+.mp-like:active { transform: translateY(1px) scale(0.99); }
+
+.mp-like .mp-like-icon { font-size: 14px; }
+.mp-like .mp-like-count { font-weight: 600; color: #374151; }
+
+.mp-like.is-liked {
+  border-color: #ff89b1;
+  background: #ffeaf1;
+  color: #9b1c47;
+}
+.mp-like.is-liked .mp-like-count { color: #9b1c47; }
+
+.mp-like.is-loading { opacity: .6; pointer-events: none; }
+
+/* Compact sur petit écran */
+@media (max-width: 480px) {
+  .mp-like { padding: 6px 9px; gap: 6px; }
+  .mp-like .mp-like-label { font-size: 12px; }
+  .mp-like .mp-like-count { font-size: 12px; }
+}

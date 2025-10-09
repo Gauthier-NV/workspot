@@ -1,7 +1,7 @@
 // app/javascript/controllers/map_controller.js
 import { Controller } from "@hotwired/stimulus";
 
-/* ---------- Helpers (inchangés) ---------- */
+/* ---------- Helpers ---------- */
 const normalizeArray = (val) => {
   if (!val) return [];
   if (Array.isArray(val)) return val.filter(Boolean);
@@ -39,7 +39,7 @@ async function chunkedForEach(items, fn, chunk = 200) {
 }
 const spotCoords = (s) => saneCoords(s.lng ?? s.longitude, s.lat ?? s.latitude);
 
-/* ---------- Mini Carousel (inchangé) ---------- */
+/* ---------- Mini Carousel ---------- */
 function buildMiniCarouselHTML(imageUrls, spotId) {
   const urls = (imageUrls || []).filter(Boolean).slice(0, 3);
   if (!urls.length) return "";
@@ -97,20 +97,50 @@ function wireMiniCarousel(rootEl) {
   });
 }
 
-/* ---------- Controller (amélioré) ---------- */
+/* ---------- Stimulus Controller ---------- */
 export default class extends Controller {
   static values = {
-    style: String,          // TON STYLE PERSONNALISÉ
+    style: String,
     center: Array,
     zoom: Number,
     apiUrl: { type: String, default: "/spots.json" },
   };
   static targets = ["loading"];
 
+  // --- Likes cache (anonyme) ---
+  likedSet = new Set();
+
+  async _bootstrapLikes() {
+    // 1) cache local (UX)
+    try {
+      const local = JSON.parse(localStorage.getItem("workspot_likes") || "[]");
+      local.forEach(id => this.likedSet.add(String(id)));
+    } catch {}
+    // 2) source serveur (/likes)
+    try {
+      const res = await fetch("/likes", { headers: { "Accept": "application/json" } });
+      if (res.ok) {
+        const data = await res.json();
+        (data.spot_ids || []).forEach(id => this.likedSet.add(String(id)));
+        localStorage.setItem("workspot_likes", JSON.stringify([...this.likedSet]));
+      }
+    } catch {}
+  }
+  _isLiked(spotId) { return this.likedSet.has(String(spotId)); }
+  _setLiked(spotId, liked) {
+    const id = String(spotId);
+    liked ? this.likedSet.add(id) : this.likedSet.delete(id);
+    try { localStorage.setItem("workspot_likes", JSON.stringify([...this.likedSet])); } catch {}
+  }
+
   connect() {
-    if (!("IntersectionObserver" in window)) { this._init(); return; }
+    if (!("IntersectionObserver" in window)) { this._bootstrapLikes(); this._init(); return; }
     this._io = new IntersectionObserver((entries) => {
-      if (entries.some(e => e.isIntersecting)) { this._io.disconnect(); this._init(); }
+      if (entries.some(e => e.isIntersecting)) {
+        this._io.disconnect();
+        this._bootstrapLikes();   // init likes cache
+        this._init();
+      }
     }, { rootMargin: "200px" });
     this._io.observe(this.element);
   }
@@ -124,7 +154,7 @@ export default class extends Controller {
 
     this.map = new mapboxgl.Map({
       container: this.element,
-      style: this.styleValue, // ← TON STYLE
+      style: this.styleValue,
       center: Array.isArray(this.centerValue) ? this.centerValue : [2.3522, 48.8566],
       zoom: Number.isFinite(this.zoomValue) ? this.zoomValue : 11.4,
       attributionControl: false,
@@ -155,7 +185,8 @@ export default class extends Controller {
     });
 
     this.map.on("click", (e) => {
-      const hits = this.map.queryRenderedFeatures(e.point, { layers: ["spots-circles","spots-circles--selected"].filter(l => this.map.getLayer(l)) });
+      const layers = ["spots-circles","spots-circles--selected"].filter(l => this.map.getLayer(l));
+      const hits = this.map.queryRenderedFeatures(e.point, { layers });
       if (!hits.length) this._clearSelection();
     });
 
@@ -188,9 +219,14 @@ export default class extends Controller {
         features.push({
           type: "Feature", id: fid,
           properties: {
-            __fid: fid, name: s.name || "Café", address: s.address || "",
-            description: s.description || "", button_link: s.button_link || "",
-            tags: normalizeArray(s.tags), image_urls: normalizeArray(s.image_urls),
+            __fid: fid,
+            name: s.name || "Café",
+            address: s.address || "",
+            description: s.description || "",
+            button_link: s.button_link || "",
+            tags: normalizeArray(s.tags),
+            image_urls: normalizeArray(s.image_urls),
+            likes_count: Number(s.likes_count ?? 0)
           },
           geometry: { type: "Point", coordinates: coords },
         });
@@ -199,110 +235,88 @@ export default class extends Controller {
       const data = { type: "FeatureCollection", features: features.filter(Boolean) };
       const src = "spots-source";
 
-     if (!this.map.getSource(src)) {
-  this.map.addSource(src, {
-    type: "geojson",
-    data,
-    cluster: true,
-    clusterMaxZoom: 13,
-    clusterRadius: 70,
-  });
+      if (!this.map.getSource(src)) {
+        this.map.addSource(src, {
+          type: "geojson",
+          data,
+          cluster: true,
+          clusterMaxZoom: 13,
+          clusterRadius: 70,
+        });
 
-  /* ---------- CLUSTERS (bleu unique, clean) ---------- */
-  /* ---------- CLUSTERS (bleu clair + plus de transparence) ---------- */
-this.map.addLayer({
-  id: "clusters",
-  type: "circle",
-  source: src,
-  filter: ["has", "point_count"],
-  paint: {
-    // Bleu plus clair (blue-400) ; tu peux essayer #93C5FD si tu veux encore plus clair
-    "circle-color": "#2f93eb",
-    // Plus transparent
-    "circle-opacity": 0.6,
-    // Tailles fluides inchangées
-   "circle-radius": [
-  "interpolate", ["exponential", 1.2], ["get","point_count"],
-  1,   24,
-  10,  30,
-  25,  36,
-  75,  44,
-  150, 54
-],
-    // Liseré blanc léger pour la lisibilité
+        /* ---------- CLUSTERS ---------- */
+        this.map.addLayer({
+          id: "clusters",
+          type: "circle",
+          source: src,
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-color": "#2f93eb",
+            "circle-opacity": 0.6,
+            "circle-radius": [
+              "interpolate", ["exponential", 1.2], ["get","point_count"],
+              1, 24, 10, 30, 25, 36, 75, 44, 150, 54
+            ],
+            "circle-blur": 0.05
+          }
+        });
 
-    // Très léger flou pour un rendu soft moderne
-    "circle-blur": 0.05
-  }
-});
+        this.map.addLayer({
+          id: "cluster-count",
+          type: "symbol",
+          source: src,
+          filter: ["has", "point_count"],
+          layout: {
+            "text-field": ["get", "point_count_abbreviated"],
+            "text-size": ["interpolate", ["linear"], ["get","point_count"], 1, 13, 10, 14, 25, 15, 75, 16, 150, 18],
+            "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+            "text-allow-overlap": true,
+            "text-ignore-placement": true
+          },
+          paint: { "text-color": "#FFFFFF", "text-halo-width": 1.2, "text-halo-blur": 0.2 }
+        });
 
-this.map.addLayer({
-  id: "cluster-count",
-  type: "symbol",
-  source: src,
-  filter: ["has", "point_count"],
-  layout: {
-  "text-field": ["get", "point_count_abbreviated"],
-  // +1 à +3 pts selon la taille du cluster
-  "text-size": ["interpolate", ["linear"], ["get","point_count"],
-    1, 13,     10, 14,     25, 15,     75, 16,     150, 18
-  ],
-  "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-  "text-allow-overlap": true,
-  "text-ignore-placement": true
-},
-paint: {
-  "text-color": "#FFFFFF",
-  // (recommandé) un halo léger pour rester lisible sur le bleu plus clair
-  "text-halo-width": 1.2,
-  "text-halo-blur": 0.2
-}});
+        /* ---------- Points ---------- */
+        this.map.addLayer({
+          id: "spots-circles",
+          type: "circle",
+          source: src,
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            "circle-color": "#2563EB",
+            "circle-radius": 6,
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": 1.5,
+            "circle-opacity": 0.9
+          }
+        });
 
+        this.map.addLayer({
+          id: "spots-circles--selected",
+          type: "circle",
+          source: src,
+          filter: ["==", ["to-string", ["get", "__fid"]], "__none__"],
+          paint: {
+            "circle-color": "#1E3A8A",
+            "circle-radius": 8,
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": 2,
+            "circle-opacity": 1
+          }
+        }, "spots-circles");
 
-  /* ---------- Points individuels & sélection ---------- */
-  this.map.addLayer({
-    id: "spots-circles",
-    type: "circle",
-    source: src,
-    filter: ["!", ["has", "point_count"]],
-    paint: {
-      "circle-color": "#2563EB",
-      "circle-radius": 6,
-      "circle-stroke-color": "#ffffff",
-      "circle-stroke-width": 1.5,
-      "circle-opacity": 0.9
-    }
-  });
+        // Interactions clusters
+        ["clusters", "cluster-count"].forEach((layerId) => {
+          this.map.on("click", layerId, (e) => this._zoomCluster(e));
+          this.map.on("mouseenter", layerId, () => this.map.getCanvas().style.cursor = "pointer");
+          this.map.on("mouseleave", layerId, () => this.map.getCanvas().style.cursor = "");
+        });
 
-  this.map.addLayer({
-    id: "spots-circles--selected",
-    type: "circle",
-    source: src,
-    filter: ["==", ["to-string", ["get", "__fid"]], "__none__"],
-    paint: {
-      "circle-color": "#1E3A8A",
-      "circle-radius": 8,
-      "circle-stroke-color": "#ffffff",
-      "circle-stroke-width": 2,
-      "circle-opacity": 1
-    }
-  }, "spots-circles");
-
-  // Interactions clusters
-  ["clusters", "cluster-count"].forEach((layerId) => {
-    this.map.on("click", layerId, (e) => this._zoomCluster(e));
-    this.map.on("mouseenter", layerId, () => this.map.getCanvas().style.cursor = "pointer");
-    this.map.on("mouseleave", layerId, () => this.map.getCanvas().style.cursor = "");
-  });
-
-  // Interactions points
-  this.map.on("mouseenter", "spots-circles", () => this.map.getCanvas().style.cursor = "pointer");
-  this.map.on("mouseleave", "spots-circles", () => this.map.getCanvas().style.cursor = "");
-  this.map.on("click", "spots-circles", (e) => this._onSpotClick(e));
-}
-
-
-      else {
+        // Interactions points
+        this.map.on("mouseenter", "spots-circles", () => this.map.getCanvas().style.cursor = "pointer");
+        this.map.on("mouseleave", "spots-circles", () => this.map.getCanvas().style.cursor = "");
+        this.map.on("click", "spots-circles", (e) => this._onSpotClick(e));
+      } else {
         this.map.getSource(src).setData(data);
       }
 
@@ -330,23 +344,32 @@ paint: {
     const res = await fetch(url, { credentials: "same-origin", signal }).catch((e)=>e);
     if (!res || !res.ok) return;
     const spots = await res.json();
+
     const features = spots.map((s) => {
       const coords = spotCoords(s);
       if (!coords) return null;
       return {
         type: "Feature",
         id: String(s.id ?? s.slug),
-        properties: { __fid: String(s.id ?? s.slug), ...s },
+        properties: {
+          __fid: String(s.id ?? s.slug),
+          name: s.name,
+          address: s.address,
+          description: s.description,
+          button_link: s.button_link,
+          tags: normalizeArray(s.tags),
+          image_urls: normalizeArray(s.image_urls),
+          likes_count: Number(s.likes_count ?? 0)
+        },
         geometry: { type: "Point", coordinates: coords },
       };
     }).filter(Boolean);
+
     this.map.getSource("spots-source").setData({ type: "FeatureCollection", features });
   }
 
   _zoomCluster(e) {
-    const feats = this.map.queryRenderedFeatures(e.point, {
-      layers: ["clusters", "cluster-count"]
-    });
+    const feats = this.map.queryRenderedFeatures(e.point, { layers: ["clusters", "cluster-count"] });
     if (!feats.length) return;
     const clusterId = feats[0].properties.cluster_id;
     this.map.getSource("spots-source").getClusterExpansionZoom(clusterId, (err, zoom) => {
@@ -372,6 +395,37 @@ paint: {
     this.openSpotPopup(f.geometry.coordinates, f.properties);
   }
 
+  async _toggleLike(spotId, btnEl) {
+    const token = document.querySelector('meta[name="csrf-token"]')?.content;
+    const liked = this._isLiked(spotId);
+    const method = liked ? "DELETE" : "POST";
+    const url = `/spots/${spotId}/like`;
+
+    btnEl.classList.add("is-loading");
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "X-CSRF-Token": token, "Accept": "application/json" }
+      });
+      if (!res.ok) return;
+
+      const data = await res.json().catch(() => ({}));
+      this._setLiked(spotId, !liked);
+
+      const countEl = btnEl.querySelector(".mp-like-count");
+      const iconEl  = btnEl.querySelector(".mp-like-icon");
+      const labelEl = btnEl.querySelector(".mp-like-label");
+
+      if (countEl && data.likes_count != null) countEl.textContent = data.likes_count;
+      btnEl.classList.toggle("is-liked", !liked);
+      btnEl.setAttribute("aria-pressed", String(!liked));
+      if (iconEl)  iconEl.textContent  = !liked ? "❤️" : "♡";
+      if (labelEl) labelEl.textContent = !liked ? "Je n’aime plus" : "J’aime";
+    } finally {
+      btnEl.classList.remove("is-loading");
+    }
+  }
+
   openSpotPopup(coords, props) {
     if (this.popup) this.popup.remove();
 
@@ -385,6 +439,9 @@ paint: {
     const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
 
     const descId = `mp-desc-${props.__fid || Math.random().toString(36).slice(2)}`;
+    const spotId = props.__fid;
+    const initialLiked = this._isLiked(spotId);
+    const initialCount = Number(props.likes_count ?? 0);
 
     const el = document.createElement("div");
     el.className = "map-popup";
@@ -400,6 +457,11 @@ paint: {
             <a href="#" class="mp-toggle-link" role="button" aria-controls="${descId}" aria-expanded="false" style="display:none;margin-top:6px;">Voir plus</a>
           </div>` : ""}
         <div class="mp-actions">
+          <button class="mp-like ${initialLiked ? "is-liked" : ""}" type="button" data-spot-id="${spotId}" aria-pressed="${initialLiked}">
+            <span class="mp-like-icon" aria-hidden="true">${initialLiked ? "❤️" : "♡"}</span>
+            <span class="mp-like-label">${initialLiked ? "Je n’aime plus" : "J’aime"}</span>
+            <span class="mp-like-count">${initialCount}</span>
+          </button>
           ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
           <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
         </div>
@@ -416,6 +478,7 @@ paint: {
 
     wireMiniCarousel(el);
 
+    // Toggle "voir plus"
     const descEl = el.querySelector(`#${CSS.escape(descId)}`);
     const toggleEl = el.querySelector(".mp-toggle-link");
     let cleanupResize = null;
@@ -464,6 +527,16 @@ paint: {
       const onResize = () => measure();
       window.addEventListener("resize", onResize, { passive: true });
       cleanupResize = () => window.removeEventListener("resize", onResize, { passive: true });
+    }
+
+    // Like button wiring
+    const likeBtn = el.querySelector(".mp-like");
+    if (likeBtn) {
+      likeBtn.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        const sid = likeBtn.getAttribute("data-spot-id");
+        this._toggleLike(sid, likeBtn);
+      }, { passive: false });
     }
 
     this.popup.on("close", () => {

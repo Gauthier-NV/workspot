@@ -1,4 +1,6 @@
 class Spot < ApplicationRecord
+  has_many :likes, dependent: :destroy
+
   TAGS = %w[lumineux service_continu team_friendly silencieux comfortable].freeze
 
   # --- Ransack allow-list ---
@@ -7,14 +9,20 @@ class Spot < ApplicationRecord
       id name description address arrondissement
       has_wifi has_power_outlets
       latitude longitude image_url image_url1 image_url2 image_url3 button_link
-      tags created_at updated_at
+      tags likes_count created_at updated_at
     ]
   end
 
-  # --- Validation URL (bouton) ---
-  validates :button_link, format: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true
+  def self.ransackable_associations(_auth_object = nil)
+    [] # pas besoin d’exposer :likes ici pour l’instant
+  end
 
-  # --- Validation URLs images (optionnel mais utile) ---
+  def self.ransackable_scopes(_auth_object = nil)
+    %i[tagged_with tagged_any]
+  end
+
+  # --- Validations URL ---
+  validates :button_link, format: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true
   validates :image_url1, :image_url2, :image_url3,
            format: URI::DEFAULT_PARSER.make_regexp(%w[http https]),
            allow_blank: true
@@ -23,18 +31,6 @@ class Spot < ApplicationRecord
   def image_urls
     [image_url1, image_url2, image_url3, image_url].compact_blank.uniq.first(3)
   end
-
-  def self.ransackable_associations(_auth_object = nil)
-    []
-  end
-
-  # Expose tes scopes à Ransack (pour pouvoir faire q[tagged_with]=..., q[tagged_any][]=...)
-  def self.ransackable_scopes(_auth_object = nil)
-    %i[tagged_with tagged_any]
-  end
-
-  # --- Validation URL ---
-  validates :button_link, format: URI::DEFAULT_PARSER.make_regexp(%w[http https]), allow_blank: true
 
   # --- Helpers tags (stockage CSV dans :tags) ---
   def tags_list
@@ -49,7 +45,7 @@ class Spot < ApplicationRecord
 
   def has_tag?(slug) = tags_list.include?(normalize_tag(slug))
 
-  # --- Scopes utilisables par Ransack ---
+  # --- Scopes tags (Ransack) ---
   scope :tagged_with, ->(tag) {
     t = tag.to_s.strip.downcase.gsub(/[\s-]+/, "_")
     where("(',' || tags || ',') LIKE ?", "%,#{t},%")
@@ -59,6 +55,14 @@ class Spot < ApplicationRecord
     ts = Array(tag_list).map { |t| t.to_s.strip.downcase.gsub(/[\s-]+/, "_") }.uniq
     ts.empty? ? all : where(ts.map { "(',' || tags || ',') LIKE ?" }.join(" OR "), *ts.map { |t| "%,#{t},%" })
   }
+
+  # --- Likes: helpers (optionnel) ---
+  scope :popular, -> { order(likes_count: :desc) }
+
+  def liked_by_visitor?(visitor_id)
+    return false if visitor_id.blank?
+    likes.exists?(visitor_id: visitor_id)
+  end
 
   private
 
