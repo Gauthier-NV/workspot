@@ -98,7 +98,7 @@ $space-7: 4rem;     // 64px
   h2#spots-map { text-transform: none; letter-spacing: 0; }
 
   h3 {
-    margin-top: $space-5; font-size: 1.2rem; color: $blue-electric;
+    margin-top: $space-5; margin-bottom: $space-3; font-size: 1.2rem; color: $blue-electric;
     text-transform: uppercase; letter-spacing: .5px;
   }
 
@@ -291,6 +291,7 @@ $space-7: 4rem;     // 64px
   margin-block: $space-4 $space-5;
   padding-left: 0px;
   padding-right: 0px;
+  margin-top: 0px;
 }
 
 .map {
@@ -471,7 +472,7 @@ $space-7: 4rem;     // 64px
     .pact .rules { flex-direction: column; gap: $space-3; }
     .pact .rule  { width: 100%; }
     h2 { font-size: 1.5rem; margin: $space-4 0 $space-2; }
-    h3 { font-size: 1rem; margin-top: $space-4; }
+    h3 { font-size: 1rem; margin-top: $space-4; margin-bottom: $space-3;}
     p  { font-size: .95rem; }
   }
 
