@@ -347,9 +347,8 @@
    Bloque le scroll vertical UNIQUEMENT en mobile
    ======================================= */
 @media (max-width: 480px) {
-  .mapboxgl-popup.ws-popup.ws-popup--mobile > .mapboxgl-popup-content {
-    overflow: hidden !important;        /* ✅ empêche le scroll vertical */
-  }
+
+
 
   .mapboxgl-popup.ws-popup.ws-popup--mobile .mp-body {
     overflow: hidden !important;        /* ✅ empêche le scroll du texte */
