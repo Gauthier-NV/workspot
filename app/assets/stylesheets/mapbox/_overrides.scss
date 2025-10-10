@@ -34,6 +34,7 @@
   margin: 0;
   margin-block-start: 0;
   margin-block-end: 4px;  /* petit espace bas contrôlé */
+  font-size: 16px;
 }
 
 /* Adresse (plus petite et compacte) */
@@ -143,7 +144,6 @@
 .mapboxgl-popup.ws-popup.ws-popup--mobile > .mapboxgl-popup-content {
   width: 92vw; max-width: 300px; border-radius: 12px;
   box-shadow: 0 6px 16px rgba(17,24,39,.14);
-  padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
 .mapboxgl-popup.ws-popup.ws-popup--mobile .mp-body {
   padding: 14px 16px 16px;
@@ -162,7 +162,7 @@
   .mp-tag { background: #111827; color: #e5e7eb; }
   .mp-link { background: #0b111e; border-color: #334155; color: #93c5fd; }
   .mp-primary { background: #3b82f6; color: #0b111e; }
-  .mp-desc::after { background: linear-gradient(to top, #0b111e, rgba(11,17,30,0)); }
+  .mp-desc::after { background: linear-gradient(to top, #e5e7eb, #e5e7eb); }
 }
 
 /* Mini carousel compact (au-dessus du titre) */
@@ -337,8 +337,34 @@
 
 /* Mobile tweaks */
 @media (max-width:480px){
-  .mp-vote-wrap { right:8px; bottom:8px; width:44px; }
-  .mp-vote-fab, .mp-vote-like-fab, .mp-vote-dislike-fab { width:44px; height:44px; }
+  .mp-vote-wrap { right:8px; bottom:8px; width:40px; }
+  .mp-vote-fab, .mp-vote-like-fab, .mp-vote-dislike-fab { width:40px; height:40px; }
   .mp-vote-like-fab   { bottom: 52px; }
   .mp-vote-dislike-fab{ top:    52px; }
+}
+
+/* =======================================
+   Bloque le scroll vertical UNIQUEMENT en mobile
+   ======================================= */
+@media (max-width: 480px) {
+  .mapboxgl-popup.ws-popup.ws-popup--mobile > .mapboxgl-popup-content {
+    overflow: hidden !important;        /* ✅ empêche le scroll vertical */
+  }
+
+  .mapboxgl-popup.ws-popup.ws-popup--mobile .mp-body {
+    overflow: hidden !important;        /* ✅ empêche le scroll du texte */
+    max-height: none !important;        /* supprime la hauteur forcée */
+    -webkit-overflow-scrolling: auto;   /* désactive l’inertie iOS */
+    touch-action: none;                 /* empêche le “pan-y” */
+  }
+
+  /* Autoriser uniquement le scroll horizontal du carrousel */
+  .mp-carousel {
+    touch-action: pan-x !important;     /* swipe horizontal OK */
+  }
+
+  /* Facultatif : masque la scrollbar mobile si elle persiste */
+  .mapboxgl-popup.ws-popup.ws-popup--mobile > .mapboxgl-popup-content::-webkit-scrollbar {
+    display: none;
+  }
 }
