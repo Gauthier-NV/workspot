@@ -2,6 +2,79 @@
    MAPBOX OVERRIDES — card compacte & lisible
    ============================================= */
 
+/* ====== Shell overlay (sidebar au-dessus de la carte) ====== */
+.map-shell {
+  position: relative;
+  width: 100%;
+  height: clamp(0px, 78vh, 820px);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(17,24,39,.12);
+}
+
+/* La carte occupe tout l’espace */
+.map-shell .map {
+  position: absolute;
+  inset: 0;  /* top:0; right:0; bottom:0; left:0 */
+  width: 100%;
+  height: 100%;
+}
+
+/* Panneau latéral (overlay, caché par défaut) */
+.map-sidebar {
+  position: absolute;
+  top: 0;           /* ✅ collé en haut */
+  left: 0;          /* ✅ collé à gauche */
+  bottom: 0;        /* ✅ toute la hauteur */
+  width: 380px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;   /* bord côté carte */
+  border-left: none;                  /* le shell a déjà les coins arrondis */
+  border-top: none;
+  border-bottom: none;
+  border-radius: 12px 0 0 12px;      /* épouse les angles du shell */
+  box-shadow: 0 10px 24px rgba(17,24,39,.18);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px;
+
+  transform: translateX(-110%); /* cachée par défaut */
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .28s ease, opacity .2s ease;
+  z-index: 2; /* au-dessus de la map */
+}
+
+.map-sidebar .sidebar-placeholder {
+  color: #6b7280;
+  padding: 8px 4px;
+}
+
+/* Quand un spot est sélectionné → slide-in */
+.map-shell.has-selection .map-sidebar {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+/* Responsive overlay */
+@media (max-width: 900px) {
+  .map-sidebar {
+    width: 320px;
+    top: 0; left: 0; bottom: 0; /* toujours collée aux bords */
+    border-radius: 12px 0 0 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  /* En très petit, on garde la popup mobile → panneau masqué */
+  .map-sidebar { display: none !important; }
+}
+
+/* ============================================= */
+
 /* La taille/les coins se gèrent côté conteneur (.map-container) */
 .map {
   width: 100%;
@@ -22,23 +95,24 @@
   overscroll-behavior: contain;
 }
 
-/* Masquer la pointe en mode mobile (fix: display: none) */
+/* Masquer la pointe en mode mobile */
 .mapboxgl-popup.ws-popup.ws-popup--mobile .mapboxgl-popup-tip { display: none; }
 
 /* Card interne */
 .map-popup { background: transparent; }
 .mp-body { padding: 10px 12px 12px; }
 
-/* Titre */
-.mapboxgl-popup .mp-title {
+/* Titre — valable pour popup et sidebar */
+.mp-title {
   margin: 0;
   margin-block-start: 0;
   margin-block-end: 4px;  /* petit espace bas contrôlé */
   font-size: 16px;
 }
 
-/* Adresse (plus petite et compacte) */
-.mapboxgl-popup .mp-address {
+/* Adresse (plus petite et compacte) — popup + sidebar */
+.mapboxgl-popup .mp-address,
+.sidebar-card .mp-address {
   font-size: 12px;
   line-height: 1.3;
   color: #8e8e8e;
@@ -56,11 +130,13 @@
 .mp-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
 .mp-tag { padding: 3px 9px; border-radius: 999px; background: #F3F4F6; color: #374151; font-size: 11px; font-weight: 600; }
 
-/* Description — source unique */
+/* Description — popup + sidebar */
 .mapboxgl-popup.ws-popup .mp-desc,
-.mapboxgl-popup.ws-popup .mp-desc * {
+.mapboxgl-popup.ws-popup .mp-desc *,
+.sidebar-card .mp-desc,
+.sidebar-card .mp-desc * {
   font-size: 13px; font-weight: 350; line-height: 1.5; color: #1f2937;
-  text-align: justify; text-align-last: left; /* dernière ligne non étirée */
+  text-align: justify; text-align-last: left;
   hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word;
 }
 
@@ -71,10 +147,10 @@
   margin-bottom: 10px;
 }
 
-/* 1 ligne visible (par défaut) */
+/* 2 lignes visibles par défaut */
 .mp-desc {
-  --mp-desc-lines: 2;           /* ✅ nombre de lignes visibles */
-  line-height: 1.5;             /* doit rester cohérent avec la suite */
+  --mp-desc-lines: 2;
+  line-height: 1.5;
   max-height: calc(var(--mp-desc-lines) * 1.5em);
   overflow: hidden;
   position: relative;
@@ -135,7 +211,7 @@
 .mapboxgl-ctrl-top-right, .mapboxgl-ctrl-bottom-right { margin: 12px; }
 .mapboxgl-ctrl-group { box-shadow: 0 1px 6px rgba(17,24,39,.10); }
 
-/* ---------- Responsive ---------- */
+/* ---------- Responsive popup ---------- */
 @media (max-width: 768px) {
   .mapboxgl-popup.ws-popup > .mapboxgl-popup-content { max-width: 90vw; }
 }
@@ -214,7 +290,7 @@
    Vote UI — Clean & Minimal
    =========================== */
 
-/* Contexte pour positionner le FAB en bas à droite de la popup */
+/* Contexte pour positionner le FAB en bas à droite de la popup/fiche */
 .mp-container { position: relative; }
 
 /* Ancre bottom-right */
@@ -344,12 +420,9 @@
 }
 
 /* =======================================
-   Bloque le scroll vertical UNIQUEMENT en mobile
+   Bloque le scroll vertical UNIQUEMENT en mobile (popup)
    ======================================= */
 @media (max-width: 480px) {
-
-
-
   .mapboxgl-popup.ws-popup.ws-popup--mobile .mp-body {
     overflow: hidden !important;        /* ✅ empêche le scroll du texte */
     max-height: none !important;        /* supprime la hauteur forcée */
@@ -367,3 +440,16 @@
     display: none;
   }
 }
+
+/* ====== Fiche dans la sidebar (réutilise les styles mp-*) ====== */
+.sidebar-card {
+  display: block;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 10px rgba(17,24,39,.06);
+}
+.sidebar-card .mp-body { padding: 12px; }
+.sidebar-card .mp-carousel { height: 220px; }
+.sidebar-card .mp-actions { margin-top: 12px; }

@@ -20,26 +20,42 @@
   <h1><strong>Les meilleurs spots pour travailler</strong>,<br><em>partout, près de vous...</em></h1>
 
   <p class="only-desktop">
-    Workspots sélectionne pour vous — des lieux sympas, accueillants et connectés — cafés,
-    restos, hôtels — parfait pour travailler, étudier, échanger… ou simplement changer d’air.
+    Workspots sélectionne pour vous des lieux sympas, accueillants et connectés — cafés,
+    restos, hôtels — parfait pour télétravailler, étudier, échanger… ou simplement changer d’air.
   </p>
 
-  <h3 id="spots-map">TOUS LES SPOTS DISPONIBLES :</h3>
+<h3 id="spots-map"
+    data-controller="spots-count"
+    data-spots-count-count-value="<%= @spots_count %>">
+  NOS SPOTS SÉLECTIONNÉS POUR VOUS :
+</h3>
 
 
 <%# === CONTENU === %>
 <!-- MAP -->
-<div class="map-container" aria-labelledby="spots-map" role="region" aria-label="Carte interactive des spots de travail">
+<div class="map-shell"
+     aria-labelledby="spots-map"
+     role="region"
+     aria-label="Carte interactive des spots de travail"
+     data-controller="map"
+     data-map-style-value="mapbox://styles/workspots/cmflemqjc007y01secq3x89ng"
+     data-map-center-value="[2.3522,48.8566]"
+     data-map-zoom-value="11.4">
+
+  <!-- Panneau latéral gauche (fiche café) -->
+  <aside class="map-sidebar" data-map-target="sidebar" aria-live="polite" aria-label="Fiche café"></aside>
+
+
+  <!-- Carte (colonne de droite) -->
   <div id="map"
        class="map"
-       data-controller="map"
-       data-map-style-value="mapbox://styles/workspots/cmflemqjc007y01secq3x89ng"
-       data-map-center-value="[2.3522,48.8566]"
-       data-map-zoom-value="11.4"
+       data-map-target="container"
        tabindex="0"
        aria-label="Carte des spots">
+    <div class="map-placeholder" data-map-target="loading">Chargement…</div>
   </div>
 </div>
+
 
 <div class="contact-card map-cta">
   <a class="btn-cta" href="#contact" aria-label="Proposer un spot ou nous contacter">
