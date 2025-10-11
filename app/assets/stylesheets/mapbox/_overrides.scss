@@ -16,66 +16,53 @@
 /* La carte occupe tout l’espace */
 .map-shell .map {
   position: absolute;
-  inset: 0;  /* top:0; right:0; bottom:0; left:0 */
+  inset: 0;
   width: 100%;
   height: 100%;
+  z-index: 0;
 }
 
-/* Panneau latéral (overlay, caché par défaut) */
+/* ====== Panneau latéral (overlay desktop) ====== */
 .map-sidebar {
   position: absolute;
-  top: 0;           /* ✅ collé en haut */
-  left: 0;          /* ✅ collé à gauche */
-  bottom: 0;        /* ✅ toute la hauteur */
+  top: 0; left: 0; bottom: 0;
   width: 380px;
   background: #ffffff;
-  border-right: 1px solid #e5e7eb;   /* bord côté carte */
-  border-left: none;                  /* le shell a déjà les coins arrondis */
-  border-top: none;
-  border-bottom: none;
-  border-radius: 12px 0 0 12px;      /* épouse les angles du shell */
+  border-right: 1px solid #e5e7eb;
+  border-radius: 12px 0 0 12px;
   box-shadow: 0 10px 24px rgba(17,24,39,.18);
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   padding: 12px;
 
-  transform: translateX(-110%); /* cachée par défaut */
+  transform: translateX(-110%);
   opacity: 0;
   pointer-events: none;
   transition: transform .28s ease, opacity .2s ease;
-  z-index: 2; /* au-dessus de la map */
+  z-index: 2;
 }
 
-.map-sidebar .sidebar-placeholder {
-  color: #6b7280;
-  padding: 8px 4px;
-}
+.map-sidebar .sidebar-placeholder { color: #6b7280; padding: 8px 4px; }
 
-/* Quand un spot est sélectionné → slide-in */
+/* Sidebar visible quand un spot est sélectionné (desktop) */
 .map-shell.has-selection .map-sidebar {
   transform: translateX(0);
   opacity: 1;
   pointer-events: auto;
 }
 
-
-/* Responsive overlay */
+/* Largeur sidebar responsive */
 @media (max-width: 900px) {
-  .map-sidebar {
-    width: 320px;
-    top: 0; left: 0; bottom: 0; /* toujours collée aux bords */
-    border-radius: 12px 0 0 12px;
-  }
+  .map-sidebar { width: 320px; border-radius: 12px 0 0 12px; }
 }
 
-@media (max-width: 560px) {
-  /* En très petit, on garde la popup mobile → panneau masqué */
-  .map-sidebar { display: none !important; }
+/* Sidebar masquée sur mobile (on utilise le bottom sheet) */
+@media (max-width: 768px) {
+  .map-sidebar { display: none; }
 }
 
 /* ============================================= */
 
-/* La taille/les coins se gèrent côté conteneur (.map-container) */
 .map {
   width: 100%;
   height: 100%;
@@ -84,14 +71,84 @@
   overflow: hidden;
 }
 
+/* ====== BOTTOM SHEET (mobile) ====== */
+.map-bottomsheet {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: #fff;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+  box-shadow: 0 -10px 30px rgba(17,24,39,.18);
+  transform: translateY(100%);
+  transition: transform .28s ease, opacity .28s ease;
+  opacity: 0;
+  pointer-events: none;
+  max-height: 65%;
+  display: flex;
+  flex-direction: column;
+  z-index: 3;
+}
+
+/* Poignée */
+.mbs-grabber {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  align-self: center;
+  width: 44px; height: 6px;
+  border-radius: 999px;
+  margin: 10px 0 6px;
+  position: relative;
+}
+.mbs-grabber::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.18);
+  border-radius: 999px;
+}
+
+/* Contenu scrollable */
+.mbs-content {
+  overflow: auto;
+  padding: 12px 16px calc(18px + env(safe-area-inset-bottom, 0));
+}
+
+/* Ouverture */
+.map-bottomsheet.is-open {
+  transform: translateY(0%);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Visible seulement en mobile */
+@media (min-width: 769px) { .map-bottomsheet { display: none; } }
+
+/* Safe-area iOS (Sass-safe) */
+@supports (padding: max(0px)) {
+  .map-bottomsheet {
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: unquote("max(0px, env(safe-area-inset-bottom))");
+  }
+}
+
+/* Évite que les contrôles Mapbox collent le sheet */
+@media (max-width: 768px) {
+  .mapboxgl-ctrl-bottom-right,
+  .mapboxgl-ctrl-bottom-left {
+    margin-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+  }
+}
+
+/* ============================================= */
 /* Popup compacte */
 .mapboxgl-popup.ws-popup > .mapboxgl-popup-content {
-  padding: 0;                 /* padding géré dans .mp-body */
+  padding: 0;
   border-radius: 8px;
   max-width: 320px;
   background: #ffffff;
-  border: none;               /* fix: bordure invalide -> none ou 1px solid transparent */
-  box-shadow: 0 6px 16px rgba(17,24,39,.12); /* ombre plus légère = look épuré */
+  border: none;
+  box-shadow: 0 6px 16px rgba(17,24,39,.12);
   overscroll-behavior: contain;
 }
 
@@ -102,28 +159,16 @@
 .map-popup { background: transparent; }
 .mp-body { padding: 10px 12px 12px; }
 
-/* Titre — valable pour popup et sidebar */
-.mp-title {
-  margin: 0;
-  margin-block-start: 0;
-  margin-block-end: 4px;  /* petit espace bas contrôlé */
-  font-size: 16px;
-}
+/* Titre — popup + sidebar */
+.mp-title { margin: 0 0 4px 0; font-size: 16px; }
 
-/* Adresse (plus petite et compacte) — popup + sidebar */
+/* Adresse — popup + sidebar */
 .mapboxgl-popup .mp-address,
 .sidebar-card .mp-address {
-  font-size: 12px;
-  line-height: 1.3;
-  color: #8e8e8e;
-  font-weight: 400;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;   /* 2 lignes max */
-  line-clamp: 2;           /* standard property for compatibility */
-  overflow: hidden;        /* coupe le surplus */
-  white-space: normal;     /* autorise retour ligne */
-  margin: 0 0 8px;
+  font-size: 12px; line-height: 1.3; color: #8e8e8e; font-weight: 400;
+  display: -webkit-box; -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+  white-space: normal; margin: 0 0 8px;
 }
 
 /* Tags */
@@ -141,42 +186,24 @@
 }
 
 /* Tronquage + lien “Voir la suite” */
-.mp-desc-wrapper {
-  display: grid;
-  gap: 3px;
-  margin-bottom: 10px;
-}
-
-/* 2 lignes visibles par défaut */
+.mp-desc-wrapper { display: grid; gap: 3px; margin-bottom: 10px; }
 .mp-desc {
   --mp-desc-lines: 2;
   line-height: 1.5;
   max-height: calc(var(--mp-desc-lines) * 1.5em);
-  overflow: hidden;
-  position: relative;
+  overflow: hidden; position: relative;
 }
-
-/* dégradé en bas (hauteur = 1 ligne) */
 .mp-desc::after {
-  content: "";
-  position: absolute; left: 0; right: 0; bottom: 0;
-  height: 2rem;
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2rem;
   background: linear-gradient(to top, #fff, rgba(255,255,255,0));
 }
-
 .mp-desc.expanded { max-height: none; }
 .mp-desc.expanded::after { display: none; }
 
 /* Lien “Voir la suite” */
 .mp-toggle-link {
-  color: #2d2e36b8;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  font-weight: 400;
-  font-size: 12px;
-  cursor: pointer;
-  display: inline;
-  line-height: 1.5;
+  color: #2d2e36b8; text-decoration: underline; text-underline-offset: 2px;
+  font-weight: 400; font-size: 12px; cursor: pointer; display: inline; line-height: 1.5;
 }
 .mp-toggle-link:hover { color: #06080d; }
 .mp-toggle-link:focus-visible,
@@ -184,23 +211,10 @@
 .mp-primary:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; border-radius: 6px; }
 
 /* Actions */
-.mp-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-start;
-  margin-top: 12px;
-}
+.mp-actions { display: flex; gap: 12px; justify-content: flex-start; margin-top: 12px; }
 .mp-link, .mp-primary {
-  text-decoration: none;
-  border-radius: 8px;
-  padding: 6px 9px;
-  min-height: unset;
-  font-size: 12px;
-  font-weight: 550;
-  line-height: 1.3;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  text-decoration: none; border-radius: 8px; padding: 6px 9px; min-height: unset;
+  font-size: 12px; font-weight: 550; line-height: 1.3; display: flex; align-items: center; justify-content: flex-start;
 }
 .mp-link { border: 1px solid #E5E7EB; background: #fff; color: #1f2a72; }
 .mp-link:hover { background: #F9FAFB; }
@@ -223,8 +237,7 @@
 }
 .mapboxgl-popup.ws-popup.ws-popup--mobile .mp-body {
   padding: 14px 16px 16px;
-  overflow: hidden; -webkit-overflow-scrolling: auto;
-  touch-action: pan-x;
+  overflow: hidden; -webkit-overflow-scrolling: auto; touch-action: pan-x;
   max-height: 56vh;
 }
 
@@ -241,7 +254,7 @@
   .mp-desc::after { background: linear-gradient(to top, #e5e7eb, #e5e7eb); }
 }
 
-/* Mini carousel compact (au-dessus du titre) */
+/* ====== Carousel (base “fade”) ====== */
 .mp-carousel {
   position: relative;
   border-radius: 8px 8px 0 0;
@@ -252,15 +265,15 @@
 .mpc-viewport { width: 100%; height: 100%; position: relative; }
 .mpc-slide { position: absolute; inset: 0; opacity: 0; transition: opacity .22s ease; }
 .mpc-slide.is-active { opacity: 1; }
-.mpc-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Desktop: ne force pas l’object-fit ici */
+.mpc-slide img { width: 100%; height: 100%; display: block; }
 .mpc-nav {
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 28px; height: 28px; border-radius: 999px; border: 0;
   background: rgba(255, 255, 255, 0.532);
   display: grid; place-items: center; cursor: pointer; padding: 0;
 }
-.mpc-prev { left: 6px; }
-.mpc-next { right: 6px; }
+.mpc-prev { left: 6px; } .mpc-next { right: 6px; }
 .mpc-nav:hover { background: #ffffffc6; }
 .mpc-dots {
   position: absolute; left: 0; right: 0; bottom: 6px;
@@ -281,53 +294,95 @@
   .mpc-dot.is-active { background: #ffffffcb; }
 }
 
-/* Mobile : un poil plus bas */
+/* ====== Carousel mobile “peek + snap” ======
+   (on aperçoit la slide suivante) */
+.mp-carousel--peek {
+  height: auto;            /* gérée par les slides */
+  border-radius: 10px;
+  background: transparent;
+}
+
+/* Track & slides (par défaut SANS inertie/snap sur desktop) */
+.mpc-snap-track {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 6px 2px 2px;
+
+  /* Desktop: pas d’inertie ni de snap */
+  scroll-snap-type: none;
+  scrollbar-width: none;     /* Firefox */
+}
+.mpc-snap-track::-webkit-scrollbar { display: none; } /* WebKit */
+
+.mpc-snap-slide {
+  flex: 0 0 auto;
+  width: 78%;
+  max-width: 360px;
+  aspect-ratio: 16 / 10;     /* ratio visuel agréable */
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f3f4f6;
+  position: relative;
+
+  /* Align prêt pour le snap (harmless si snap désactivé) */
+  scroll-snap-align: start;
+}
+/* Desktop: ne force pas l’object-fit ici */
+.mpc-snap-slide img { width: 100%; height: 100%; display: block; }
+
+/* Dots du peek */
+.mpc-snap-dots {
+  display: flex; justify-content: center; gap: 6px; padding: 6px 0 0;
+}
+.mpc-snap-dots .mpc-dot {
+  width: 6px; height: 6px; border-radius: 999px; border: none;
+  background: #e5e7eb;
+}
+.mpc-snap-dots .mpc-dot.is-active { background: #111827; }
+
+/* Momentum scroll & snap + COVER UNIQUEMENT mobile/tablette */
+@media (max-width: 1024px) {
+  .mpc-snap-track {
+    -webkit-overflow-scrolling: touch;  /* inertie iOS/Android */
+    scroll-snap-type: x proximity;      /* snap souple */
+    touch-action: pan-x;
+  }
+  .mp-carousel--peek { touch-action: pan-x; }
+}
+
+/* Un peu plus de peek sur très petit écran */
 @media (max-width: 480px) {
-  .mp-carousel { height: 150px; }
+  .mpc-snap-slide { width: 82%; }
 }
 
 /* ===========================
    Vote UI — Clean & Minimal
    =========================== */
-
-/* Contexte pour positionner le FAB en bas à droite de la popup/fiche */
 .mp-container { position: relative; }
 
 /* Ancre bottom-right */
 .mp-vote-wrap {
-  position: absolute;
-  right: 10px; bottom: 10px;
-  width: 48px; /* ancre verticale pour les 3 boutons */
-  display: grid; justify-items: center;
-  z-index: 2;
-  transition: opacity .15s ease;
+  position: absolute; right: 10px; bottom: 10px;
+  width: 48px; display: grid; justify-items: center;
+  z-index: 2; transition: opacity .15s ease;
 }
 .mp-vote-wrap.is-loading { opacity:.6; pointer-events:none; }
 
-/* FABs (coeur central, like au-dessus, dislike au-dessous) */
+/* FABs */
 .mp-vote-fab,
 .mp-vote-like-fab,
 .mp-vote-dislike-fab {
   --fab-bg: rgba(255,255,255,.92);
   --fab-border: rgba(0,0,0,.08);
   --fab-fg: #0f172a;
-
-  width: 40px; height: 40px;
-  display: grid; place-items: center;
-  border-radius: 9999px;
-  border: 1px solid var(--fab-border);
-  background: var(--fab-bg);
-  color: var(--fab-fg);
+  width: 40px; height: 40px; display: grid; place-items: center;
+  border-radius: 9999px; border: 1px solid var(--fab-border);
+  background: var(--fab-bg); color: var(--fab-fg);
   backdrop-filter: blur(6px);
   box-shadow: 0 4px 14px rgba(0,0,0,.10);
   cursor: pointer;
-
-  transition:
-    transform .12s ease,
-    background-color .18s ease,
-    box-shadow .18s ease,
-    border-color .18s ease,
-    opacity .12s ease;
+  transition: transform .12s ease, background-color .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .12s ease;
 }
 .mp-vote-fab:hover,
 .mp-vote-like-fab:hover,
@@ -336,7 +391,7 @@
 .mp-vote-like-fab:active,
 .mp-vote-dislike-fab:active { transform: translateY(1px) scale(.98); }
 
-/* Bouton central => superposition des 3 SVG */
+/* Icônes superposées */
 .mp-vote-fab { position: relative; }
 .mp-vote-icon { position: absolute; width: 22px; height: 22px; opacity: 0; transition: opacity .2s ease, transform .2s ease; }
 .mp-vote-icon svg { width: 100%; height: 100%; display: block; }
@@ -347,76 +402,47 @@
 .mp-vote-fab.is-disliked .mp-vote-icon--disliked { opacity: 1; }
 .mp-vote-fab:hover .mp-vote-icon { transform: scale(1.1); }
 
-/* États visuels sélection */
+/* États sélection */
 .mp-vote-fab.is-liked {
-  --fab-bg: rgba(253, 242, 248, .95);   /* rose-50 */
-  --fab-border: #fda4af;                /* rose-300 */
-  --fab-fg: #be123c;                    /* rose-800 */
+  --fab-bg: rgba(253, 242, 248, .95);
+  --fab-border: #fda4af;
+  --fab-fg: #be123c;
 }
 .mp-vote-fab.is-disliked {
-  --fab-bg: rgba(248, 250, 252, .95);   /* slate-50 */
-  --fab-border: #94a3b8;                /* slate-400 */
-  --fab-fg: #334155;                    /* slate-700 */
+  --fab-bg: rgba(248, 250, 252, .95);
+  --fab-border: #94a3b8;
+  --fab-fg: #334155;
 }
 
-/* Positions (menu fermé) : like/dislike masqués */
+/* Positions (menu fermé) */
 .mp-vote-like-fab,
 .mp-vote-dislike-fab {
   position: absolute; left: 0; right: 0; margin: 0 auto;
-  opacity: 0; pointer-events: none;
-  transform: translateY(0) scale(.9);
+  opacity: 0; pointer-events: none; transform: translateY(0) scale(.9);
 }
-.mp-vote-like-fab   { bottom: 50px; }  /* au-dessus du central */
-.mp-vote-dislike-fab{ top:   50px; }  /* en dessous du central */
+.mp-vote-like-fab   { bottom: 50px; }
+.mp-vote-dislike-fab{ top:   50px; }
 
-/* Ouverture : révèle les deux boutons ronds */
+/* Menu ouvert */
 .mp-vote-wrap.is-open .mp-vote-like-fab,
 .mp-vote-wrap.is-open .mp-vote-dislike-fab {
-  opacity: 1; pointer-events: auto;
-  transform: translateY(0) scale(1);
+  opacity: 1; pointer-events: auto; transform: translateY(0) scale(1);
 }
 
-/* Feedback de sélection */
+/* Feedback */
 .mp-vote-like-fab.is-active  { outline:1.5px solid #fb7185; background:#fff1f2; }
 .mp-vote-dislike-fab.is-active{ outline:1.5px solid #94a3b8; background:#f1f5f9; }
 
-/* Focus visible (a11y) */
+/* Focus visible */
 .mp-vote-fab:focus-visible,
 .mp-vote-like-fab:focus-visible,
 .mp-vote-dislike-fab:focus-visible {
-  outline: 2px solid #3b82f6; /* blue-500 */
-  outline-offset: 2px;
-  border-color: #93c5fd;      /* blue-300 */
+  outline: 2px solid #3b82f6; outline-offset: 2px; border-color: #93c5fd;
 }
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .mp-vote-fab,
-  .mp-vote-like-fab,
-  .mp-vote-dislike-fab {
-    --fab-bg: rgba(2,6,23,.70);
-    --fab-border: rgba(255,255,255,.12);
-    --fab-fg: #e5e7eb;
-    box-shadow: 0 8px 24px rgba(0,0,0,.45);
-  }
-  .mp-vote-like-fab.is-active   { background: rgba(251,113,133,.12); }
-  .mp-vote-dislike-fab.is-active{ background: rgba(148,163,184,.12); }
-}
-
-/* Reduced motion */
+/* Motion réduite */
 @media (prefers-reduced-motion: reduce) {
-  .mp-vote-fab,
-  .mp-vote-like-fab,
-  .mp-vote-dislike-fab,
-  .mp-vote-icon { transition: none; }
-}
-
-/* Mobile tweaks */
-@media (max-width:480px){
-  .mp-vote-wrap { right:8px; bottom:8px; width:40px; }
-  .mp-vote-fab, .mp-vote-like-fab, .mp-vote-dislike-fab { width:40px; height:40px; }
-  .mp-vote-like-fab   { bottom: 52px; }
-  .mp-vote-dislike-fab{ top:    52px; }
+  .mp-vote-fab, .mp-vote-like-fab, .mp-vote-dislike-fab, .mp-vote-icon { transition: none; }
 }
 
 /* =======================================
@@ -424,24 +450,16 @@
    ======================================= */
 @media (max-width: 480px) {
   .mapboxgl-popup.ws-popup.ws-popup--mobile .mp-body {
-    overflow: hidden !important;        /* ✅ empêche le scroll du texte */
-    max-height: none !important;        /* supprime la hauteur forcée */
-    -webkit-overflow-scrolling: auto;   /* désactive l’inertie iOS */
-    touch-action: none;                 /* empêche le “pan-y” */
+    overflow: hidden !important;
+    max-height: none !important;
+    -webkit-overflow-scrolling: auto;
+    touch-action: none;
   }
-
-  /* Autoriser uniquement le scroll horizontal du carrousel */
-  .mp-carousel {
-    touch-action: pan-x !important;     /* swipe horizontal OK */
-  }
-
-  /* Facultatif : masque la scrollbar mobile si elle persiste */
-  .mapboxgl-popup.ws-popup.ws-popup--mobile > .mapboxgl-popup-content::-webkit-scrollbar {
-    display: none;
-  }
+  .mp-carousel { touch-action: pan-x !important; }
+  .mapboxgl-popup.ws-popup.ws-popup--mobile > .mapboxgl-popup-content::-webkit-scrollbar { display: none; }
 }
 
-/* ====== Fiche dans la sidebar (réutilise les styles mp-*) ====== */
+/* ====== Fiche desktop (sidebar) ====== */
 .sidebar-card {
   display: block;
   background: #fff;
@@ -453,3 +471,66 @@
 .sidebar-card .mp-body { padding: 12px; }
 .sidebar-card .mp-carousel { height: 220px; }
 .sidebar-card .mp-actions { margin-top: 12px; }
+
+/* =========================================================
+   MOBILE COMPACT — bottom sheet + card + contenu (ordre souhaité)
+   ========================================================= */
+@media (max-width: 768px) {
+  /* Sheet un peu plus bas par défaut */
+  .map-bottomsheet { max-height: 58%; }
+
+  /* Paddings serrés */
+  .mbs-content { padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0)); }
+
+  /* Card mobile (HTML: .sidebar-card.sidebar-card--mobile) */
+  .map-bottomsheet .sidebar-card--mobile {
+    border: 0; box-shadow: none; border-radius: 12px; overflow: hidden;
+  }
+
+  /* 1) Infos en haut */
+  .map-bottomsheet .mp-info { padding: 8px 10px 6px; }
+  .map-bottomsheet .mp-title { font-size: 15px; margin: 0 0 2px; }
+  .map-bottomsheet .mp-address {
+    font-size: 12px; margin: 0 0 6px;
+    display: -webkit-box; -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1; line-clamp: 1; overflow: hidden;
+  }
+
+  /* Tags plus serrés en mobile */
+  .map-bottomsheet .mp-tags--mobile { gap: 4px; margin: 6px 0 8px; }
+  .map-bottomsheet .mp-tags--mobile .mp-tag { font-size: 10px; padding: 2px 7px; }
+
+  /* 2) Actions juste sous les infos */
+  .map-bottomsheet .mp-actions--top { display: flex; gap: 8px; padding: 0 10px 8px; margin-top: 0; }
+  .map-bottomsheet .mp-actions--top .mp-link,
+  .map-bottomsheet .mp-actions--top .mp-primary { font-size: 12px; padding: 6px 8px; }
+
+  /* 3) Images (carrousel compact) */
+  .map-bottomsheet .mp-header { padding: 0 10px; }
+  .map-bottomsheet .mp-carousel { height: 120px; border-radius: 10px; }
+
+  /* 4) Description en bas */
+  .map-bottomsheet .mp-desc-wrapper { padding: 8px 10px 10px; margin: 0; }
+  .map-bottomsheet .mp-desc { --mp-desc-lines: 2; }
+
+  /* COVER UNIQUEMENT MOBILE (fade + peek) */
+  .mpc-slide img,
+  .mpc-snap-slide img {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Votes compacts */
+  .map-bottomsheet .mp-vote-wrap { right: 8px; bottom: 8px; width: 40px; }
+  .map-bottomsheet .mp-vote-fab,
+  .map-bottomsheet .mp-vote-like-fab,
+  .map-bottomsheet .mp-vote-dislike-fab { width: 36px; height: 36px; }
+  .map-bottomsheet .mp-vote-like-fab    { bottom: 46px; }
+  .map-bottomsheet .mp-vote-dislike-fab { top:    46px; }
+}
+
+@media (max-width: 480px) {
+  .map-bottomsheet { max-height: 50%; }
+  .map-bottomsheet .mp-carousel { height: 170px; } /* hauteur + grande sur très petit écran */
+  .map-bottomsheet .mp-desc { --mp-desc-lines: 1; }
+}

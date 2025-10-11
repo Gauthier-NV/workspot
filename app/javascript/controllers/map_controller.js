@@ -40,7 +40,7 @@ async function chunkedForEach(items, fn, chunk = 200) {
 
 const spotCoords = (s) => saneCoords(s.lng ?? s.longitude, s.lat ?? s.latitude);
 
-/* ---------- Mini Carousel ---------- */
+/* ---------- Mini Carousel (fade) ---------- */
 function buildMiniCarouselHTML(imageUrls, spotId) {
   const urls = (imageUrls || []).filter(Boolean).slice(0, 3);
   if (!urls.length) return "";
@@ -89,13 +89,72 @@ function wireMiniCarousel(rootEl) {
     if (dot)  { e.stopPropagation(); go(Number(dot.dataset.to || 0)); }
   });
   let startX = null;
-  car.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; });
+  car.addEventListener("touchstart", (e) => { startX = e.touches[0].clientX; }, { passive: true });
   car.addEventListener("touchend", (e) => {
     if (startX == null) return;
     const dx = e.changedTouches[0].clientX - startX;
     if (Math.abs(dx) > 30) go(active + (dx < 0 ? 1 : -1));
     startX = null;
   });
+}
+
+/* ---------- NEW: Carousel “peek + snap” (mobile/tablette) ---------- */
+function buildPeekCarouselHTML(imageUrls, spotId) {
+  const urls = (imageUrls || []).filter(Boolean).slice(0, 6);
+  if (!urls.length) return "";
+  const slides = urls.map((u, i) => `
+    <div class="mpc-snap-slide" data-index="${i}">
+      <img src="${u}" alt="Photo ${i + 1}" loading="lazy" decoding="async" />
+    </div>
+  `).join("");
+  return `
+    <div class="mp-carousel mp-carousel--peek" id="mpc-${spotId}" data-count="${urls.length}" data-active="0">
+      <div class="mpc-snap-track" role="group" aria-label="Galerie d’images">
+        ${slides}
+      </div>
+      <div class="mpc-snap-dots" aria-hidden="true">
+        ${urls.map((_, i) => `<button class="mpc-dot ${i===0?"is-active":""}" data-to="${i}" tabindex="-1"></button>`).join("")}
+      </div>
+    </div>`;
+}
+
+function wirePeekCarousel(rootEl) {
+  const car = rootEl.querySelector(".mp-carousel--peek");
+  if (!car) return;
+  const track = car.querySelector(".mpc-snap-track");
+  const dots  = Array.from(car.querySelectorAll(".mpc-snap-dots .mpc-dot"));
+  if (!track) return;
+
+  const slides = Array.from(track.children);
+  const update = () => {
+    const { left: tl, width: tw } = track.getBoundingClientRect();
+    let best = 0, bestOverlap = -1;
+    slides.forEach((slide, i) => {
+      const r = slide.getBoundingClientRect();
+      const overlap = Math.max(0, Math.min(r.right, tl + tw) - Math.max(r.left, tl));
+      if (overlap > bestOverlap) { bestOverlap = overlap; best = i; }
+    });
+    car.dataset.active = String(best);
+    dots.forEach((d, i) => d.classList.toggle("is-active", i === best));
+  };
+
+  let raf = null;
+  const onScroll = () => {
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(update);
+  };
+  track.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", update);
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener("click", () => {
+      const slide = slides[i];
+      if (!slide) return;
+      slide.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+    });
+  });
+
+  update();
 }
 
 /* ---------- Vote Manager (local + sync serveur) ---------- */
@@ -165,14 +224,13 @@ export default class extends Controller {
     zoom: Number,
     apiUrl: { type: String, default: "/spots.json" },
   };
-  static targets = ["loading", "sidebar", "container"]; // ✅ sidebar + container
 
-  // --- Haptics helper ---
+  static targets = ["loading", "sidebar", "container", "bottomsheet", "bottomsheetContent"];
+
   _haptic(pattern = [12, 60, 12]) {
     try { if (navigator.vibrate) navigator.vibrate(pattern); } catch {}
   }
 
-  // --- Long-press (2s) ---
   _setupLongPress(mainBtn, wrap) {
     if (!mainBtn || !wrap) return;
     const LONG_PRESS_MS = 2000;
@@ -220,6 +278,7 @@ export default class extends Controller {
   }
 
   connect() {
+    this.mqlMobile = window.matchMedia("(max-width: 768px)");
     this.voteManager = new VoteManager();
     if (!("IntersectionObserver" in window)) { this._bootstrapVotes(); this._init(); return; }
     this._io = new IntersectionObserver((entries) => {
@@ -231,6 +290,9 @@ export default class extends Controller {
     }, { rootMargin: "200px" });
     this._io.observe(this.element);
   }
+
+  isMobile() { return this.mqlMobile?.matches ?? window.innerWidth <= 768; }
+  _shouldUsePeek() { return window.matchMedia("(max-width: 1024px)").matches; }
 
   async _bootstrapVotes() {
     try {
@@ -272,7 +334,7 @@ export default class extends Controller {
     this.mb = mapboxgl;
 
     this.map = new mapboxgl.Map({
-      container: this.hasContainerTarget ? this.containerTarget : this.element, // ✅ carte dans target
+      container: this.hasContainerTarget ? this.containerTarget : this.element,
       style: this.styleValue,
       center: Array.isArray(this.centerValue) ? this.centerValue : [2.3522, 48.8566],
       zoom: Number.isFinite(this.zoomValue) ? this.zoomValue : 11.4,
@@ -303,7 +365,6 @@ export default class extends Controller {
       this.map.on("moveend", () => this._loadSpotsForBounds());
     });
 
-   // remplace ton this.map.on("click", (e) => { ... }) existant
     this.map.on("click", (e) => {
       const spotLayers    = ["spots-circles","spots-circles--selected"].filter(l => this.map.getLayer(l));
       const clusterLayers = ["clusters","cluster-count"].filter(l => this.map.getLayer(l));
@@ -311,16 +372,12 @@ export default class extends Controller {
       const spotHits    = this.map.queryRenderedFeatures(e.point, { layers: spotLayers });
       const clusterHits = this.map.queryRenderedFeatures(e.point, { layers: clusterLayers });
 
-      // 1) Clic sur un point => géré par son propre handler
       if (spotHits.length) return;
-
-      // 2) Clic sur un cluster => NE PAS fermer
       if (clusterHits.length) return;
 
-      // 3) Clic dans le vide => on ferme
       this._clearSelection();
+      this.closeBottomSheet();
     });
-
 
     this._fsHandler = () => this.map?.resize();
     ["fullscreenchange","webkitfullscreenchange","mozfullscreenchange","MSFullscreenChange"]
@@ -347,8 +404,7 @@ export default class extends Controller {
       await chunkedForEach(spots, (s) => {
         const coords = spotCoords(s);
         if (!coords) return;
-        const idRaw = s.id;
-        if (idRaw == null) return;
+        const idRaw = s.id; if (idRaw == null) return;
         const fid = String(idRaw);
         features.push({
           type: "Feature", id: fid,
@@ -440,7 +496,6 @@ export default class extends Controller {
           }
         }, "spots-circles");
 
-        // Interactions clusters
         ["clusters", "cluster-count"].forEach((layerId) => {
           this.map.on("click", layerId, (e) => this._zoomCluster(e));
           this.map.on("mouseenter", layerId, () => this.map.getCanvas().style.cursor = "pointer");
@@ -515,76 +570,81 @@ export default class extends Controller {
 
     this.map.getSource("spots-source").getClusterExpansionZoom(clusterId, (err, zoom) => {
       if (err) return;
-      // ✅ centre "visuellement" selon la sidebar (si ouverte)
       const easeOpts = this._buildClusterEaseOptions(lngLat, zoom);
       this.map.easeTo(easeOpts);
     });
   }
 
-
   _onSpotClick(e) {
-  const f = e.features?.[0];
-  if (!f) return;
-  const id = String(f.properties?.__fid);
+    const f = e.features?.[0];
+    if (!f) return;
+    const id = String(f.properties?.__fid);
 
-  // Marque visuellement le point sélectionné
-  this.map.setFilter("spots-circles--selected", ["==", ["to-string", ["get", "__fid"]], id]);
+    this.map.setFilter("spots-circles--selected", ["==", ["to-string", ["get", "__fid"]], id]);
+    this.openSpot(f.properties, f.geometry.coordinates);
+  }
 
-  // 👉 AUCUN recentrage / AUCUN mouvement ici
+  /* ---------- Routing desktop / mobile ---------- */
+  openSpot(props, coords) {
+    if (this.isMobile()) {
+      const html = this._renderSpotHTMLMobile(props, coords);
+      this.showBottomSheet(html);
+    } else {
+      this.openSpotSidebar(props, coords);
+    }
+  }
 
-  // Ouvre/actualise la fiche en sidebar
-  this.openSpotSidebar(f.properties, f.geometry.coordinates);
+  showBottomSheet(html) {
+    if (!this.hasBottomsheetTarget || !this.hasBottomsheetContentTarget) return;
+    this.bottomsheetContentTarget.innerHTML = html;
+    this.bottomsheetTarget.classList.add("is-open");
+    this.bottomsheetTarget.setAttribute("aria-hidden", "false");
+
+    const root = this.bottomsheetContentTarget;
+    // Carrousels
+    wireMiniCarousel(root);     // si jamais du markup “mini” est rendu
+    wirePeekCarousel(root);     // le “peek + snap”
+    // UI
+    this._wireExpandableDesc(root);
+    this._wireVotes(root);
+  }
+
+  closeBottomSheet() {
+    if (!this.hasBottomsheetTarget) return;
+    this.bottomsheetTarget.classList.remove("is-open");
+    this.bottomsheetTarget.setAttribute("aria-hidden", "true");
+    if (this.hasBottomsheetContentTarget) this.bottomsheetContentTarget.innerHTML = "";
   }
 
   /* ---------- Helpers offset / sidebar ---------- */
- _getSidebarPx() {
-  try {
-    if (!this.hasSidebarTarget) return 0;
-    const el = this.sidebarTarget;
-    const cs = getComputedStyle(el);
-    if (cs.display === "none" || cs.visibility === "hidden") return 0;
-    // Même masquée par translateX, l'élément garde sa largeur
-    const w = el.getBoundingClientRect().width || 0;
-    const canvasW = this.map?.getCanvas()?.clientWidth || 0;
-    return Math.max(0, Math.min(w, Math.round(canvasW * 0.6)));
-  } catch { return 0; }
-}
-
-
-
-
-// Construit les options d’animation pour centrer "visuellement" avec la sidebar
-_buildClusterEaseOptions(lngLat, zoom) {
-  const sb = this._getSidebarPx();
-  const offset = sb ? [Math.round(sb / 2), 0] : [0, 0]; // ✅ place le point au centre de la zone visible
-  return {
-    center: lngLat,
-    zoom,
-    offset,
-    padding: 0,
-    duration: 400,
-    easing: t => t,
-    essential: true
-  };
-}
-
-  _easeToWithSidebarOffset(lngLat) {
-    const sidebarW = this._getSidebarWidthPx();
-    const xOffset = sidebarW / 2; // ajuste si besoin (1/3, 2/3…)
-    this.map.easeTo({
-      center: lngLat,
-      zoom: this.map.getZoom(),
-      offset: [xOffset, 0],
-      duration: 350,
-      easing: (t) => t,
-      essential: true,
-    });
+  _getSidebarPx() {
+    try {
+      if (!this.hasSidebarTarget) return 0;
+      const el = this.sidebarTarget;
+      const cs = getComputedStyle(el);
+      if (cs.display === "none" || cs.visibility === "hidden") return 0;
+      const w = el.getBoundingClientRect().width || 0;
+      const canvasW = this.map?.getCanvas()?.clientWidth || 0;
+      return Math.max(0, Math.min(w, Math.round(canvasW * 0.6)));
+    } catch { return 0; }
   }
 
-  /* ---------- Rendu “fiche” dans la sidebar ---------- */
-  openSpotSidebar(props, coords) {
-    this.sidebarTarget.innerHTML = "";
+  _buildClusterEaseOptions(lngLat, zoom) {
+    const sb = this._getSidebarPx();
+    const offset = sb ? [Math.round(sb / 2), 0] : [0, 0];
+    return { center: lngLat, zoom, offset, padding: 0, duration: 400, easing: t => t, essential: true };
+  }
 
+  _easeToWithSidebarOffset(lngLat) {
+    const sidebarW = this._getSidebarPx();
+    const xOffset = sidebarW / 2;
+    this.map.easeTo({ center: lngLat, zoom: this.map.getZoom(), offset: [xOffset, 0], duration: 350, easing: (t) => t, essential: true });
+  }
+
+  /* ---------- Rendus HTML ---------- */
+
+  // Utilisé par desktop & popup — choisit peek si ≤1024px
+  _renderSpotHTML(props, coords) {
     const name = props.name || "Café";
     const address = props.address || "";
     const description = props.description || "";
@@ -594,242 +654,220 @@ _buildClusterEaseOptions(lngLat, zoom) {
     const spotId = String(props.__fid);
     const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
 
-    const wrap = document.createElement("div");
-    wrap.className = "sidebar-card";
+    const usePeek = this._shouldUsePeek();
+    const carouselHTML = usePeek
+      ? buildPeekCarouselHTML(images, spotId)
+      : buildMiniCarouselHTML(images, spotId);
 
-    wrap.innerHTML = `
-      <div class="mp-container">
-        <div class="mp-header">
-          ${buildMiniCarouselHTML(images, spotId)}
+    return `
+      <div class="sidebar-card">
+        <div class="mp-container">
+          <div class="mp-header">
+            ${carouselHTML}
+          </div>
+          <div class="mp-body">
+            <h3 class="mp-title">${name}</h3>
+            ${address ? `<p class="mp-address">${address}</p>` : ""}
+            ${tags.length ? `<div class="mp-tags">${tags.map(t => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
+            ${description ? `
+              <div class="mp-desc-wrapper">
+                <div class="mp-desc" data-collapsed="true">${description}</div>
+                <a href="#" class="mp-toggle-link" role="button" aria-expanded="false" style="display:none;margin-top:6px;">Voir plus</a>
+              </div>` : ""}
+            <div class="mp-actions">
+              ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
+              <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
+            </div>
+          </div>
+
+          <div class="mp-vote-wrap" data-spot-id="${spotId}">
+            <button class="mp-vote-like-fab" type="button" aria-label="Like" data-spot-id="${spotId}">❤</button>
+            <button class="mp-vote-fab" type="button" aria-haspopup="true" aria-expanded="false" data-spot-id="${spotId}">♡</button>
+            <button class="mp-vote-dislike-fab" type="button" aria-label="Dislike" data-spot-id="${spotId}">✖</button>
+          </div>
         </div>
-        <div class="mp-body">
-          <h3 class="mp-title">${name}</h3>
-          ${address ? `<p class="mp-address">${address}</p>` : ""}
-          ${tags.length ? `<div class="mp-tags">${tags.map(t => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
+      </div>
+    `;
+  }
+
+  _renderSpotHTMLDesktop(props, coords) {
+    return this._renderSpotHTML(props, coords);
+  }
+
+  // Mobile : Infos → Tags → Actions → Images (peek) → Description
+  _renderSpotHTMLMobile(props, coords) {
+    const name = props.name || "Café";
+    const address = props.address || "";
+    const description = props.description || "";
+    const button_link = props.button_link || "";
+    const images = normalizeArray(props.image_urls);
+    const tags = normalizeArray(props.tags);
+    const spotId = String(props.__fid);
+    const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
+
+    return `
+      <div class="sidebar-card sidebar-card--mobile">
+        <div class="mp-container">
+
+          <!-- 1) Infos -->
+          <div class="mp-info">
+            <h3 class="mp-title">${name}</h3>
+            ${address ? `<p class="mp-address">${address}</p>` : ""}
+            ${tags.length ? `<div class="mp-tags mp-tags--mobile">${tags.map(t => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
+          </div>
+
+          <!-- 2) Actions -->
+          <div class="mp-actions mp-actions--top">
+            ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
+            <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
+          </div>
+
+          <!-- 3) Images (peek + snap) -->
+          <div class="mp-header">
+            ${buildPeekCarouselHTML(images, spotId)}
+          </div>
+
+          <!-- 4) Description -->
           ${description ? `
             <div class="mp-desc-wrapper">
               <div class="mp-desc" data-collapsed="true">${description}</div>
               <a href="#" class="mp-toggle-link" role="button" aria-expanded="false" style="display:none;margin-top:6px;">Voir plus</a>
             </div>` : ""}
-          <div class="mp-actions">
-            ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
-            <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
-          </div>
-        </div>
 
-        <!-- Votes -->
-        <div class="mp-vote-wrap" data-spot-id="${spotId}">
-          <button class="mp-vote-like-fab" type="button" aria-label="Like" data-spot-id="${spotId}">❤</button>
-          <button class="mp-vote-fab" type="button" aria-haspopup="true" aria-expanded="false" data-spot-id="${spotId}">♡</button>
-          <button class="mp-vote-dislike-fab" type="button" aria-label="Dislike" data-spot-id="${spotId}">✖</button>
+          <!-- Votes -->
+          <div class="mp-vote-wrap" data-spot-id="${spotId}">
+            <button class="mp-vote-like-fab" type="button" aria-label="Like" data-spot-id="${spotId}">❤</button>
+            <button class="mp-vote-fab" type="button" aria-haspopup="true" aria-expanded="false" data-spot-id="${spotId}">♡</button>
+            <button class="mp-vote-dislike-fab" type="button" aria-label="Dislike" data-spot-id="${spotId}">✖</button>
+          </div>
+
         </div>
       </div>
     `;
-
-    this.element.classList.add("has-selection"); // ✅ ouvre la colonne gauche
-    this.sidebarTarget.innerHTML = "";
-
-
-    this.sidebarTarget.appendChild(wrap);
-
-    wireMiniCarousel(wrap);
-
-    // “Voir plus”
-    const descEl = wrap.querySelector(".mp-desc");
-    const toggleEl = wrap.querySelector(".mp-toggle-link");
-    if (descEl && toggleEl) {
-      const COLLAPSED_LINES = 2;
-      const collapse = () => {
-        descEl.classList.remove("expanded");
-        descEl.setAttribute("data-collapsed", "true");
-        descEl.style.setProperty("--mp-desc-lines", COLLAPSED_LINES);
-        toggleEl.textContent = "Voir plus";
-        toggleEl.setAttribute("aria-expanded", "false");
-      };
-      const expand = () => {
-        descEl.classList.add("expanded");
-        descEl.setAttribute("data-collapsed", "false");
-        toggleEl.textContent = "Voir moins";
-        toggleEl.setAttribute("aria-expanded", "true");
-      };
-      const measure = () => {
-        const wasExpanded = descEl.classList.contains("expanded");
-        if (wasExpanded) { descEl.classList.remove("expanded"); void descEl.offsetHeight; }
-        const needs = descEl.scrollHeight > descEl.clientHeight + 1;
-        toggleEl.style.display = needs ? "inline" : "none";
-        if (wasExpanded) descEl.classList.add("expanded");
-      };
-      collapse(); requestAnimationFrame(measure); setTimeout(measure, 60);
-      const onToggle = (e) => { e.preventDefault(); (descEl.getAttribute("data-collapsed") === "true") ? expand() : collapse(); requestAnimationFrame(measure); };
-      toggleEl.addEventListener("click", onToggle);
-    }
-
-    // Votes
-    this._renderVoteUI(wrap, spotId);
-    const voteWrap    = wrap.querySelector(".mp-vote-wrap");
-    const mainBtn     = wrap.querySelector(".mp-vote-fab");
-    const likeBtn     = wrap.querySelector(".mp-vote-like-fab");
-    const dislikeBtn  = wrap.querySelector(".mp-vote-dislike-fab");
-
-    this._setupLongPress(mainBtn, voteWrap);
-
-    mainBtn?.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      const open = !voteWrap.classList.contains("is-open");
-      voteWrap.classList.toggle("is-open", open);
-      mainBtn.setAttribute("aria-expanded", String(open));
-    });
-
-    likeBtn?.addEventListener("click", async (ev) => {
-      ev.preventDefault();
-      voteWrap?.classList.add("is-loading");
-      const target = (this.voteManager.getVote(spotId) === "like") ? "none" : "like";
-      const data = await this.voteManager.toggleVote(spotId, target);
-      this._updateFeatureCounts(spotId, data.likes_count, data.dislikes_count);
-      this._renderVoteUI(wrap, spotId);
-      voteWrap?.classList.remove("is-loading");
-      this._haptic([8]);
-    });
-
-    dislikeBtn?.addEventListener("click", async (ev) => {
-      ev.preventDefault();
-      voteWrap?.classList.add("is-loading");
-      const target = (this.voteManager.getVote(spotId) === "dislike") ? "none" : "dislike";
-      const data = await this.voteManager.toggleVote(spotId, target);
-      this._updateFeatureCounts(spotId, data.likes_count, data.dislikes_count);
-      this._renderVoteUI(wrap, spotId);
-      voteWrap?.classList.remove("is-loading");
-      this._haptic([8]);
-    });
   }
 
-  /* ---------- Popup (fallback mobile) — inchangée sauf nettoyage ---------- */
-  openSpotPopup(coords, props) {
-    if (this.popup) this.popup.remove();
+  /* ---------- Sidebar (desktop / tablette) ---------- */
+  openSpotSidebar(props, coords) {
+    if (!this.hasSidebarTarget) return;
 
-    const name = props.name || "Café";
-    const address = props.address || "";
-    const description = props.description || "";
-    const button_link = props.button_link || "";
-    const tags = normalizeArray(props.tags);
-    const images = normalizeArray(props.image_urls);
-    const isMobile = window.matchMedia("(max-width: 480px)").matches;
-    const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
+    const html = this._renderSpotHTMLDesktop(props, coords);
+    this.sidebarTarget.innerHTML = html;
+    this.element.classList.add("has-selection");
 
-    const descId = `mp-desc-${props.__fid || Math.random().toString(36).slice(2)}`;
-    const spotId = String(props.__fid);
+    const root = this.sidebarTarget;
+    // On câble les deux (selon le markup rendu par _renderSpotHTML)
+    wireMiniCarousel(root);
+    wirePeekCarousel(root);
+    this._wireExpandableDesc(root);
+    this._wireVotes(root);
+  }
 
-    const el = document.createElement("div");
-    el.className = "map-popup";
-    el.innerHTML = `
-      <div class="mp-container">
-        <div class="mp-header">
-          ${buildMiniCarouselHTML(images, props.__fid)}
-        </div>
+  _wireExpandableDesc(root) {
+    const descEl = root.querySelector(".mp-desc");
+    const toggleEl = root.querySelector(".mp-toggle-link");
+    if (!(descEl && toggleEl)) return;
 
-        <div class="mp-vote-wrap" data-spot-id="${spotId}">
-          <button class="mp-vote-like-fab" type="button" aria-label="Like" data-spot-id="${spotId}">❤</button>
-          <button class="mp-vote-fab" type="button" aria-haspopup="true" aria-expanded="false" data-spot-id="${spotId}">♡</button>
-          <button class="mp-vote-dislike-fab" type="button" aria-label="Dislike" data-spot-id="${spotId}">✖</button>
-        </div>
+    const COLLAPSED_LINES = 2;
+    const collapse = () => {
+      descEl.classList.remove("expanded");
+      descEl.setAttribute("data-collapsed", "true");
+      descEl.style.setProperty("--mp-desc-lines", COLLAPSED_LINES);
+      toggleEl.textContent = "Voir plus";
+      toggleEl.setAttribute("aria-expanded", "false");
+    };
+    const expand = () => {
+      descEl.classList.add("expanded");
+      descEl.setAttribute("data-collapsed", "false");
+      toggleEl.textContent = "Voir moins";
+      toggleEl.setAttribute("aria-expanded", "true");
+    };
+    const measure = () => {
+      const wasExpanded = descEl.classList.contains("expanded");
+      if (wasExpanded) { descEl.classList.remove("expanded"); void descEl.offsetHeight; }
+      const needs = descEl.scrollHeight > descEl.clientHeight + 1;
+      toggleEl.style.display = needs ? "inline" : "none";
+      if (wasExpanded) descEl.classList.add("expanded");
+    };
+    collapse(); requestAnimationFrame(measure); setTimeout(measure, 60);
 
-        <div class="mp-body">
-          <h3 class="mp-title">${name}</h3>
-          ${address ? `<p class="mp-address">${address}</p>` : ""}
-          ${tags.length ? `<div class="mp-tags">${tags.map(t => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
-          ${description ? `
-            <div class="mp-desc-wrapper">
-              <div class="mp-desc" id="${descId}" data-collapsed="true">${description}</div>
-              <a href="#" class="mp-toggle-link" role="button" aria-controls="${descId}" aria-expanded="false" style="display:none;margin-top:6px;">Voir plus</a>
-            </div>` : ""}
-          <div class="mp-actions">
-            ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
-            <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
-          </div>
-        </div>
-      </div>`;
+    const onToggle = (e) => { e.preventDefault(); (descEl.getAttribute("data-collapsed") === "true") ? expand() : collapse(); requestAnimationFrame(measure); };
+    toggleEl.addEventListener("click", onToggle);
+    toggleEl.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") onToggle(e); });
+  }
 
-    this.popup = new this.mb.Popup({
-      anchor: "bottom",
-      offset: [0, -14],
-      closeButton: true,
-      closeOnClick: false,
-      maxWidth: isMobile ? "92vw" : "360px",
-      className: `ws-popup ${isMobile ? "ws-popup--mobile" : ""}`,
-    }).setLngLat(coords).setDOMContent(el).addTo(this.map);
-
-    wireMiniCarousel(el);
-
-    const descEl = el.querySelector(`#${CSS.escape(descId)}`);
-    const toggleEl = el.querySelector(".mp-toggle-link");
-
-    if (descEl && toggleEl) {
-      const COLLAPSED_LINES = 2;
-      const collapse = () => {
-        descEl.classList.remove("expanded");
-        descEl.setAttribute("data-collapsed", "true");
-        descEl.style.setProperty("--mp-desc-lines", COLLAPSED_LINES);
-        toggleEl.textContent = "Voir plus";
-        toggleEl.setAttribute("aria-expanded", "false");
-      };
-      const expand = () => {
-        descEl.classList.add("expanded");
-        descEl.setAttribute("data-collapsed", "false");
-        toggleEl.textContent = "Voir moins";
-        toggleEl.setAttribute("aria-expanded", "true");
-      };
-      const measure = () => {
-        const wasExpanded = descEl.classList.contains("expanded");
-        if (wasExpanded) { descEl.classList.remove("expanded"); void descEl.offsetHeight; }
-        const needs = descEl.scrollHeight > descEl.clientHeight + 1;
-        toggleEl.style.display = needs ? "inline" : "none";
-        if (wasExpanded) descEl.classList.add("expanded");
-      };
-      const onToggle = (e) => { e.preventDefault(); (descEl.getAttribute("data-collapsed") === "true") ? expand() : collapse(); requestAnimationFrame(measure); };
-      collapse(); requestAnimationFrame(measure); setTimeout(measure, 60);
-      toggleEl.addEventListener("click", onToggle);
-      toggleEl.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") onToggle(e); });
-    }
-
-    // Votes
-    const wrap       = el.querySelector(".mp-vote-wrap");
-    const mainBtn    = el.querySelector(".mp-vote-fab");
-    const likeFab    = el.querySelector(".mp-vote-like-fab");
-    const dislikeFab = el.querySelector(".mp-vote-dislike-fab");
+  _wireVotes(root) {
+    const wrap       = root.querySelector(".mp-vote-wrap");
+    if (!wrap) return;
+    const spotId     = wrap?.dataset?.spotId;
+    const mainBtn    = root.querySelector(".mp-vote-fab");
+    const likeBtn    = root.querySelector(".mp-vote-like-fab");
+    const dislikeBtn = root.querySelector(".mp-vote-dislike-fab");
 
     this._setupLongPress(mainBtn, wrap);
-    this._renderVoteUI(el, spotId);
+    this._renderVoteUI(root, spotId);
 
     mainBtn?.addEventListener("click", (ev) => {
       ev.preventDefault();
       const open = !wrap.classList.contains("is-open");
       wrap.classList.toggle("is-open", open);
       mainBtn.setAttribute("aria-expanded", String(open));
-    }, { passive: false });
+    });
 
-    likeFab?.addEventListener("click", async (ev) => {
+    likeBtn?.addEventListener("click", async (ev) => {
       ev.preventDefault();
       wrap?.classList.add("is-loading");
       const target = (this.voteManager.getVote(spotId) === "like") ? "none" : "like";
       const data = await this.voteManager.toggleVote(spotId, target);
       this._updateFeatureCounts(spotId, data.likes_count, data.dislikes_count);
-      this._renderVoteUI(el, spotId);
+      this._renderVoteUI(root, spotId);
       wrap?.classList.remove("is-loading");
       this._haptic([8]);
-    }, { passive: false });
+    });
 
-    dislikeFab?.addEventListener("click", async (ev) => {
+    dislikeBtn?.addEventListener("click", async (ev) => {
       ev.preventDefault();
       wrap?.classList.add("is-loading");
       const target = (this.voteManager.getVote(spotId) === "dislike") ? "none" : "dislike";
       const data = await this.voteManager.toggleVote(spotId, target);
       this._updateFeatureCounts(spotId, data.likes_count, data.dislikes_count);
-      this._renderVoteUI(el, spotId);
+      this._renderVoteUI(root, spotId);
       wrap?.classList.remove("is-loading");
       this._haptic([8]);
-    }, { passive: false });
+    });
+  }
 
-    // clic ailleurs dans la popup => referme
+  _renderVoteUI(root, spotId) {
+    const mainBtn = root.querySelector(".mp-vote-fab");
+    const vote = this.voteManager.getVote(spotId);
+    mainBtn?.classList.toggle("is-liked", vote === "like");
+    mainBtn?.classList.toggle("is-disliked", vote === "dislike");
+  }
+
+  /* ---------- Popup (optionnel/fallback) ---------- */
+  openSpotPopup(coords, props) {
+    if (this.popup) this.popup.remove();
+
+    const isMobileTiny = window.matchMedia("(max-width: 480px)").matches;
+    const el = document.createElement("div");
+    el.className = "map-popup";
+    el.innerHTML = this._renderSpotHTML(props, coords);
+
+    this.popup = new this.mb.Popup({
+      anchor: "bottom",
+      offset: [0, -14],
+      closeButton: true,
+      closeOnClick: false,
+      maxWidth: isMobileTiny ? "92vw" : "360px",
+      className: `ws-popup ${isMobileTiny ? "ws-popup--mobile" : ""}`,
+    }).setLngLat(coords).setDOMContent(el).addTo(this.map);
+
+    wireMiniCarousel(el);
+    wirePeekCarousel(el);
+    this._wireExpandableDesc(el);
+    this._wireVotes(el);
+
+    const wrap = el.querySelector(".mp-vote-wrap");
+    const mainBtn = el.querySelector(".mp-vote-fab");
     el.addEventListener("click", (evt) => {
       const inWrap = evt.target.closest(".mp-vote-wrap");
       if (!inWrap) {
@@ -862,26 +900,23 @@ _buildClusterEaseOptions(lngLat, zoom) {
     } catch {}
   }
 
- _clearSelection() {
-  if (this.map?.getLayer("spots-circles--selected")) {
-    this.map.setFilter("spots-circles--selected", ["==", ["to-string", ["get", "__fid"]], "__none__"]);
-  }
-  this.popup?.remove();
+  _clearSelection() {
+    if (this.map?.getLayer("spots-circles--selected")) {
+      this.map.setFilter("spots-circles--selected", ["==", ["to-string", ["get", "__fid"]], "__none__"]);
+    }
+    this.popup?.remove();
 
-  // ✅ referme le panneau
-  this.element.classList.remove("has-selection");
-  if (this.hasSidebarTarget) {
-    // (Option A) Laisser vide
-    // this.sidebarTarget.innerHTML = "";
+    this.element.classList.remove("has-selection");
+    if (this.hasSidebarTarget) {
+      this.sidebarTarget.innerHTML = `
+        <div class="sidebar-placeholder">
+          <h3>Sélectionnez un café</h3>
+          <p>Cliquez sur un point pour afficher la fiche ici.</p>
+        </div>`;
+    }
 
-    // (Option B) Petit placeholder
-    this.sidebarTarget.innerHTML = `
-      <div class="sidebar-placeholder">
-        <h3>Sélectionnez un café</h3>
-        <p>Cliquez sur un point pour afficher la fiche ici.</p>
-      </div>`;
+    this.closeBottomSheet();
   }
-}
 
   disconnect() {
     this._io?.disconnect();

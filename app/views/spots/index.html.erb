@@ -1,11 +1,9 @@
 <%# === HEAD : Mapbox uniquement sur cette page === %>
 <% content_for :mapbox_head do %>
-  <!-- Préconnexions pour réduire la latence -->
   <link rel="preconnect" href="https://api.mapbox.com" crossorigin>
-  <link rel="preconnect" href="https://events.mapbox.com" crossorigin> <!-- +++ AJOUT -->
+  <link rel="preconnect" href="https://events.mapbox.com" crossorigin>
   <link rel="dns-prefetch" href="//api.mapbox.com">
 
-  <!-- CSS Mapbox non bloquante -->
   <link rel="preload"
         as="style"
         href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css"
@@ -16,7 +14,6 @@
 <% end %>
 
 <div class="workspot-presentation">
-
   <h1><strong>Les meilleurs spots pour travailler</strong>,<br><em>partout, près de vous...</em></h1>
 
   <p class="only-desktop">
@@ -24,45 +21,56 @@
     restos, hôtels — parfait pour télétravailler, étudier, échanger… ou simplement changer d’air.
   </p>
 
-<h3 id="spots-map"
-    data-controller="spots-count"
-    data-spots-count-count-value="<%= @spots_count %>">
-  NOS SPOTS SÉLECTIONNÉS POUR VOUS :
-</h3>
+  <h3 id="spots-map"
+      data-controller="spots-count"
+      data-spots-count-count-value="<%= @spots_count %>">
+    NOS SPOTS SÉLECTIONNÉS POUR VOUS :
+  </h3>
 
+  <%# === MAP WRAPPER (une seule .map-shell) === %>
+  <div class="map-shell"
+       aria-labelledby="spots-map"
+       role="region"
+       aria-label="Carte interactive des spots de travail"
+       data-controller="map"
+       data-map-style-value="mapbox://styles/workspots/cmflemqjc007y01secq3x89ng"
+       data-map-center-value="[2.3522,48.8566]"
+       data-map-zoom-value="11.4">
 
-<%# === CONTENU === %>
-<!-- MAP -->
-<div class="map-shell"
-     aria-labelledby="spots-map"
-     role="region"
-     aria-label="Carte interactive des spots de travail"
-     data-controller="map"
-     data-map-style-value="mapbox://styles/workspots/cmflemqjc007y01secq3x89ng"
-     data-map-center-value="[2.3522,48.8566]"
-     data-map-zoom-value="11.4">
+    <%# Sidebar desktop (une seule) %>
+    <aside class="map-sidebar"
+           data-map-target="sidebar"
+           aria-live="polite"
+           aria-label="Fiche café"></aside>
 
-  <!-- Panneau latéral gauche (fiche café) -->
-  <aside class="map-sidebar" data-map-target="sidebar" aria-live="polite" aria-label="Fiche café"></aside>
+    <%# Carte (une seule, avec un ID unique) %>
+    <div id="map"
+         class="map"
+         data-map-target="container"
+         tabindex="0"
+         aria-label="Carte des spots">
+      <div class="map-placeholder" data-map-target="loading">Chargement…</div>
+    </div>
 
-
-  <!-- Carte (colonne de droite) -->
-  <div id="map"
-       class="map"
-       data-map-target="container"
-       tabindex="0"
-       aria-label="Carte des spots">
-    <div class="map-placeholder" data-map-target="loading">Chargement…</div>
+    <%# Bottom sheet mobile (nouveau) %>
+    <section class="map-bottomsheet"
+             data-map-target="bottomsheet"
+             aria-hidden="true">
+      <button class="mbs-grabber"
+              type="button"
+              data-action="click->map#closeBottomSheet"
+              aria-label="Fermer le panneau"></button>
+      <div class="mbs-content" data-map-target="bottomsheetContent">
+        <!-- Contenu du café cliqué injecté ici -->
+      </div>
+    </section>
   </div>
-</div>
 
-
-<div class="contact-card map-cta">
-  <a class="btn-cta" href="#contact" aria-label="Proposer un spot ou nous contacter">
-    Proposer un spot / Nous contacter
-  </a>
-</div>
-
+  <div class="contact-card map-cta">
+    <a class="btn-cta" href="#contact" aria-label="Proposer un spot ou nous contacter">
+      Proposer un spot / Nous contacter
+    </a>
+  </div>
 
 
       <!-- PACTE DU WORKSPOTTER -->
