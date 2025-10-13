@@ -123,8 +123,8 @@ $space-7: 4rem;     // 64px
   }
 
   h3 {
-    margin-top: $space-5;
-    margin-bottom: $space-3;
+    margin-top: $space-1;
+    margin-bottom: $space-1;
     font-size: 1.2rem;
     color: $blue-electric;
     text-transform: uppercase;
@@ -373,59 +373,8 @@ $space-7: 4rem;     // 64px
     min-height: 200px;
   }
 
-  .workspot-presentation .contact-card.map-cta {
-    margin-top: 0;
-  }
-
-  .workspot-presentation .contact-card.map-cta .btn-cta {
-    border-radius: 0 0 12px 12px;
-  }
 }
 
-/* ============== CTA MAPS ================== */
-.contact-card.map-cta {
-  @extend .page-container;
-  font-family: $font;
-  text-align: center;
-  margin: 0 auto $space-5;
-  padding: 0;
-
-  .btn-cta {
-    display: block;
-    inline-size: 100%;
-    min-block-size: 48px;
-    padding: 14px 20px;
-    border-radius: 0 0 12px 12px;
-    font-weight: 700;
-    font-size: 1rem;
-    text-decoration: none;
-    background: $blue-electric;
-    color: $white;
-    border: 2px solid $blue-electric;
-    box-shadow: 0 4px 10px rgba($black, .1);
-    transition: background 0.2s ease, border-color 0.2s ease, transform 0.08s ease;
-
-    &:hover {
-      background: darken($blue-electric, 5%);
-      border-color: darken($blue-electric, 5%);
-      transform: translateY(-1px);
-    }
-
-    &:active { transform: translateY(1px); }
-
-    &:focus-visible {
-      outline: 3px solid rgba($blue-electric, .45);
-      outline-offset: 3px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .btn-cta {
-      font-size: .95rem;
-      padding: 12px 16px;
-    }
-  }
-}
 
 /* ================================
    Contact (harmonisé)

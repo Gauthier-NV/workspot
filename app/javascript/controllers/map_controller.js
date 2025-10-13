@@ -605,12 +605,13 @@ export default class extends Controller {
     this.bottomsheetTarget.dataset.stage = "1"; // 1 = compact, 2 = étendu
     this.bottomsheetTarget.setAttribute("aria-hidden", "false");
 
-    // Carrousels & UI
     const root = this.bottomsheetContentTarget;
     wireMiniCarousel(root);
     wirePeekCarousel(root);
-    this._wireExpandableDesc(root);
     this._wireVotes(root);
+
+    // ✅ lock initial: pas de scroll tant qu'on n'est pas étendu
+    this.bottomsheetContentTarget.classList.add("is-locked");
 
     // Active la logique 2-temps sur mobile uniquement
     if (this.isMobile()) {
@@ -626,56 +627,90 @@ export default class extends Controller {
     if (this.hasBottomsheetContentTarget) this.bottomsheetContentTarget.innerHTML = "";
   }
 
-  /* ---------- Two-stage bottom sheet (mobile) ---------- */
+  /* ---------- Two-step bottom sheet (mobile) ---------- */
   _wireTwoStageBottomSheet() {
     const sheet = this.bottomsheetTarget;
     const content = this.bottomsheetContentTarget;
     if (!(sheet && content)) return;
 
-    // Remet à zéro
+    // Reset & lock stage 1
     sheet.dataset.stage = "1";
     content.scrollTop = 0;
+    content.classList.add("is-locked");
+
+    let isTransitioning = false;
+    const afterTransition = () => {
+      if (!isTransitioning) return;
+      isTransitioning = false;
+      sheet.classList.remove("is-transitioning");
+      this.map?.resize();
+    };
 
     const expandToStage2 = () => {
-      if (sheet.dataset.stage === "2") return;
+      if (sheet.dataset.stage === "2" || isTransitioning) return;
+      isTransitioning = true;
+      sheet.classList.add("is-transitioning");
+
       sheet.dataset.stage = "2";
-      // Resize la carte après l’anim (CSS transition) pour éviter les artefacts
-      setTimeout(() => this.map?.resize(), 300);
+      // Déverrouille après la transition
+      setTimeout(() => {
+        content.classList.remove("is-locked");
+        afterTransition();
+      }, 300);
     };
 
-    // 1) Scroll vers le haut dans la card => passe en stage 2 dès qu’on scrolle un peu
-    const onScroll = () => {
-      // Quand le contenu a défilé (on “tire” la fiche vers le haut)
-      if (content.scrollTop > 24 && sheet.dataset.stage === "1") {
-        expandToStage2();
-        content.removeEventListener("scroll", onScroll, { passive: true });
-      }
+    const collapseToStage1 = () => {
+      if (sheet.dataset.stage === "1" || isTransitioning) return;
+      isTransitioning = true;
+      sheet.classList.add("is-transitioning");
+
+      // Re-lock & remonte en haut
+      content.classList.add("is-locked");
+      content.scrollTop = 0;
+      sheet.dataset.stage = "1";
+
+      setTimeout(() => { afterTransition(); }, 300);
     };
-    content.addEventListener("scroll", onScroll, { passive: true });
 
-    // 2) Poignée (si présente) => toggle stage
-    const grabber = sheet.querySelector(".mbs-grabber");
-    if (grabber) {
-      grabber.addEventListener("click", () => {
-        if (sheet.dataset.stage === "1") expandToStage2();
-        else { sheet.dataset.stage = "1"; setTimeout(()=>this.map?.resize(), 300); }
-      });
-    }
-
-    // 3) Gestuelle tactile: premier “swipe up” sur le sheet quand le contenu est en haut
+    // --- Gestuelle: swipe UP léger pour étendre (stage 1 seulement)
     let touchStartY = null;
     const onTouchStart = (e) => { touchStartY = e.touches?.[0]?.clientY ?? null; };
     const onTouchMove = (e) => {
-      if (touchStartY == null) return;
-      const y = e.touches?.[0]?.clientY ?? touchStartY;
-      const dy = touchStartY - y; // positif si on glisse vers le haut
-      if (content.scrollTop <= 0 && dy > 12 && sheet.dataset.stage === "1") {
+      if (sheet.dataset.stage !== "1" || touchStartY == null) return;
+      const y  = e.touches?.[0]?.clientY ?? touchStartY;
+      const dy = touchStartY - y; // positif = vers le haut
+      if (dy > 14) {
+        e.preventDefault(); // empêche le scroll fantôme
         expandToStage2();
         touchStartY = null;
       }
     };
+    const onTouchEnd = () => { touchStartY = null; };
+
     sheet.addEventListener("touchstart", onTouchStart, { passive: true });
-    sheet.addEventListener("touchmove", onTouchMove, { passive: true });
+    sheet.addEventListener("touchmove", onTouchMove, { passive: false });
+    sheet.addEventListener("touchend", onTouchEnd, { passive: true });
+    sheet.addEventListener("touchcancel", onTouchEnd, { passive: true });
+
+    // --- TAP sur la card pour étendre (stage 1)
+    const onClickToExpand = () => {
+      if (sheet.dataset.stage === "1") expandToStage2();
+    };
+    const card = content.querySelector(".sidebar-card");
+    (card || content).addEventListener("click", onClickToExpand);
+
+    // --- Poignée: toggle stage
+    const grabber = sheet.querySelector(".mbs-grabber");
+    if (grabber) {
+      grabber.addEventListener("click", () => {
+        if (sheet.dataset.stage === "1") expandToStage2();
+        else collapseToStage1();
+      });
+    }
+
+    // On ne change plus de stage via le scroll: noop
+    const onScroll = () => {};
+    content.addEventListener("scroll", onScroll, { passive: true });
   }
 
   /* ---------- Helpers offset / sidebar ---------- */
@@ -711,7 +746,7 @@ export default class extends Controller {
     const address = props.address || "";
     const description = props.description || "";
     const button_link = props.button_link || "";
-    const tags = normalizeArray(props.tags);
+       const tags = normalizeArray(props.tags);
     const images = normalizeArray(props.image_urls);
     const spotId = String(props.__fid);
     const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
@@ -731,11 +766,8 @@ export default class extends Controller {
             <h3 class="mp-title">${name}</h3>
             ${address ? `<p class="mp-address">${address}</p>` : ""}
             ${tags.length ? `<div class="mp-tags">${tags.map(t => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
-            ${description ? `
-              <div class="mp-desc-wrapper">
-                <div class="mp-desc" data-collapsed="true">${description}</div>
-                <a href="#" class="mp-toggle-link" role="button" aria-expanded="false" style="display:none;margin-top:6px;">Voir plus</a>
-              </div>` : ""}
+            ${description ? `<div class="mp-desc">${description}</div>` : ""}
+
             <div class="mp-actions">
               ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
               <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
@@ -743,9 +775,16 @@ export default class extends Controller {
           </div>
 
           <div class="mp-vote-wrap" data-spot-id="${spotId}">
-            <button class="mp-vote-like-fab" type="button" aria-label="Like" data-spot-id="${spotId}">❤</button>
-            <button class="mp-vote-fab" type="button" aria-haspopup="true" aria-expanded="false" data-spot-id="${spotId}">♡</button>
-            <button class="mp-vote-dislike-fab" type="button" aria-label="Dislike" data-spot-id="${spotId}">✖</button>
+            <button class="mp-vote-btn mp-vote-btn--up" type="button" aria-label="J’aime" title="J’aime" data-spot-id="${spotId}">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 10v10H4a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h3zm3.5 10H16a4 4 0 0 0 3.87-2.93l1.1-4.39A2 2 0 0 0 19.03 8H15V5a3 3 0 0 0-3-3h-.2a1 1 0 0 0-.95.68L8.76 8.1A3 3 0 0 1 6 10h4.5v10z" fill="currentColor"/>
+              </svg>
+            </button>
+            <button class="mp-vote-btn mp-vote-btn--down" type="button" aria-label="Je n’aime pas" title="Je n’aime pas" data-spot-id="${spotId}">
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 4v10H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3zm3.5-2H16a4 4 0 0 1 3.87 2.93l1.1 4.39A2 2 0 0 1 19.03 14H15v3a3 3 0 0 1-3 3h-.2a1 1 0 0 1-.95-.68L8.76 9.9A3 3 0 0 0 6 8h4.5V2z" fill="currentColor"/>
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -758,55 +797,52 @@ export default class extends Controller {
 
   // Mobile : Infos → Tags → Actions → Images (peek) → Description
   _renderSpotHTMLMobile(props, coords) {
-    const name = props.name || "Café";
-    const address = props.address || "";
-    const description = props.description || "";
-    const button_link = props.button_link || "";
-    const images = normalizeArray(props.image_urls); // ✅ correction ici
-    const tags = normalizeArray(props.tags);
-    const spotId = String(props.__fid);
-    const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
-
-    return `
-      <div class="sidebar-card sidebar-card--mobile">
-        <div class="mp-container">
-
-          <!-- 1) Infos -->
-          <div class="mp-info">
-            <h3 class="mp-title">${name}</h3>
-            ${address ? `<p class="mp-address">${address}</p>` : ""}
-            ${tags.length ? `<div class="mp-tags mp-tags--mobile">${tags.map(t => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
-          </div>
-
-          <!-- 2) Actions -->
-          <div class="mp-actions mp-actions--top">
-            ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
-            <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
-          </div>
-
-          <!-- 3) Images (peek + snap) -->
-          <div class="mp-header">
-            ${buildPeekCarouselHTML(images, spotId)}
-          </div>
-
-          <!-- 4) Description -->
-          ${description ? `
-            <div class="mp-desc-wrapper">
-              <div class="mp-desc" data-collapsed="true">${description}</div>
-              <a href="#" class="mp-toggle-link" role="button" aria-expanded="false" style="display:none;margin-top:6px;">Voir plus</a>
-            </div>` : ""}
-
-          <!-- Votes -->
-          <div class="mp-vote-wrap" data-spot-id="${spotId}">
-            <button class="mp-vote-like-fab" type="button" aria-label="Like" data-spot-id="${spotId}">❤</button>
-            <button class="mp-vote-fab" type="button" aria-haspopup="true" aria-expanded="false" data-spot-id="${spotId}">♡</button>
-            <button class="mp-vote-dislike-fab" type="button" aria-label="Dislike" data-spot-id="${spotId}">✖</button>
-          </div>
-
+  const name = props.name || "Café";
+  const address = props.address || "";
+  const description = props.description || "";
+  const button_link = props.button_link || "";
+  const images = normalizeArray(props.image_urls);
+  const tags = normalizeArray(props.tags);
+  const spotId = String(props.__fid);
+  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
+  return `
+    <div class="sidebar-card sidebar-card--mobile">
+      <div class="mp-container">
+        <!-- 1) Infos -->
+        <div class="mp-info">
+          <h3 class="mp-title">${name}</h3>
+          ${address ? `<p class="mp-address">${address}</p>` : ""}
+          ${tags.length ? `<div class="mp-tags mp-tags--mobile">${tags.map(t => `<span class="mp-tag">${t}</span>`).join("")}</div>` : ""}
+        </div>
+        <!-- 2) Actions -->
+        <div class="mp-actions mp-actions--top">
+          ${button_link ? `<a class="mp-link" href="${button_link}" target="_blank" rel="noopener">Infos</a>` : ""}
+          <a class="mp-primary" href="${gmaps}" target="_blank" rel="noopener">Itinéraire</a>
+        </div>
+        <!-- 3) Images (peek + snap) -->
+        <div class="mp-header">
+          ${buildPeekCarouselHTML(images, spotId)}
+        </div>
+        <!-- 4) Description -->
+        ${description ? `<div class="mp-desc">${description}</div>` : ""}
+        <!-- Votes -->
+        <div class="mp-vote-wrap" data-spot-id="${spotId}">
+          <button class="mp-vote-btn mp-vote-btn--up" type="button" aria-label="J’aime" title="J’aime" data-spot-id="${spotId}">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 10v10H4a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h3zm3.5 10H16a4 4 0 0 0 3.87-2.93l1.1-4.39A2 2 0 0 0 19.03 8H15V5a3 3 0 0 0-3-3h-.2a1 1 0 0 0-.95.68L8.76 8.1A3 3 0 0 1 6 10h4.5v10z" fill="currentColor"/>
+            </svg>
+          </button>
+          <button class="mp-vote-btn mp-vote-btn--down" type="button" aria-label="Je n’aime pas" title="Je n’aime pas" data-spot-id="${spotId}">
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 4v10H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3zm3.5-2H16a4 4 0 0 1 3.87 2.93l1.1 4.39A2 2 0 0 1 19.03 14H15v3a3 3 0 0 1-3 3h-.2a1 1 0 0 1-.95-.68L8.76 9.9A3 3 0 0 0 6 8h4.5V2z" fill="currentColor"/>
+            </svg>
+          </button>
         </div>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
+
 
   /* ---------- Sidebar (desktop / tablette) ---------- */
   openSpotSidebar(props, coords) {
@@ -819,62 +855,23 @@ export default class extends Controller {
     const root = this.sidebarTarget;
     wireMiniCarousel(root);
     wirePeekCarousel(root);
-    this._wireExpandableDesc(root);
+
     this._wireVotes(root);
   }
 
-  _wireExpandableDesc(root) {
-    const descEl = root.querySelector(".mp-desc");
-    const toggleEl = root.querySelector(".mp-toggle-link");
-    if (!(descEl && toggleEl)) return;
 
-    const COLLAPSED_LINES = 2;
-    const collapse = () => {
-      descEl.classList.remove("expanded");
-      descEl.setAttribute("data-collapsed", "true");
-      descEl.style.setProperty("--mp-desc-lines", COLLAPSED_LINES);
-      toggleEl.textContent = "Voir plus";
-      toggleEl.setAttribute("aria-expanded", "false");
-    };
-    const expand = () => {
-      descEl.classList.add("expanded");
-      descEl.setAttribute("data-collapsed", "false");
-      toggleEl.textContent = "Voir moins";
-      toggleEl.setAttribute("aria-expanded", "true");
-    };
-    const measure = () => {
-      const wasExpanded = descEl.classList.contains("expanded");
-      if (wasExpanded) { descEl.classList.remove("expanded"); void descEl.offsetHeight; }
-      const needs = descEl.scrollHeight > descEl.clientHeight + 1;
-      toggleEl.style.display = needs ? "inline" : "none";
-      if (wasExpanded) descEl.classList.add("expanded");
-    };
-    collapse(); requestAnimationFrame(measure); setTimeout(measure, 60);
-
-    const onToggle = (e) => { e.preventDefault(); (descEl.getAttribute("data-collapsed") === "true") ? expand() : collapse(); requestAnimationFrame(measure); };
-    toggleEl.addEventListener("click", onToggle);
-    toggleEl.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") onToggle(e); });
-  }
 
   _wireVotes(root) {
-    const wrap       = root.querySelector(".mp-vote-wrap");
+    const wrap   = root.querySelector(".mp-vote-wrap");
     if (!wrap) return;
-    const spotId     = wrap?.dataset?.spotId;
-    const mainBtn    = root.querySelector(".mp-vote-fab");
-    const likeBtn    = root.querySelector(".mp-vote-like-fab");
-    const dislikeBtn = root.querySelector(".mp-vote-dislike-fab");
+    const spotId = wrap?.dataset?.spotId;
+    const upBtn   = root.querySelector(".mp-vote-btn--up");
+    const downBtn = root.querySelector(".mp-vote-btn--down");
 
-    this._setupLongPress(mainBtn, wrap);
+    // État initial (actif/inactif)
     this._renderVoteUI(root, spotId);
 
-    mainBtn?.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      const open = !wrap.classList.contains("is-open");
-      wrap.classList.toggle("is-open", open);
-      mainBtn.setAttribute("aria-expanded", String(open));
-    });
-
-    likeBtn?.addEventListener("click", async (ev) => {
+    upBtn?.addEventListener("click", async (ev) => {
       ev.preventDefault();
       wrap?.classList.add("is-loading");
       const target = (this.voteManager.getVote(spotId) === "like") ? "none" : "like";
@@ -885,7 +882,7 @@ export default class extends Controller {
       this._haptic([8]);
     });
 
-    dislikeBtn?.addEventListener("click", async (ev) => {
+    downBtn?.addEventListener("click", async (ev) => {
       ev.preventDefault();
       wrap?.classList.add("is-loading");
       const target = (this.voteManager.getVote(spotId) === "dislike") ? "none" : "dislike";
@@ -897,12 +894,20 @@ export default class extends Controller {
     });
   }
 
-  _renderVoteUI(root, spotId) {
-    const mainBtn = root.querySelector(".mp-vote-fab");
+
+   _renderVoteUI(root, spotId) {
+    const upBtn   = root.querySelector(".mp-vote-btn--up");
+    const downBtn = root.querySelector(".mp-vote-btn--down");
     const vote = this.voteManager.getVote(spotId);
-    mainBtn?.classList.toggle("is-liked", vote === "like");
-    mainBtn?.classList.toggle("is-disliked", vote === "dislike");
+
+    upBtn?.classList.toggle("is-active", vote === "like");
+    downBtn?.classList.toggle("is-active", vote === "dislike");
+
+    // aria-pressed pour accessibilité
+    if (upBtn)   upBtn.setAttribute("aria-pressed",   vote === "like" ? "true" : "false");
+    if (downBtn) downBtn.setAttribute("aria-pressed", vote === "dislike" ? "true" : "false");
   }
+
 
   /* ---------- Popup (optionnel/fallback) ---------- */
   openSpotPopup(coords, props) {
@@ -924,7 +929,6 @@ export default class extends Controller {
 
     wireMiniCarousel(el);
     wirePeekCarousel(el);
-    this._wireExpandableDesc(el);
     this._wireVotes(el);
 
     const wrap = el.querySelector(".mp-vote-wrap");

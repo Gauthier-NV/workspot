@@ -71,10 +71,9 @@
 .map-bottomsheet {
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  background: #fff;
+  background: #ffffff;
   border-top-left-radius: 14px;
   border-top-right-radius: 14px;
-  box-shadow: 0 -10px 30px rgba(17,24,39,.18);
   transform: translateY(100%);
   transition: transform .28s ease, opacity .28s ease;
   opacity: 0;
@@ -181,31 +180,19 @@
   hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word;
 }
 
-/* Tronquage + lien “Voir la suite” */
-.mp-desc-wrapper { display: grid; gap: 3px; margin-bottom: 10px; }
+/* Description — popup + sidebar */
 .mp-desc {
-  --mp-desc-lines: 2;
+  font-size: 13px;
+  font-weight: 350;
   line-height: 1.5;
-  max-height: calc(var(--mp-desc-lines) * 1.5em);
-  overflow: hidden; position: relative;
+  color: #1f2937;
+  text-align: justify;
+  text-align-last: left;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+  margin-bottom: 10px;
 }
-.mp-desc::after {
-  content: "";
-  position: absolute; left: 0; right: 0; bottom: 0; height: 2rem;
-  background: linear-gradient(to top, #fff, rgba(255,255,255,0));
-}
-.mp-desc.expanded { max-height: none; }
-.mp-desc.expanded::after { display: none; }
-
-/* Lien “Voir la suite” */
-.mp-toggle-link {
-  color: #2d2e36b8; text-decoration: underline; text-underline-offset: 2px;
-  font-weight: 400; font-size: 12px; cursor: pointer; display: inline; line-height: 1.5;
-}
-.mp-toggle-link:hover { color: #06080d; }
-.mp-toggle-link:focus-visible,
-.mp-link:focus-visible,
-.mp-primary:focus-visible { outline: 2px solid #2563EB; outline-offset: 2px; border-radius: 6px; }
 
 /* Actions */
 .mp-actions { display: flex; gap: 12px; justify-content: flex-start; margin-top: 12px; }
@@ -355,95 +342,6 @@
   .mpc-snap-slide { width: 82%; }
 }
 
-/* ===========================
-   Vote UI — Clean & Minimal
-   =========================== */
-.mp-container { position: relative; }
-
-/* Ancre bottom-right */
-.mp-vote-wrap {
-  position: absolute; right: 10px; bottom: 10px;
-  width: 48px; display: grid; justify-items: center;
-  z-index: 2; transition: opacity .15s ease;
-}
-.mp-vote-wrap.is-loading { opacity:.6; pointer-events:none; }
-
-/* FABs */
-.mp-vote-fab,
-.mp-vote-like-fab,
-.mp-vote-dislike-fab {
-  --fab-bg: rgba(255,255,255,.92);
-  --fab-border: rgba(0,0,0,.08);
-  --fab-fg: #0f172a;
-  width: 40px; height: 40px; display: grid; place-items: center;
-  border-radius: 9999px; border: 1px solid var(--fab-border);
-  background: var(--fab-bg); color: var(--fab-fg);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 4px 14px rgba(0,0,0,.10);
-  cursor: pointer;
-  transition: transform .12s ease, background-color .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .12s ease;
-}
-.mp-vote-fab:hover,
-.mp-vote-like-fab:hover,
-.mp-vote-dislike-fab:hover { box-shadow: 0 6px 18px rgba(0,0,0,.12); }
-.mp-vote-fab:active,
-.mp-vote-like-fab:active,
-.mp-vote-dislike-fab:active { transform: translateY(1px) scale(.98); }
-
-/* Icônes superposées */
-.mp-vote-fab { position: relative; }
-.mp-vote-icon { position: absolute; width: 22px; height: 22px; opacity: 0; transition: opacity .2s ease, transform .2s ease; }
-.mp-vote-icon svg { width: 100%; height: 100%; display: block; }
-.mp-vote-icon--default { opacity: 1; }
-.mp-vote-fab.is-liked .mp-vote-icon--default,
-.mp-vote-fab.is-disliked .mp-vote-icon--default { opacity: 0; }
-.mp-vote-fab.is-liked .mp-vote-icon--liked { opacity: 1; }
-.mp-vote-fab.is-disliked .mp-vote-icon--disliked { opacity: 1; }
-.mp-vote-fab:hover .mp-vote-icon { transform: scale(1.1); }
-
-/* États sélection */
-.mp-vote-fab.is-liked {
-  --fab-bg: rgba(253, 242, 248, .95);
-  --fab-border: #fda4af;
-  --fab-fg: #be123c;
-}
-.mp-vote-fab.is-disliked {
-  --fab-bg: rgba(248, 250, 252, .95);
-  --fab-border: #94a3b8;
-  --fab-fg: #334155;
-}
-
-/* Positions (menu fermé) */
-.mp-vote-like-fab,
-.mp-vote-dislike-fab {
-  position: absolute; left: 0; right: 0; margin: 0 auto;
-  opacity: 0; pointer-events: none; transform: translateY(0) scale(.9);
-}
-.mp-vote-like-fab   { bottom: 50px; }
-.mp-vote-dislike-fab{ top:   50px; }
-
-/* Menu ouvert */
-.mp-vote-wrap.is-open .mp-vote-like-fab,
-.mp-vote-wrap.is-open .mp-vote-dislike-fab {
-  opacity: 1; pointer-events: auto; transform: translateY(0) scale(1);
-}
-
-/* Feedback */
-.mp-vote-like-fab.is-active  { outline:1.5px solid #fb7185; background:#fff1f2; }
-.mp-vote-dislike-fab.is-active{ outline:1.5px solid #94a3b8; background:#f1f5f9; }
-
-/* Focus visible */
-.mp-vote-fab:focus-visible,
-.mp-vote-like-fab:focus-visible,
-.mp-vote-dislike-fab:focus-visible {
-  outline: 2px solid #3b82f6; outline-offset: 2px; border-color: #93c5fd;
-}
-
-/* Motion réduite */
-@media (prefers-reduced-motion: reduce) {
-  .mp-vote-fab, .mp-vote-like-fab, .mp-vote-dislike-fab, .mp-vote-icon { transition: none; }
-}
-
 /* =======================================
    Bloque le scroll vertical UNIQUEMENT en mobile (popup)
    ======================================= */
@@ -480,8 +378,12 @@
   /* Sheet un peu plus bas par défaut */
   .map-bottomsheet { max-height: 58%; }
 
-  /* Paddings serrés */
-  .mbs-content { padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0)); }
+  .map-bottomsheet .mp-container {
+    background: #ffffff;
+  }
+
+  /* Paddings serrés + marge basse pour laisser passer les boutons flottants */
+  .mbs-content { padding: 8px 12px calc( env(safe-area-inset-bottom, 0)); }
 
   /* Card mobile (HTML: .sidebar-card.sidebar-card--mobile) */
   .map-bottomsheet .sidebar-card--mobile {
@@ -512,15 +414,7 @@
 
   /* 4) Description en bas */
   .map-bottomsheet .mp-desc-wrapper { padding: 8px 10px 10px; margin: 0; }
-  .map-bottomsheet .mp-desc { --mp-desc-lines: 2; }
-
-  /* Votes compacts */
-  .map-bottomsheet .mp-vote-wrap { right: 8px; bottom: 8px; width: 40px; }
-  .map-bottomsheet .mp-vote-fab,
-  .map-bottomsheet .mp-vote-like-fab,
-  .map-bottomsheet .mp-vote-dislike-fab { width: 36px; height: 36px; }
-  .map-bottomsheet .mp-vote-like-fab    { bottom: 46px; }
-  .map-bottomsheet .mp-vote-dislike-fab { top:    46px; }
+  .map-bottomsheet .mp-desc { --mp-desc-lines: 2; padding: 20px 10px 6px ; }
 
   /* ---- SPACER quand pas d’images (même taille que le carrousel) ---- */
   .map-bottomsheet .mpc-spacer {
@@ -641,9 +535,142 @@
   }
 
   @media (max-width: 1024px) {
-  .mpc-dots,
-  .mpc-snap-dots {
-    display: none !important;
+    .mpc-dots,
+    .mpc-snap-dots {
+      display: none !important;
+    }
   }
 }
+
+/* =========================================================
+   ➕ AJOUTS — Lock/Unlock du scroll pour le two-step
+   ========================================================= */
+
+/* Lock du scroll tant qu'on n'est pas en stage 2 */
+.mbs-content.is-locked {
+  overflow: hidden !important;
+  -webkit-overflow-scrolling: auto !important;
+  touch-action: pan-x !important;
+}
+
+/* En stage 1, on n'autorise que le pan horizontal sur le header/carrousel */
+.map-bottomsheet[data-stage="1"] .mp-header {
+  touch-action: pan-x;
+}
+
+/* Optionnel: évite les clics pendant la transition */
+.map-bottomsheet.is-transitioning {
+  pointer-events: none;
+}
+
+/* ===========================
+   Vote UI — 2 boutons (👍 / 👎)
+   =========================== */
+
+.mp-container { position: relative; }
+
+/* ---- Desktop / tablette : bas-droite de la card (horizontal) ---- */
+.mp-vote-wrap {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: flex;         /* HORIZONTAL */
+  gap: 8px;              /* espace entre 👍 et 👎 */
+  z-index: 2;
+  transition: opacity .15s ease;
+}
+.mp-vote-wrap.is-loading { opacity: .6; pointer-events: none; }
+
+/* Boutons ronds */
+.mp-vote-btn {
+  --fab-bg: rgba(255,255,255,.92);
+  --fab-border: rgba(0,0,0,.08);
+  --fab-fg: #a2a2a2;
+
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  border: 1px solid var(--fab-border);
+  background: var(--fab-bg);
+  color: var(--fab-fg);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 14px rgba(0,0,0,.10);
+  cursor: pointer;
+  transition: transform .12s ease, background-color .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .12s ease;
+}
+.mp-vote-btn:hover { box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.mp-vote-btn:active { transform: translateY(1px) scale(.98); }
+
+/* États actifs (sélection) */
+.mp-vote-btn--up.is-active {
+  --fab-bg: rgba(220, 252, 231, .95);   /* vert très pâle */
+  --fab-border: #97fcbc;
+  --fab-fg: #42a568;
+}
+.mp-vote-btn--down.is-active {
+  --fab-bg: rgba(254, 226, 226, .95);   /* rouge très pâle */
+  --fab-border: #fca5a5;
+  --fab-fg: #c15353;
+}
+
+/* Focus visible (a11y) */
+.mp-vote-btn:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-color: #93c5fd;
+}
+
+/* ---- Mobile : boutons flottants toujours visibles pendant le scroll ---- */
+@media (max-width: 768px) {
+  /* Laisse de la place en bas du contenu pour le bandeau de boutons */
+  .map-bottomsheet .mbs-content {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
+  }
+
+  /* Le conteneur devient sticky en bas de la zone scrollable */
+  .map-bottomsheet .mp-vote-wrap {
+    position: sticky;
+    bottom: 8px;         /* colle au bas du viewport du scroll */
+    right: auto;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end; /* bas-droite */
+    gap: 8px;
+    padding-right: 8px;
+    z-index: 5;          /* au-dessus du contenu */
+    pointer-events: none; /* n’empêche pas le scroll */
+  }
+  .map-bottomsheet .mp-vote-btn {
+    pointer-events: auto; /* clics actifs sur les boutons */
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Dark mode léger */
+@media (prefers-color-scheme: dark) {
+  .mp-vote-btn {
+    --fab-bg: rgba(15,23,42,.9);
+    --fab-border: rgba(255,255,255,.08);
+    --fab-fg: #e5e7eb;
+    box-shadow: 0 4px 14px rgba(0,0,0,.35);
+  }
+  .mp-vote-btn--up.is-active {
+    --fab-bg: rgba(34, 197, 94, .18);
+    --fab-border: rgba(74, 222, 128, .5);
+    --fab-fg: #86efac;
+  }
+  .mp-vote-btn--down.is-active {
+    --fab-bg: rgba(239, 68, 68, .18);
+    --fab-border: rgba(252, 165, 165, .5);
+    --fab-fg: #fecaca;
+  }
+}
+
+/* Motion réduite */
+@media (prefers-reduced-motion: reduce) {
+  .mp-vote-btn { transition: none; }
 }
