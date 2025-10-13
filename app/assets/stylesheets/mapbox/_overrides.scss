@@ -25,16 +25,12 @@
 /* ====== Panneau latéral (overlay desktop) ====== */
 .map-sidebar {
   position: absolute;
-  top: 0; left: 0; bottom: 0;
+  top: 0; left: 0;
   width: 380px;
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
   border-radius: 12px 0 0 12px;
-  box-shadow: 0 10px 24px rgba(17,24,39,.18);
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   padding: 12px;
-
   transform: translateX(-110%);
   opacity: 0;
   pointer-events: none;
@@ -194,7 +190,8 @@
   overflow: hidden; position: relative;
 }
 .mp-desc::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2rem;
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0; height: 2rem;
   background: linear-gradient(to top, #fff, rgba(255,255,255,0));
 }
 .mp-desc.expanded { max-height: none; }
@@ -282,7 +279,6 @@
 .mpc-dot {
   width: 6px; height: 6px; border-radius: 999px; border: none;
   background: rgba(255,255,255,.7); box-shadow: 0 0 0 1px rgba(0,0,0,.15) inset;
-  padding: 0; cursor: pointer;
 }
 .mpc-dot.is-active { background: #fff; }
 
@@ -319,16 +315,13 @@
   flex: 0 0 auto;
   width: 78%;
   max-width: 360px;
-  aspect-ratio: 16 / 10;     /* ratio visuel agréable */
+  aspect-ratio: 16 / 10;
   border-radius: 10px;
   overflow: hidden;
   background: #f3f4f6;
   position: relative;
-
-  /* Align prêt pour le snap (harmless si snap désactivé) */
   scroll-snap-align: start;
 }
-/* Desktop: ne force pas l’object-fit ici */
 .mpc-snap-slide img { width: 100%; height: 100%; display: block; }
 
 /* Dots du peek */
@@ -344,11 +337,17 @@
 /* Momentum scroll & snap + COVER UNIQUEMENT mobile/tablette */
 @media (max-width: 1024px) {
   .mpc-snap-track {
-    -webkit-overflow-scrolling: touch;  /* inertie iOS/Android */
-    scroll-snap-type: x proximity;      /* snap souple */
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
     touch-action: pan-x;
   }
   .mp-carousel--peek { touch-action: pan-x; }
+
+  .mpc-slide img,
+  .mpc-snap-slide img {
+    object-fit: cover;
+    object-position: center;
+  }
 }
 
 /* Un peu plus de peek sur très petit écran */
@@ -467,6 +466,8 @@
   overflow: hidden;
   border: 1px solid #e5e7eb;
   box-shadow: 0 2px 10px rgba(17,24,39,.06);
+  margin-bottom: 12px;
+
 }
 .sidebar-card .mp-body { padding: 12px; }
 .sidebar-card .mp-carousel { height: 220px; }
@@ -498,27 +499,20 @@
 
   /* Tags plus serrés en mobile */
   .map-bottomsheet .mp-tags--mobile { gap: 4px; margin: 6px 0 8px; }
-  .map-bottomsheet .mp-tags--mobile .mp-tag { font-size: 10px; padding: 2px 7px; }
+  .map-bottomsheet .mp-tags--mobile .mp-tag { font-size: 10.5px; padding: 2px 7px; }
 
   /* 2) Actions juste sous les infos */
   .map-bottomsheet .mp-actions--top { display: flex; gap: 8px; padding: 0 10px 8px; margin-top: 0; }
   .map-bottomsheet .mp-actions--top .mp-link,
   .map-bottomsheet .mp-actions--top .mp-primary { font-size: 12px; padding: 6px 8px; }
 
-  /* 3) Images (carrousel compact) */
+  /* 3) Images (carrousel compact par défaut) */
   .map-bottomsheet .mp-header { padding: 0 10px; }
   .map-bottomsheet .mp-carousel { height: 120px; border-radius: 10px; }
 
   /* 4) Description en bas */
   .map-bottomsheet .mp-desc-wrapper { padding: 8px 10px 10px; margin: 0; }
   .map-bottomsheet .mp-desc { --mp-desc-lines: 2; }
-
-  /* COVER UNIQUEMENT MOBILE (fade + peek) */
-  .mpc-slide img,
-  .mpc-snap-slide img {
-    object-fit: cover;
-    object-position: center;
-  }
 
   /* Votes compacts */
   .map-bottomsheet .mp-vote-wrap { right: 8px; bottom: 8px; width: 40px; }
@@ -527,10 +521,129 @@
   .map-bottomsheet .mp-vote-dislike-fab { width: 36px; height: 36px; }
   .map-bottomsheet .mp-vote-like-fab    { bottom: 46px; }
   .map-bottomsheet .mp-vote-dislike-fab { top:    46px; }
+
+  /* ---- SPACER quand pas d’images (même taille que le carrousel) ---- */
+  .map-bottomsheet .mpc-spacer {
+    border-radius: 10px;
+    background: #f3f4f6;
+    height: 120px;
+  }
 }
 
+/* Très petits écrans */
 @media (max-width: 480px) {
   .map-bottomsheet { max-height: 50%; }
-  .map-bottomsheet .mp-carousel { height: 170px; } /* hauteur + grande sur très petit écran */
+  .map-bottomsheet .mp-carousel { height: 170px; }
   .map-bottomsheet .mp-desc { --mp-desc-lines: 1; }
+
+  /* Spacer aligné */
+  .map-bottomsheet .mpc-spacer { height: 170px; }
+}
+
+/* =========================================================
+   MOBILE — Two-step sheet avec peek d’images (à la Google Maps)
+   (version alignée avec le JS: data-stage="1" puis data-stage="2")
+   ========================================================= */
+@media (max-width: 768px) {
+  /* Variables de hauteur (peuvent être ajustées) */
+  .map-bottomsheet {
+    --bs-peek: 32vh;        /* hauteur à l’ouverture (étape 1) */
+    --bs-expanded: 58vh;    /* hauteur étendue (étape 2) */
+    max-height: none;
+  }
+
+  /* Étape 1 (peek) & Étape 2 (étendu) */
+  .map-bottomsheet.is-open[data-stage="1"] { height: var(--bs-peek); }
+  .map-bottomsheet.is-open[data-stage="2"] { height: var(--bs-expanded); }
+
+  /* Le conteneur scrollable occupe toute la hauteur du sheet */
+  .mbs-content {
+    height: 100%;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Le header agit comme un "masque" du carrousel (peek d’images) */
+  .map-bottomsheet .mp-header {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    padding: 0 10px; /* conserve ton padding */
+    transition: height .24s ease;
+  }
+
+  /* Étape 1: petite fenêtre qui ne montre qu’une bande d’images */
+  .map-bottomsheet.is-open[data-stage="1"] .mp-header {
+    height: 110px;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,.28));
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,.28));
+  }
+
+  /* Étape 2: on révèle davantage les images (corrigé pour voir le bas) */
+  .map-bottomsheet.is-open[data-stage="2"] .mp-header {
+    height: auto; /* <-- avant 200px */
+    overflow: visible;
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
+
+  /* Le carrousel garde une vraie hauteur: il est "coupé" par le header */
+  .map-bottomsheet .mp-header .mp-carousel {
+    height: 220px; /* plus grand que la fenêtre de peek */
+    border-radius: 10px;
+  }
+
+  /* En étape 2 : la hauteur du carrousel suit le contenu (évite la coupe en bas) */
+  .map-bottomsheet.is-open[data-stage="2"] .mp-header .mp-carousel {
+    height: auto;
+  }
+
+  /* Transitions douces sur le sheet lui-même */
+  .map-bottomsheet { transition: height .24s ease, transform .28s ease, opacity .28s ease; }
+
+  /* Poignée un peu plus visible */
+  .mbs-grabber { margin-top: 10px; }
+  .mbs-grabber::before { background: rgba(0,0,0,.22); }
+}
+
+/* XS: ajuste les hauteurs pour les écrans très petits */
+@media (max-width: 480px) {
+  .map-bottomsheet {
+    --bs-peek: 26vh;
+    --bs-expanded: 45vh;
+  }
+  .map-bottomsheet.is-open[data-stage="1"] .mp-header { height: 50px; }
+  .map-bottomsheet.is-open[data-stage="2"] .mp-header { height: auto; }  /* auto aussi en XS */
+  .map-bottomsheet .mp-header .mp-carousel { height: auto; }             /* suit le contenu */
+}
+
+/* =========================================================
+   PATCH FINALE — garantit la visibilité du bas des images en mobile
+   (neutralise les hauteurs conflictuelles quand nécessaire)
+   ========================================================= */
+@media (max-width: 768px) {
+  /* Étape 1 (peek) : la fenêtre = la hauteur du carrousel (alignées) */
+  .map-bottomsheet.is-open[data-stage="1"] .mp-header .mp-carousel { height: 110px !important; }
+
+  /* Étape 2 (étendu) : aucune coupe */
+  .map-bottomsheet.is-open[data-stage="2"] .mp-header {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .map-bottomsheet.is-open[data-stage="2"] .mp-header .mp-carousel {
+    height: auto !important;
+  }
+
+  /* Neutralise les autres hauteurs mobiles possibles */
+  .map-bottomsheet .mp-carousel,
+  .map-bottomsheet .mpc-spacer {
+    height: auto !important;
+  }
+
+  @media (max-width: 1024px) {
+  .mpc-dots,
+  .mpc-snap-dots {
+    display: none !important;
+  }
+}
 }

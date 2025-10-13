@@ -98,7 +98,7 @@ function wireMiniCarousel(rootEl) {
   });
 }
 
-/* ---------- NEW: Carousel “peek + snap” (mobile/tablette) ---------- */
+/* ---------- Carousel “peek + snap” (mobile/tablette) ---------- */
 function buildPeekCarouselHTML(imageUrls, spotId) {
   const urls = (imageUrls || []).filter(Boolean).slice(0, 6);
   if (!urls.length) return "";
@@ -596,24 +596,86 @@ export default class extends Controller {
 
   showBottomSheet(html) {
     if (!this.hasBottomsheetTarget || !this.hasBottomsheetContentTarget) return;
+
+    // Injecte le contenu
     this.bottomsheetContentTarget.innerHTML = html;
+
+    // Ouvre en mode "compact" (étape 1)
     this.bottomsheetTarget.classList.add("is-open");
+    this.bottomsheetTarget.dataset.stage = "1"; // 1 = compact, 2 = étendu
     this.bottomsheetTarget.setAttribute("aria-hidden", "false");
 
+    // Carrousels & UI
     const root = this.bottomsheetContentTarget;
-    // Carrousels
-    wireMiniCarousel(root);     // si jamais du markup “mini” est rendu
-    wirePeekCarousel(root);     // le “peek + snap”
-    // UI
+    wireMiniCarousel(root);
+    wirePeekCarousel(root);
     this._wireExpandableDesc(root);
     this._wireVotes(root);
+
+    // Active la logique 2-temps sur mobile uniquement
+    if (this.isMobile()) {
+      this._wireTwoStageBottomSheet();
+    }
   }
 
   closeBottomSheet() {
     if (!this.hasBottomsheetTarget) return;
     this.bottomsheetTarget.classList.remove("is-open");
+    this.bottomsheetTarget.removeAttribute("data-stage");
     this.bottomsheetTarget.setAttribute("aria-hidden", "true");
     if (this.hasBottomsheetContentTarget) this.bottomsheetContentTarget.innerHTML = "";
+  }
+
+  /* ---------- Two-stage bottom sheet (mobile) ---------- */
+  _wireTwoStageBottomSheet() {
+    const sheet = this.bottomsheetTarget;
+    const content = this.bottomsheetContentTarget;
+    if (!(sheet && content)) return;
+
+    // Remet à zéro
+    sheet.dataset.stage = "1";
+    content.scrollTop = 0;
+
+    const expandToStage2 = () => {
+      if (sheet.dataset.stage === "2") return;
+      sheet.dataset.stage = "2";
+      // Resize la carte après l’anim (CSS transition) pour éviter les artefacts
+      setTimeout(() => this.map?.resize(), 300);
+    };
+
+    // 1) Scroll vers le haut dans la card => passe en stage 2 dès qu’on scrolle un peu
+    const onScroll = () => {
+      // Quand le contenu a défilé (on “tire” la fiche vers le haut)
+      if (content.scrollTop > 24 && sheet.dataset.stage === "1") {
+        expandToStage2();
+        content.removeEventListener("scroll", onScroll, { passive: true });
+      }
+    };
+    content.addEventListener("scroll", onScroll, { passive: true });
+
+    // 2) Poignée (si présente) => toggle stage
+    const grabber = sheet.querySelector(".mbs-grabber");
+    if (grabber) {
+      grabber.addEventListener("click", () => {
+        if (sheet.dataset.stage === "1") expandToStage2();
+        else { sheet.dataset.stage = "1"; setTimeout(()=>this.map?.resize(), 300); }
+      });
+    }
+
+    // 3) Gestuelle tactile: premier “swipe up” sur le sheet quand le contenu est en haut
+    let touchStartY = null;
+    const onTouchStart = (e) => { touchStartY = e.touches?.[0]?.clientY ?? null; };
+    const onTouchMove = (e) => {
+      if (touchStartY == null) return;
+      const y = e.touches?.[0]?.clientY ?? touchStartY;
+      const dy = touchStartY - y; // positif si on glisse vers le haut
+      if (content.scrollTop <= 0 && dy > 12 && sheet.dataset.stage === "1") {
+        expandToStage2();
+        touchStartY = null;
+      }
+    };
+    sheet.addEventListener("touchstart", onTouchStart, { passive: true });
+    sheet.addEventListener("touchmove", onTouchMove, { passive: true });
   }
 
   /* ---------- Helpers offset / sidebar ---------- */
@@ -700,7 +762,7 @@ export default class extends Controller {
     const address = props.address || "";
     const description = props.description || "";
     const button_link = props.button_link || "";
-    const images = normalizeArray(props.image_urls);
+    const images = normalizeArray(props.image_urls); // ✅ correction ici
     const tags = normalizeArray(props.tags);
     const spotId = String(props.__fid);
     const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${coords[1]},${coords[0]}`;
@@ -755,7 +817,6 @@ export default class extends Controller {
     this.element.classList.add("has-selection");
 
     const root = this.sidebarTarget;
-    // On câble les deux (selon le markup rendu par _renderSpotHTML)
     wireMiniCarousel(root);
     wirePeekCarousel(root);
     this._wireExpandableDesc(root);
