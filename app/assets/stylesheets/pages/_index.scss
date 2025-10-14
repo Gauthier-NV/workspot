@@ -202,6 +202,7 @@ $space-7: 4rem;     // 64px
   }
 }
 
+
 /* ================================
    Banner générique + PWA cards (inchangé)
 ================================ */
@@ -228,6 +229,73 @@ $space-7: 4rem;     // 64px
     text-shadow: 1px 1px 3px rgba($black, .2);
   }
 }
+
+/* ================================
+   Community Share - Version Épurée
+================================ */
+.community-share {
+  @extend .page-container;
+  margin-block: $space-6;
+  padding: 0;
+  text-align: left;
+  font-family: $font;
+  color: $text-color;
+
+  /* Conteneur pour le texte et le bouton */
+  .community-share-content {
+    margin-bottom: $space-6; /* Espace pour le futur carousel */
+
+    h3 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: $dark-gray;
+      margin-bottom: $space-3;
+      line-height: 1.2;
+
+    }
+
+    p {
+      font-size: clamp(1rem, 1.2vw, 1.2rem);
+      line-height: 1.7;
+      color: $text-muted;
+    }
+  }
+
+  /* Bouton CTA (style existant) */
+  .community-share-contact-card {
+  display: flex;
+  justify-content: center; /* Centre horizontalement */
+  margin-top: $space-4;
+
+  .btn-cta {
+    @extend .btn-primary;
+    font-size: 1rem;
+    padding: $space-2 $space-3;
+    /* Pas besoin d'align-content ici */
+  }
+}
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .community-share {
+    margin-block: $space-4;
+
+    .community-share-content {
+      h2 {
+        font-size: 1.6rem;
+      }
+      p {
+        font-size: 1rem;
+      }
+    }
+
+    .btn-cta {
+      min-width: 100%;
+    }
+  }
+}
+
 
 /* ================================
    Section "À propos" (about-banner)

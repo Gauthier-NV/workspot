@@ -225,18 +225,6 @@
   max-height: 56vh;
 }
 
-/* ---------- Dark mode léger ---------- */
-@media (prefers-color-scheme: dark) {
-  .mapboxgl-popup.ws-popup > .mapboxgl-popup-content {
-    background: #0b111e; border-color: rgba(255,255,255,.08); box-shadow: 0 10px 24px rgba(0,0,0,.5);
-  }
-  .mp-title { color: #e5e7eb; }
-  .mp-address, .mp-desc { color: #cbd5e1; }
-  .mp-tag { background: #111827; color: #e5e7eb; }
-  .mp-link { background: #0b111e; border-color: #334155; color: #93c5fd; }
-  .mp-primary { background: #3b82f6; color: #0b111e; }
-  .mp-desc::after { background: linear-gradient(to top, #e5e7eb, #e5e7eb); }
-}
 
 /* ====== Carousel (base “fade”) ====== */
 .mp-carousel {
@@ -269,13 +257,7 @@
 }
 .mpc-dot.is-active { background: #fff; }
 
-/* Dark mode carrousel */
-@media (prefers-color-scheme: dark) {
-  .mp-carousel { background: #0f172a; }
-  .mpc-nav { background: rgba(15,23,42,.9); color: #e5e7eb; }
-  .mpc-dot { background: rgba(255, 255, 255, 0.283); }
-  .mpc-dot.is-active { background: #ffffffcb; }
-}
+
 
 /* ====== Carousel mobile “peek + snap” ======
    (on aperçoit la slide suivante) */
@@ -650,25 +632,7 @@
   }
 }
 
-/* Dark mode léger */
-@media (prefers-color-scheme: dark) {
-  .mp-vote-btn {
-    --fab-bg: rgba(15,23,42,.9);
-    --fab-border: rgba(255,255,255,.08);
-    --fab-fg: #e5e7eb;
-    box-shadow: 0 4px 14px rgba(0,0,0,.35);
-  }
-  .mp-vote-btn--up.is-active {
-    --fab-bg: rgba(34, 197, 94, .18);
-    --fab-border: rgba(74, 222, 128, .5);
-    --fab-fg: #86efac;
-  }
-  .mp-vote-btn--down.is-active {
-    --fab-bg: rgba(239, 68, 68, .18);
-    --fab-border: rgba(252, 165, 165, .5);
-    --fab-fg: #fecaca;
-  }
-}
+
 
 /* Motion réduite */
 @media (prefers-reduced-motion: reduce) {
