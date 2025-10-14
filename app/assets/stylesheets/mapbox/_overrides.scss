@@ -238,7 +238,8 @@
 .mpc-slide { position: absolute; inset: 0; opacity: 0; transition: opacity .22s ease; }
 .mpc-slide.is-active { opacity: 1; }
 /* Desktop: ne force pas l’object-fit ici */
-.mpc-slide img { width: 100%; height: 100%; display: block; }
+.mpc-slide img { width: 100%; height: 100%; display: block; object-fit: cover;
+    object-position: center; }
 .mpc-nav {
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 28px; height: 28px; border-radius: 999px; border: 0;
