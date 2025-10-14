@@ -4,6 +4,7 @@
 
 /* ====== Shell overlay (sidebar au-dessus de la carte) ====== */
 .map-shell {
+  margin-top: 10px;
   position: relative;
   width: 100%;
   height: clamp(0px, 78vh, 820px);
@@ -311,7 +312,7 @@
     scroll-snap-type: x proximity;
     touch-action: pan-x;
   }
-  .mp-carousel--peek { touch-action: pan-x; }
+  .mp-carousel--peek { touch-action: pan-x pan-y; }
 
   .mpc-slide img,
   .mpc-snap-slide img {
@@ -538,7 +539,7 @@
 
 /* En stage 1, on n'autorise que le pan horizontal sur le header/carrousel */
 .map-bottomsheet[data-stage="1"] .mp-header {
-  touch-action: pan-x;
+  touch-action: pan-x pan-y;
 }
 
 /* Optionnel: évite les clics pendant la transition */
@@ -579,11 +580,11 @@
   background: var(--fab-bg);
   color: var(--fab-fg);
   backdrop-filter: blur(6px);
-  box-shadow: 0 4px 14px rgba(0,0,0,.10);
+  box-shadow: 0 2px 7px rgba(0,0,0,.08);
   cursor: pointer;
   transition: transform .12s ease, background-color .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .12s ease;
 }
-.mp-vote-btn:hover { box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.mp-vote-btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,.10); }
 .mp-vote-btn:active { transform: translateY(1px) scale(.98); }
 
 /* États actifs (sélection) */
