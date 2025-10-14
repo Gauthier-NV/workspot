@@ -1,7 +1,6 @@
 /* =============================================
    MAPBOX OVERRIDES — card compacte & lisible
    ============================================= */
-
 /* ====== Shell overlay (sidebar au-dessus de la carte) ====== */
 .map-shell {
   margin-top: 10px;
@@ -13,7 +12,6 @@
   background: #fff;
   box-shadow: 0 6px 16px rgba(17,24,39,.12);
 }
-
 /* La carte occupe tout l’espace */
 .map-shell .map {
   position: absolute;
@@ -22,7 +20,6 @@
   height: 100%;
   z-index: 0;
 }
-
 /* ====== Panneau latéral (overlay desktop) ====== */
 .map-sidebar {
   position: absolute;
@@ -38,28 +35,22 @@
   transition: transform .28s ease, opacity .2s ease;
   z-index: 2;
 }
-
 .map-sidebar .sidebar-placeholder { color: #6b7280; padding: 8px 4px; }
-
 /* Sidebar visible quand un spot est sélectionné (desktop) */
 .map-shell.has-selection .map-sidebar {
   transform: translateX(0);
   opacity: 1;
   pointer-events: auto;
 }
-
 /* Largeur sidebar responsive */
 @media (max-width: 900px) {
   .map-sidebar { width: 320px; border-radius: 12px 0 0 12px; }
 }
-
 /* Sidebar masquée sur mobile (on utilise le bottom sheet) */
 @media (max-width: 768px) {
   .map-sidebar { display: none; }
 }
-
 /* ============================================= */
-
 .map {
   width: 100%;
   height: 100%;
@@ -67,7 +58,6 @@
   border-radius: 10px;
   overflow: hidden;
 }
-
 /* ====== BOTTOM SHEET (mobile) ====== */
 .map-bottomsheet {
   position: absolute;
@@ -76,7 +66,7 @@
   border-top-left-radius: 14px;
   border-top-right-radius: 14px;
   transform: translateY(100%);
-  transition: transform .28s ease, opacity .28s ease;
+  transition: transform .28s ease, opacity .28s ease, height .24s ease;
   opacity: 0;
   pointer-events: none;
   max-height: 65%;
@@ -84,7 +74,6 @@
   flex-direction: column;
   z-index: 3;
 }
-
 /* Poignée */
 .mbs-grabber {
   appearance: none;
@@ -103,23 +92,19 @@
   background: rgba(0,0,0,.18);
   border-radius: 999px;
 }
-
 /* Contenu scrollable */
 .mbs-content {
   overflow: auto;
   padding: 12px 16px calc(18px + env(safe-area-inset-bottom, 0));
 }
-
 /* Ouverture */
 .map-bottomsheet.is-open {
   transform: translateY(0%);
   opacity: 1;
   pointer-events: auto;
 }
-
 /* Visible seulement en mobile */
 @media (min-width: 769px) { .map-bottomsheet { display: none; } }
-
 /* Safe-area iOS (Sass-safe) */
 @supports (padding: max(0px)) {
   .map-bottomsheet {
@@ -127,7 +112,6 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
-
 /* Évite que les contrôles Mapbox collent le sheet */
 @media (max-width: 768px) {
   .mapboxgl-ctrl-bottom-right,
@@ -135,7 +119,6 @@
     margin-bottom: calc(12px + env(safe-area-inset-bottom, 0));
   }
 }
-
 /* ============================================= */
 /* Popup compacte */
 .mapboxgl-popup.ws-popup > .mapboxgl-popup-content {
@@ -147,17 +130,13 @@
   box-shadow: 0 6px 16px rgba(17,24,39,.12);
   overscroll-behavior: contain;
 }
-
 /* Masquer la pointe en mode mobile */
 .mapboxgl-popup.ws-popup.ws-popup--mobile .mapboxgl-popup-tip { display: none; }
-
 /* Card interne */
 .map-popup { background: transparent; }
 .mp-body { padding: 10px 12px 12px; }
-
 /* Titre — popup + sidebar */
 .mp-title { margin: 0 0 4px 0; font-size: 16px; }
-
 /* Adresse — popup + sidebar */
 .mapboxgl-popup .mp-address,
 .sidebar-card .mp-address {
@@ -166,11 +145,9 @@
   -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
   white-space: normal; margin: 0 0 8px;
 }
-
 /* Tags */
 .mp-tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
 .mp-tag { padding: 3px 9px; border-radius: 999px; background: #F3F4F6; color: #374151; font-size: 11px; font-weight: 600; }
-
 /* Description — popup + sidebar */
 .mapboxgl-popup.ws-popup .mp-desc,
 .mapboxgl-popup.ws-popup .mp-desc *,
@@ -180,7 +157,6 @@
   text-align: justify; text-align-last: left;
   hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word;
 }
-
 /* Description — popup + sidebar */
 .mp-desc {
   font-size: 13px;
@@ -194,7 +170,6 @@
   overflow-wrap: break-word;
   margin-bottom: 10px;
 }
-
 /* Actions */
 .mp-actions { display: flex; gap: 12px; justify-content: flex-start; margin-top: 12px; }
 .mp-link, .mp-primary {
@@ -205,16 +180,13 @@
 .mp-link:hover { background: #F9FAFB; }
 .mp-primary { background: #2563EB; color: #fff; box-shadow: 0 2px 6px rgba(37,99,235,.2); }
 .mp-primary:hover { background: #1e3a8a; }
-
 /* Contrôles Mapbox */
 .mapboxgl-ctrl-top-right, .mapboxgl-ctrl-bottom-right { margin: 12px; }
 .mapboxgl-ctrl-group { box-shadow: 0 1px 6px rgba(17,24,39,.10); }
-
 /* ---------- Responsive popup ---------- */
 @media (max-width: 768px) {
   .mapboxgl-popup.ws-popup > .mapboxgl-popup-content { max-width: 90vw; }
 }
-
 /* Mode mobile : largeur raisonnable + safe-area iOS */
 .mapboxgl-popup.ws-popup.ws-popup--mobile > .mapboxgl-popup-content {
   width: 92vw; max-width: 300px; border-radius: 12px;
@@ -222,11 +194,9 @@
 }
 .mapboxgl-popup.ws-popup.ws-popup--mobile .mp-body {
   padding: 14px 16px 16px;
-  overflow: hidden; -webkit-overflow-scrolling: auto; touch-action: pan-x;
+  overflow: hidden; -webkit-overflow-scrolling: auto; touch-action: pan-x pan-y;
   max-height: 56vh;
 }
-
-
 /* ====== Carousel (base “fade”) ====== */
 .mp-carousel {
   position: relative;
@@ -258,9 +228,6 @@
   background: rgba(255,255,255,.7); box-shadow: 0 0 0 1px rgba(0,0,0,.15) inset;
 }
 .mpc-dot.is-active { background: #fff; }
-
-
-
 /* ====== Carousel mobile “peek + snap” ======
    (on aperçoit la slide suivante) */
 .mp-carousel--peek {
@@ -268,20 +235,17 @@
   border-radius: 10px;
   background: transparent;
 }
-
 /* Track & slides (par défaut SANS inertie/snap sur desktop) */
 .mpc-snap-track {
   display: flex;
   gap: 10px;
   overflow-x: auto;
   padding: 6px 2px 2px;
-
   /* Desktop: pas d’inertie ni de snap */
   scroll-snap-type: none;
   scrollbar-width: none;     /* Firefox */
 }
 .mpc-snap-track::-webkit-scrollbar { display: none; } /* WebKit */
-
 .mpc-snap-slide {
   flex: 0 0 auto;
   width: 78%;
@@ -294,7 +258,6 @@
   scroll-snap-align: start;
 }
 .mpc-snap-slide img { width: 100%; height: 100%; display: block; }
-
 /* Dots du peek */
 .mpc-snap-dots {
   display: flex; justify-content: center; gap: 6px; padding: 6px 0 0;
@@ -304,28 +267,24 @@
   background: #e5e7eb;
 }
 .mpc-snap-dots .mpc-dot.is-active { background: #111827; }
-
 /* Momentum scroll & snap + COVER UNIQUEMENT mobile/tablette */
 @media (max-width: 1024px) {
   .mpc-snap-track {
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x proximity;
-    touch-action: pan-x;
+    touch-action: pan-x pan-y;
   }
   .mp-carousel--peek { touch-action: pan-x pan-y; }
-
   .mpc-slide img,
   .mpc-snap-slide img {
     object-fit: cover;
     object-position: center;
   }
 }
-
 /* Un peu plus de peek sur très petit écran */
 @media (max-width: 480px) {
   .mpc-snap-slide { width: 82%; }
 }
-
 /* =======================================
    Bloque le scroll vertical UNIQUEMENT en mobile (popup)
    ======================================= */
@@ -339,7 +298,6 @@
   .mp-carousel { touch-action: pan-x !important; }
   .mapboxgl-popup.ws-popup.ws-popup--mobile > .mapboxgl-popup-content::-webkit-scrollbar { display: none; }
 }
-
 /* ====== Fiche desktop (sidebar) ====== */
 .sidebar-card {
   display: block;
@@ -349,31 +307,25 @@
   border: 1px solid #e5e7eb;
   box-shadow: 0 2px 10px rgba(17,24,39,.06);
   margin-bottom: 12px;
-
 }
 .sidebar-card .mp-body { padding: 12px; }
 .sidebar-card .mp-carousel { height: 220px; }
 .sidebar-card .mp-actions { margin-top: 12px; }
-
 /* =========================================================
    MOBILE COMPACT — bottom sheet + card + contenu (ordre souhaité)
    ========================================================= */
 @media (max-width: 768px) {
   /* Sheet un peu plus bas par défaut */
   .map-bottomsheet { max-height: 58%; }
-
   .map-bottomsheet .mp-container {
     background: #ffffff;
   }
-
   /* Paddings serrés + marge basse pour laisser passer les boutons flottants */
   .mbs-content { padding: 8px 12px calc( env(safe-area-inset-bottom, 0)); }
-
   /* Card mobile (HTML: .sidebar-card.sidebar-card--mobile) */
   .map-bottomsheet .sidebar-card--mobile {
     border: 0; box-shadow: none; border-radius: 12px; overflow: hidden;
   }
-
   /* 1) Infos en haut */
   .map-bottomsheet .mp-info { padding: 8px 10px 6px; }
   .map-bottomsheet .mp-title { font-size: 15px; margin: 0 0 2px; }
@@ -382,24 +334,19 @@
     display: -webkit-box; -webkit-box-orient: vertical;
     -webkit-line-clamp: 1; line-clamp: 1; overflow: hidden;
   }
-
   /* Tags plus serrés en mobile */
   .map-bottomsheet .mp-tags--mobile { gap: 4px; margin: 6px 0 8px; }
   .map-bottomsheet .mp-tags--mobile .mp-tag { font-size: 10.5px; padding: 2px 7px; }
-
   /* 2) Actions juste sous les infos */
   .map-bottomsheet .mp-actions--top { display: flex; gap: 8px; padding: 0 10px 8px; margin-top: 0; }
   .map-bottomsheet .mp-actions--top .mp-link,
   .map-bottomsheet .mp-actions--top .mp-primary { font-size: 12px; padding: 6px 8px; }
-
   /* 3) Images (carrousel compact par défaut) */
   .map-bottomsheet .mp-header { padding: 0 10px; }
   .map-bottomsheet .mp-carousel { height: 120px; border-radius: 10px; }
-
   /* 4) Description en bas */
   .map-bottomsheet .mp-desc-wrapper { padding: 8px 10px 10px; margin: 0; }
   .map-bottomsheet .mp-desc { --mp-desc-lines: 2; padding: 20px 10px 6px ; }
-
   /* ---- SPACER quand pas d’images (même taille que le carrousel) ---- */
   .map-bottomsheet .mpc-spacer {
     border-radius: 10px;
@@ -407,17 +354,14 @@
     height: 120px;
   }
 }
-
 /* Très petits écrans */
 @media (max-width: 480px) {
   .map-bottomsheet { max-height: 50%; }
   .map-bottomsheet .mp-carousel { height: 170px; }
   .map-bottomsheet .mp-desc { --mp-desc-lines: 1; }
-
   /* Spacer aligné */
   .map-bottomsheet .mpc-spacer { height: 170px; }
 }
-
 /* =========================================================
    MOBILE — Two-step sheet avec peek d’images (à la Google Maps)
    (version alignée avec le JS: data-stage="1" puis data-stage="2")
@@ -429,18 +373,15 @@
     --bs-expanded: 58vh;    /* hauteur étendue (étape 2) */
     max-height: none;
   }
-
   /* Étape 1 (peek) & Étape 2 (étendu) */
   .map-bottomsheet.is-open[data-stage="1"] { height: var(--bs-peek); }
   .map-bottomsheet.is-open[data-stage="2"] { height: var(--bs-expanded); }
-
   /* Le conteneur scrollable occupe toute la hauteur du sheet */
   .mbs-content {
     height: 100%;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
   }
-
   /* Le header agit comme un "masque" du carrousel (peek d’images) */
   .map-bottomsheet .mp-header {
     position: relative;
@@ -449,14 +390,12 @@
     padding: 0 10px; /* conserve ton padding */
     transition: height .24s ease;
   }
-
   /* Étape 1: petite fenêtre qui ne montre qu’une bande d’images */
   .map-bottomsheet.is-open[data-stage="1"] .mp-header {
     height: 110px;
     -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,.28));
             mask-image: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,.28));
   }
-
   /* Étape 2: on révèle davantage les images (corrigé pour voir le bas) */
   .map-bottomsheet.is-open[data-stage="2"] .mp-header {
     height: auto; /* <-- avant 200px */
@@ -464,26 +403,26 @@
     -webkit-mask-image: none;
             mask-image: none;
   }
-
   /* Le carrousel garde une vraie hauteur: il est "coupé" par le header */
   .map-bottomsheet .mp-header .mp-carousel {
     height: 220px; /* plus grand que la fenêtre de peek */
     border-radius: 10px;
   }
-
   /* En étape 2 : la hauteur du carrousel suit le contenu (évite la coupe en bas) */
   .map-bottomsheet.is-open[data-stage="2"] .mp-header .mp-carousel {
     height: auto;
   }
-
   /* Transitions douces sur le sheet lui-même */
   .map-bottomsheet { transition: height .24s ease, transform .28s ease, opacity .28s ease; }
-
   /* Poignée un peu plus visible */
   .mbs-grabber { margin-top: 10px; }
   .mbs-grabber::before { background: rgba(0,0,0,.22); }
+  /* CORRECTION : En stage 2, le carrousel ne doit pas capturer le swipe horizontal */
+  .map-bottomsheet.is-open[data-stage="2"] .mp-carousel--peek,
+  .map-bottomsheet.is-open[data-stage="2"] .mpc-snap-track {
+    touch-action: pan-y !important;
+  }
 }
-
 /* XS: ajuste les hauteurs pour les écrans très petits */
 @media (max-width: 480px) {
   .map-bottomsheet {
@@ -494,7 +433,6 @@
   .map-bottomsheet.is-open[data-stage="2"] .mp-header { height: auto; }  /* auto aussi en XS */
   .map-bottomsheet .mp-header .mp-carousel { height: auto; }             /* suit le contenu */
 }
-
 /* =========================================================
    PATCH FINALE — garantit la visibilité du bas des images en mobile
    (neutralise les hauteurs conflictuelles quand nécessaire)
@@ -502,7 +440,6 @@
 @media (max-width: 768px) {
   /* Étape 1 (peek) : la fenêtre = la hauteur du carrousel (alignées) */
   .map-bottomsheet.is-open[data-stage="1"] .mp-header .mp-carousel { height: 110px !important; }
-
   /* Étape 2 (étendu) : aucune coupe */
   .map-bottomsheet.is-open[data-stage="2"] .mp-header {
     height: auto !important;
@@ -511,13 +448,11 @@
   .map-bottomsheet.is-open[data-stage="2"] .mp-header .mp-carousel {
     height: auto !important;
   }
-
   /* Neutralise les autres hauteurs mobiles possibles */
   .map-bottomsheet .mp-carousel,
   .map-bottomsheet .mpc-spacer {
     height: auto !important;
   }
-
   @media (max-width: 1024px) {
     .mpc-dots,
     .mpc-snap-dots {
@@ -525,34 +460,27 @@
     }
   }
 }
-
 /* =========================================================
    ➕ AJOUTS — Lock/Unlock du scroll pour le two-step
    ========================================================= */
-
 /* Lock du scroll tant qu'on n'est pas en stage 2 */
 .mbs-content.is-locked {
   overflow: hidden !important;
   -webkit-overflow-scrolling: auto !important;
   touch-action: pan-x !important;
 }
-
 /* En stage 1, on n'autorise que le pan horizontal sur le header/carrousel */
 .map-bottomsheet[data-stage="1"] .mp-header {
-  touch-action: pan-x pan-y;
+  touch-action: pan-x ;
 }
-
 /* Optionnel: évite les clics pendant la transition */
 .map-bottomsheet.is-transitioning {
   pointer-events: none;
 }
-
 /* ===========================
    Vote UI — 2 boutons (👍 / 👎)
    =========================== */
-
 .mp-container { position: relative; }
-
 /* ---- Desktop / tablette : bas-droite de la card (horizontal) ---- */
 .mp-vote-wrap {
   position: absolute;
@@ -564,13 +492,11 @@
   transition: opacity .15s ease;
 }
 .mp-vote-wrap.is-loading { opacity: .6; pointer-events: none; }
-
 /* Boutons ronds */
 .mp-vote-btn {
   --fab-bg: rgba(255,255,255,.92);
   --fab-border: rgba(0,0,0,.08);
   --fab-fg: #a2a2a2;
-
   width: 40px;
   height: 40px;
   display: grid;
@@ -586,7 +512,6 @@
 }
 .mp-vote-btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,.10); }
 .mp-vote-btn:active { transform: translateY(1px) scale(.98); }
-
 /* États actifs (sélection) */
 .mp-vote-btn--up.is-active {
   --fab-bg: rgba(220, 252, 231, .95);   /* vert très pâle */
@@ -598,21 +523,18 @@
   --fab-border: #fca5a5;
   --fab-fg: #c15353;
 }
-
 /* Focus visible (a11y) */
 .mp-vote-btn:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
   border-color: #93c5fd;
 }
-
 /* ---- Mobile : boutons flottants toujours visibles pendant le scroll ---- */
 @media (max-width: 768px) {
   /* Laisse de la place en bas du contenu pour le bandeau de boutons */
   .map-bottomsheet .mbs-content {
     padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
   }
-
   /* Le conteneur devient sticky en bas de la zone scrollable */
   .map-bottomsheet .mp-vote-wrap {
     position: sticky;
@@ -633,9 +555,6 @@
     height: 36px;
   }
 }
-
-
-
 /* Motion réduite */
 @media (prefers-reduced-motion: reduce) {
   .mp-vote-btn { transition: none; }
