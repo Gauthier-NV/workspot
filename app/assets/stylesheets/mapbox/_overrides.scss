@@ -12,6 +12,14 @@
   overflow: hidden;
   background: #fff;
   box-shadow: 0 6px 16px rgba(17,24,39,.12);
+
+}
+
+@media (max-width: 768px) {
+  .map-shell {
+    height: clamp(0px, 70vh, 550px); /* Réduit la hauteur max */
+    margin-bottom: 0; /* Évite les marges inutiles */
+  }
 }
 
 /* La carte occupe tout l’espace */
@@ -196,10 +204,27 @@
 }
 
 /* Actions */
-.mp-actions { display: flex; gap: 12px; justify-content: flex-start; margin-top: 12px; }
-.mp-link, .mp-primary {
-  text-decoration: none; border-radius: 8px; padding: 6px 9px; min-height: unset;
-  font-size: 12px; font-weight: 550; line-height: 1.3; display: flex; align-items: center; justify-content: flex-start;
+.mp-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between; /* Pour que les boutons prennent toute la largeur */
+  margin-top: 12px;
+  width: 100%;
+}
+.mp-link,
+.mp-primary {
+  flex: 1; /* Chaque bouton prend 50% de la largeur */
+  text-align: center; /* Centre le texte */
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 6px 9px;
+  min-height: unset;
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centre le contenu */
 }
 .mp-link { border: 1px solid #E5E7EB; background: #fff; color: #1f2a72; }
 .mp-link:hover { background: #F9FAFB; }
@@ -499,23 +524,42 @@
 
 .mp-container { position: relative; }
 
-.mp-vote-wrap {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
+.mp-vote-container {
   display: flex;
-  gap: 8px;
-  z-index: 2;
-  transition: opacity .15s ease;
+  align-items: center;
+  justify-content: space-evenly;
+  margin-top: 25px;
+  width: 100%;
 }
+
+.mp-vote-label {
+  font-size: 15px;
+  color: #6b7280; /* Gris moyen */
+  font-weight: 350;
+  letter-spacing: 0.2px;
+  margin-right: 8px; /* Espace entre le texte et les boutons */
+}
+
+/* Boutons de vote : alignés à droite */
+.mp-vote-wrap {
+  display: flex;
+  gap: 10px;
+}
+
+
 .mp-vote-wrap.is-loading { opacity: .6; pointer-events: none; }
 
+/* === Boutons de vote === */
 .mp-vote-btn {
   --fab-bg: rgba(255,255,255,.92);
   --fab-border: rgba(0,0,0,.08);
   --fab-fg: #a2a2a2;
-  width: 40px; height: 40px;
-  display: grid; place-items: center;
+  --icon-stroke: 0; /* 👈 épaisseur du contour SVG (0 = aucun) */
+
+  width: 37px;
+  height: 37px;
+  display: grid;
+  place-items: center;
   border-radius: 9999px;
   border: 1px solid var(--fab-border);
   background: var(--fab-bg);
@@ -523,27 +567,57 @@
   backdrop-filter: blur(6px);
   box-shadow: 0 2px 7px rgba(0,0,0,.08);
   cursor: pointer;
-  transition: transform .12s ease, background-color .18s ease, box-shadow .18s ease, border-color .18s ease, opacity .12s ease;
+  transition:
+    transform .12s ease,
+    background-color .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease,
+    opacity .12s ease;
 }
-.mp-vote-btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,.10); }
-.mp-vote-btn:active { transform: translateY(1px) scale(.98); }
 
+.mp-vote-btn:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,.10);
+  --icon-stroke: 0.3; /* 👈 un léger contour au survol */
+}
+
+.mp-vote-btn:active {
+  transform: translateY(1px) scale(.98);
+}
+
+/* === État actif Like === */
 .mp-vote-btn--up.is-active {
   --fab-bg: rgba(220, 252, 231, .95);
   --fab-border: #97fcbc;
   --fab-fg: #42a568;
+  --icon-stroke: 0.7; /* 👈 épaissir le like actif */
 }
+
+/* === État actif Dislike === */
 .mp-vote-btn--down.is-active {
   --fab-bg: rgba(254, 226, 226, .95);
   --fab-border: #fca5a5;
   --fab-fg: #c15353;
+  --icon-stroke: 0.7; /* 👈 épaissir le dislike actif */
 }
 
+/* === Accessibilité focus clavier === */
 .mp-vote-btn:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
   border-color: #93c5fd;
 }
+
+/* === SVG : couleur + épaisseur dynamique === */
+.mp-vote-btn svg path {
+  stroke: currentColor;
+  stroke-width: var(--icon-stroke);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  paint-order: stroke fill;
+  vector-effect: non-scaling-stroke;
+  transition: stroke-width .2s ease;
+}
+
 
 /* ---- Mobile : boutons flottants visibles pendant le scroll ---- */
 @media (max-width: 768px) {
